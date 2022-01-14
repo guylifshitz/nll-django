@@ -29,7 +29,7 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG") != "False"
 
-ALLOWED_HOSTS = ["localhost", "https://news-lang-learn-staging.herokuapp.com/"]
+ALLOWED_HOSTS = ["localhost", "news-lang-learn-staging.herokuapp.com"]
 
 
 # Application definition
@@ -81,9 +81,10 @@ WSGI_APPLICATION = "news_reader.wsgi.application"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 # Using mongoengine since it supports arrays and dicts in mongoDB
-mongoengine.connect(
-    # host="mongodb://<username>:<password>@cluster0-shard-00-00.i2axa.mongodb.net:27017,cluster0-shard-00-01.i2axa.mongodb.net:27017,cluster0-shard-00-02.i2axa.mongodb.net:27017/myFirstDatabase?ssl=true&replicaSet=atlas-z0i0kb-shard-0&authSource=admin&retryWrites=true&w=majority"
-    host="mongodb://localhost:27017/newspaper-language-learner"
+mongoengine.connect(host=
+    os.environ.get(
+    "MONGO_URI", "mongodb://localhost:27017/newspaper-language-learner"
+)
 )
 
 # DATABASES = {
