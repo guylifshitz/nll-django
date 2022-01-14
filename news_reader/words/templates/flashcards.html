@@ -1,0 +1,44 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/words/style.css' %}">
+<script src="{% static '/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'js/words/flashcards.js' %}"></script>
+<script>
+    var words = {{ words | safe }};
+</script>
+
+<div class="page">
+    <div class="flashcard">
+        <div class="flashcard-top-word" id="top-word">
+
+        </div>
+        <div class="flashcard-bottom-word" id="bottom-word">
+
+        </div>
+        <div class="flashcard-bottom-word" id="bottom-word-holder">
+            ???
+        </div>
+
+        <div class="flashcard-buttons">
+            <div>
+                <div class="button flashcard-button" id="next-button">
+                    ^^^
+                </div>
+            </div>
+            <div>
+                <div hidden class="button back-button flashcard-button" id="back-button">
+                    <<< </div>
+
+                        <div class="button save-button flashcard-button" id="save-button">
+                            save
+                        </div>
+                        <a href="https://en.wiktionary.org/" style="text-decoration: none;" target="_blank"
+                            id="definition-button" class="flashcard-button ">
+                            <div class="button">def.
+                            </div>
+                        </a>
+
+                </div>
+            </div>
+        </div>
+    </div>

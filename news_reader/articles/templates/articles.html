@@ -1,0 +1,49 @@
+<link rel="stylesheet" href="http://localhost:8082/css/style.css">
+<script src="http://localhost:8082/js/jquery-3.6.0.min.js"></script>
+<script src="http://localhost:8082/js/logic.js"></script>
+
+{% for article in articles %}
+
+<div class="page">
+    <div class="articles">
+        <div class="article" style="width: 100%; display: table;">
+            <div style="width: 90%; display: table-cell;">
+                <div class="title">
+                    {% for word in article.words %}
+                    <span class="word" id="word_{{forloop.counter}}"> {{ word.word }} </span>
+                    <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">{{word.translation}}</div>
+                    {%endfor %}
+                    <div class="article_metadata">
+                        {{article.source}}
+                        --
+                        {{article.feed_name}}
+                        ---
+                        {{article.published_datetime}}
+                        ---
+                        score: {{article.known_words_count}}
+                        ---
+                        <a href={{article.link}}> LINK </a>
+                    </div>
+                </div>
+
+                <div class="title_mix">
+                    {% for word in article.words %}
+                    <div class="word" id="word_{{forloop.counter}}"> {{ word.mix }} </div>
+                    <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">{{word.mix_translation}}</div>
+                    {%endfor %}
+                </div>
+                <div class="title_translation" hidden>
+                    {{ article.title_translation}}
+                </div>
+            </div>
+            <div style="width: 10%; display: table-cell;">
+                <div class="button_partial_translation button">mix</div>
+                <div class="button_full_translation button">full</div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% empty %}
+No articles to render.
+{% endfor %}
