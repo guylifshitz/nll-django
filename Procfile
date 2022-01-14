@@ -1,1 +1,1 @@
-web: gunicorn myproject.wsgi
+web: gunicorn news_reader˝.wsgi
