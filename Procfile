@@ -1,1 +1,1 @@
-web: gunicorn news_reader˝.wsgi
+web: gunicorn news_reader.wsgi
