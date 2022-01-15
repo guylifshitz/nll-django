@@ -1,6 +1,8 @@
-<link rel="stylesheet" href="http://localhost:8082/css/style.css">
-<script src="http://localhost:8082/js/jquery-3.6.0.min.js"></script>
-<script src="http://localhost:8082/js/logic.js"></script>
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<script src="{% static '/js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static '/js/logic.js' %}"></script>
 
 {% for article in articles %}
 
