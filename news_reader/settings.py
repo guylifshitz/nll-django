@@ -29,7 +29,7 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG") != "False"
 
-ALLOWED_HOSTS = ["localhost", "news-lang-learn-staging.herokuapp.com"]
+ALLOWED_HOSTS = ["localhost", "news-lang-learn-staging.herokuapp.com", "192.168.0.17"]
 
 
 # Application definition

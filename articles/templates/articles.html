@@ -1,8 +1,8 @@
 {% load static %}
 
-<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<link rel="stylesheet" href="{% static 'css/articles/style.css' %}">
 <script src="{% static '/js/jquery-3.6.0.min.js' %}"></script>
-<script src="{% static '/js/logic.js' %}"></script>
+<script src="{% static '/js/articles/logic.js' %}"></script>
 
 {% for article in articles %}
 
@@ -31,9 +31,24 @@
                 <div class="title_mix">
                     {% for word in article.words %}
                     <div class="word" id="word_{{forloop.counter}}"> {{ word.mix }} </div>
-                    <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">{{word.mix_translation}}</div>
+                    <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">{{word.mix_word_translation}}</div>
                     {%endfor %}
                 </div>
+                <div class="title_mix title_mix_segmented">
+                    {% for word in article.words %}
+                    <div class="word" id="word_segmented_{{forloop.counter}}"> {{ word.mix_segmented }} </div>
+                    <div class="word_tooltip" id="word_tooltip_segmented_{{forloop.counter}}">
+                        <!-- <div>{{word.mix_word_lemma}}</div> -->
+                        <div>{{word.mix_word_translation_segmented}}</div>
+                    </div>
+                    {%endfor %}
+                </div>
+                <!-- <div class="title_mix title_mix_lemma">
+                    {% for word in article.words %}
+                    <div class="word" id="word_lemma_{{forloop.counter}}"> {{ word.mix_lemma }} </div>
+                    <div class="word_tooltip" id="word_tooltip_lemma_{{forloop.counter}}">{{word.mix_word_translation_lemma}}</div>
+                    {%endfor %}
+                </div> -->
                 <div class="title_translation" hidden>
                     {{ article.title_translation}}
                 </div>

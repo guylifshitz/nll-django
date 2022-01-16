@@ -14,4 +14,5 @@ class Rss_feeds(Document):
     title_translation = fields.StringField()
     title_parsed_clean = fields.ListField()
     title_parsed_lemma = fields.ListField()
+    title_parsed_segmented = fields.ListField()
     
