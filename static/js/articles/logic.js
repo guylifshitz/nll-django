@@ -16,7 +16,10 @@ $(document).ready(function () {
   }
   $(".button_partial_translation").on("click", show_partial_translation);
 
-  $(".word").on("click", show_partial_translation);
+  $(".word").on("click", function(element){
+    tooltip2 =  element.target.nextElementSibling.getElementsByClassName("mix_tooltip_2")[0]
+    $(tooltip2).toggle();
+  });
 
   function position_tooltips() {
     var tooltips = $(".word_tooltip");

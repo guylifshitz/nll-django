@@ -30,25 +30,13 @@
 
                 <div class="title_mix">
                     {% for word in article.words %}
-                    <div class="word" id="word_{{forloop.counter}}"> {{ word.mix }} </div>
-                    <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">{{word.mix_word_translation}}</div>
-                    {%endfor %}
-                </div>
-                <div class="title_mix title_mix_segmented">
-                    {% for word in article.words %}
-                    <div class="word" id="word_segmented_{{forloop.counter}}"> {{ word.mix_segmented }} </div>
-                    <div class="word_tooltip" id="word_tooltip_segmented_{{forloop.counter}}">
-                        <!-- <div>{{word.mix_word_lemma}}</div> -->
-                        <div>{{word.mix_word_translation_segmented}}</div>
+                    <div class="word word_{{word.word_foreign}}" id="word_{{forloop.counter}}">{{ word.mix_word }}</div>
+                    <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">
+                        <div class="mix_tooltip_1">{{word.mix_word_tooltip_1}}</div>
+                        <div class="mix_tooltip_2" hidden>{{word.mix_word_tooltip_2}}</div>
                     </div>
                     {%endfor %}
                 </div>
-                <!-- <div class="title_mix title_mix_lemma">
-                    {% for word in article.words %}
-                    <div class="word" id="word_lemma_{{forloop.counter}}"> {{ word.mix_lemma }} </div>
-                    <div class="word_tooltip" id="word_tooltip_lemma_{{forloop.counter}}">{{word.mix_word_translation_lemma}}</div>
-                    {%endfor %}
-                </div> -->
                 <div class="title_translation" hidden>
                     {{ article.title_translation}}
                 </div>

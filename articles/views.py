@@ -28,36 +28,43 @@ def index(request):
         words = []
         known_words_count = 0
         for index, lemma in enumerate(article["title_parsed_lemma"]):
+            
             lemma = Words.objects(_id=lemma)[0]
-
-            mix_word = lemma["translation"].lower()
-            mix_word_translation = article["title_parsed_clean"][index]
+            word_translation = lemma["translation"].lower()
+            
+            word_foreign = "foreign"
+            mix_word = article["title_parsed_clean"][index]
+            mix_word_translation = lemma["translation"].lower()
             mix_word_lemma = lemma["_id"]
+            mix_word_segmented = article["title_parsed_segmented"][index]
 
-            mix_word_segmented = lemma["translation"].lower()
-            mix_word_segmented_translation = article["title_parsed_segmented"][index]
+            if lemma["_id"] not in mix_word_segmented:
+                mix_word_segmented = mix_word_segmented + f" ({lemma['_id']})"
 
-            if lemma["count"] > word_count_cutoff:
-                mix_word = article["title_parsed_clean"][index]
-                mix_word_translation = lemma["translation"].lower()
+            if lemma["count"] < word_count_cutoff:
+                word_foreign = "native"
+                mix_word = lemma["translation"].lower()
+                mix_word_translation = article["title_parsed_clean"][index]
 
-                mix_word_segmented = article["title_parsed_segmented"][index]
-                if lemma["_id"] not in mix_word_segmented:
-                    mix_word_segmented = mix_word_segmented + f"({lemma['_id']})"
+                mix_word_tooltip_1 = mix_word_translation
+                mix_word_tooltip_2 = mix_word_segmented
 
-                mix_word_segmented_translation = lemma["translation"].lower()
-
+            else:
+                mix_word_tooltip_1 = mix_word_segmented
+                mix_word_tooltip_2 = mix_word_translation
                 known_words_count = known_words_count + 1
 
             word_components = {
                 "word": article["title_parsed_clean"][index],
                 "lemma": lemma["_id"],
-                "mix": mix_word,
+                "mix_word": mix_word,
                 "mix_word_translation": mix_word_translation,
                 "mix_word_lemma": mix_word_lemma,
+                "mix_word_tooltip_1": mix_word_tooltip_1,
+                "mix_word_tooltip_2": mix_word_tooltip_2,
                 "mix_segmented": mix_word_segmented,
-                "mix_word_translation_segmented": mix_word_segmented_translation,
-                "translation": lemma["translation"].lower(),
+                "translation": word_translation,
+                "word_foreign":  word_foreign
             }
             words.append(word_components)
 
