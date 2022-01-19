@@ -11,6 +11,7 @@ def index(request):
     word_count_cutoff = int(request.GET.get("word_count_cutoff", 10))
     start_date_cutoff = request.GET.get("start_date", "01-01-1900")
     start_date_cutoff = datetime.datetime.strptime(start_date_cutoff, "%d-%m-%Y")
+    article_display_count = int(request.GET.get("count", 100))
 
     articles = Rss_feeds.objects.filter(
         language=language, published_datetime__gte=start_date_cutoff, title_translation__ne=None
@@ -91,5 +92,5 @@ def index(request):
     articles_to_render = sorted(
         articles_to_render, key=lambda d: d["known_words_ratio"], reverse=True
     )
-    articles_to_render = articles_to_render[0:100]
+    articles_to_render = articles_to_render[0:article_display_count]
     return render(request, "articles.html", {"articles": articles_to_render})
