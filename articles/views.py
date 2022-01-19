@@ -6,12 +6,14 @@ import datetime
 import traceback
 
 def index(request):
+
+    language = request.GET.get("language", "arabic")
     word_count_cutoff = int(request.GET.get("word_count_cutoff", 10))
     start_date_cutoff = request.GET.get("start_date", "01-01-1900")
     start_date_cutoff = datetime.datetime.strptime(start_date_cutoff, "%d-%m-%Y")
 
     articles = Rss_feeds.objects.filter(
-        published_datetime__gte=start_date_cutoff, title_translation__ne=None
+        language=language, published_datetime__gte=start_date_cutoff, title_translation__ne=None
     )
     print("Got articles")
 
