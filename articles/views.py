@@ -16,13 +16,13 @@ def index(request):
     articles = Rss_feeds.objects.filter(
         language=language, published_datetime__gte=start_date_cutoff, title_translation__ne=None
     )
-    print("Got articles")
+    print(f"Got {len(articles)} articles")
 
-    words = Words.objects.filter()
+    words = Words.objects.filter().order_by('-count')
     words_dict = {}
     for word in words:
         words_dict[word["_id"]] = word
-    print("Got words")
+    print(f"Got {len(words)} words")
 
     articles_to_render = []
     for article in articles:
@@ -39,6 +39,7 @@ def index(request):
             words = []
             known_words_count = 0
             for index, lemma in enumerate(article["title_parsed_lemma"]):
+                word_index = list(words_dict.keys()).index(lemma)
                 lemma = words_dict[lemma]
                 word_translation = lemma["translation"].lower()
 
@@ -51,7 +52,7 @@ def index(request):
                 if lemma["_id"] not in mix_word_segmented:
                     mix_word_segmented = mix_word_segmented + f" ({lemma['_id']})"
 
-                if lemma["count"] < word_count_cutoff:
+                if word_index >= word_count_cutoff:
                     word_foreign = "native"
                     mix_word = lemma["translation"].lower()
                     mix_word_translation = article["title_parsed_clean"][index]
@@ -63,6 +64,9 @@ def index(request):
                     mix_word_tooltip_1 = mix_word_segmented
                     mix_word_tooltip_2 = mix_word_translation
                     known_words_count = known_words_count + 1
+
+                # DEBUG
+                mix_word_tooltip_1 = mix_word_tooltip_1 + f" ({word_index})"
 
                 word_components = {
                     "word": article["title_parsed_clean"][index],
