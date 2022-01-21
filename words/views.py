@@ -35,7 +35,7 @@ def flashcards(request):
 
     words_to_show = sorted(words_to_show, key=lambda d: d["frequency"], reverse=True)
 
-    if settings.DEBUG:
+    if settings.ENVIRONMENT == "local":
         import pandas as pd
         pd.DataFrame(words_to_show).to_csv("words.csv")
 
