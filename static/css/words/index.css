@@ -1,0 +1,31 @@
+div {
+  font-size: 30px;
+}
+
+a {
+  color: inherit;
+}
+
+.page {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+}
+
+.card {
+  width: 50%;
+  height: fit-content;
+  background-color: #cfd8dc;
+  border-radius: 15px;
+  padding: 50px;
+  margin-top: 30px;
+}
+
+.word_line {
+  width: fit-content;
+}
+
+.line_element{
+  font-size: 30px;
+  padding: 20px;
+}

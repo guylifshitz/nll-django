@@ -1,0 +1,26 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/words/index.css' %}">
+<script src="{% static '/js/jquery-3.6.0.min.js' %}"></script>
+
+<div class="page">
+    <div class="card">
+        <div>
+            <table class="word_line" border="1">
+                {% for word in words %}
+                <tr>
+                    <td class="line_element word_idx">
+                        {{word.index}}
+                    </td>
+                    <td class="line_element word_word">
+                        {{word.word}}
+                    </td>
+                    <td class="line_element word_translation">
+                        {{word.translation}}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
