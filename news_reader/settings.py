@@ -85,7 +85,7 @@ WSGI_APPLICATION = "news_reader.wsgi.application"
 # Using mongoengine since it supports arrays and dicts in mongoDB
 mongoengine.connect(host=
     os.environ.get(
-    "MONGO_URI", "mongodb://admin:9TmVkghnpAzL3Qc@cluster0-shard-00-00.i2axa.mongodb.net:27017,cluster0-shard-00-01.i2axa.mongodb.net:27017,cluster0-shard-00-02.i2axa.mongodb.net:27017/newspaper-language-learner?ssl=true&replicaSet=atlas-z0i0kb-shard-0&authSource=admin&retryWrites=true&w=majority"
+    "MONGO_URI", os.environ.get("NEWSPAPER_LEARNER_MONGO_URI")
     # "MONGO_URI", "mongodb://localhost:27017/newspaper-language-learner"
 )
 )
