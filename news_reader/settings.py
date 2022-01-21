@@ -83,12 +83,8 @@ WSGI_APPLICATION = "news_reader.wsgi.application"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 # Using mongoengine since it supports arrays and dicts in mongoDB
-mongoengine.connect(host=
-    os.environ.get(
-    "MONGO_URI", os.environ.get("NEWSPAPER_LEARNER_MONGO_URI")
-    # "MONGO_URI", "mongodb://localhost:27017/newspaper-language-learner"
-)
-)
+mongoengine.connect(host=os.environ.get("NEWSPAPER_LEARNER_MONGO_URI"))
+# "mongodb://localhost:27017/newspaper-language-learner"
 
 # DATABASES = {
 #     'default': {
