@@ -2,7 +2,7 @@ from django.shortcuts import render
 from articles.models import Rss_feeds
 from words.models import Words
 from mongoengine import Q
-
+import os
 
 def word(request, word_id):
     word = Words.objects.filter(_id=word_id).first()
@@ -35,9 +35,9 @@ def flashcards(request):
 
     words_to_show = sorted(words_to_show, key=lambda d: d["frequency"], reverse=True)
 
-    import pandas as pd
-
-    pd.DataFrame(words_to_show).to_csv("words.csv")
+    if os.environ.get("DEBUG") != "False":
+        import pandas as pd
+        pd.DataFrame(words_to_show).to_csv("words.csv")
 
     words_to_show = words_to_show[lower_freq_cutoff:upper_freq_cutoff]
     print(f"Last word frequency: {words_to_show[-1]['frequency']}")
