@@ -18,7 +18,7 @@ def index(request):
     )
     print(f"Got {len(articles)} articles")
 
-    words = Words.objects.filter().order_by('-count')
+    words = Words.objects.filter(language=language).order_by('-count')
     words_dict = {}
     for word in words:
         words_dict[word["_id"]] = word
