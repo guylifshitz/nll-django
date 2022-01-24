@@ -16,4 +16,6 @@ class Rss_feeds(Document):
     title_parsed_lemma = fields.ListField()
     title_parsed_segmented = fields.ListField()
     title_parsed_prefixes = fields.ListField()
+    title_parsed_POSTAG = fields.ListField()
+    title_parsed_FEATS = fields.ListField()
     

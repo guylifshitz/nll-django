@@ -4,11 +4,61 @@ from articles.models import Rss_feeds
 from words.models import Words
 import datetime
 import traceback
+import mlconjug3
 
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
 
+def conjugate_verbs():
+    if article["title_parsed_POSTAG"][index] == "VB":
+        verb = lemma["translation"]
+        if verb.startswith("to "):
+            verb = verb.replace("to ", "")
+        feats = article["title_parsed_FEATS"][index]
+
+        number = "s"
+        if "num=S" in feats:
+            number = "s"
+        elif "num=P" in feats:
+            number = "p"
+
+        person = "3"
+        if "per=1" in feats:
+            person = "1"     
+        elif "per=2" in feats:
+            person = "2"     
+        elif "per=3" in feats:
+            person = "3"
+
+        tense = "past"
+        if "tense=FUTURE" in feats:
+            tense = "future"
+        elif "tense=PAST" in feats:
+            tense = "past"
+        elif "tense=IMPERATIVE" in feats:
+            tense = "imperative"
+        elif "tense=BEINONI" in feats:
+            tense = "imperative"
+        else:
+            tense = "imperative"
+
+        cong = conjugator.conjugate(verb)
+        if not cong.predicted:
+            
+            if tense == "future":
+                conjugated = "will " + verb
+            if tense == "past":
+                conjugated = cong.conjug_info["indicative"]["indicative past tense"][f"{person}{number}"]
+            else:
+                conjugated = verb
+            print()
+            print()
+            print(lemma["translation"])
+            print(feats)
+            print(conjugated)
+
 
 def index(request):
+    conjugator = mlconjug3.Conjugator(language='en')
 
     language = request.GET.get("language", "arabic")
     word_count_cutoff = int(request.GET.get("word_count_cutoff", 10))
@@ -44,6 +94,9 @@ def index(request):
             for index, lemma in enumerate(article["title_parsed_lemma"]):
                 word_index = list(words_dict.keys()).index(lemma)
                 lemma = words_dict[lemma]
+
+                conjugate_verbs()
+
                 word_translation = lemma["translation"].lower()
 
                 word_foreign = "foreign"
