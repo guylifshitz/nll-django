@@ -7,6 +7,7 @@ import traceback
 
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
 
+
 def index(request):
 
     language = request.GET.get("language", "arabic")
@@ -20,7 +21,7 @@ def index(request):
     )
     print(f"Got {len(articles)} articles")
 
-    words = Words.objects.filter(language=language).order_by('-count')
+    words = Words.objects.filter(language=language).order_by("-count")
     words_dict = {}
     for word in words:
         words_dict[word["_id"]] = word
@@ -50,13 +51,19 @@ def index(request):
                 mix_word_translation = lemma["translation"].lower()
                 mix_word_lemma = lemma["_id"]
                 mix_word_segmented = article["title_parsed_segmented"][index]
+                word_prefixes = article["title_parsed_prefixes"][index]
 
-                if lemma["_id"] not in mix_word_segmented:
+                if word_prefixes:
+                    word_prefixes = "".join(word_prefixes) + "+"
+                else:
+                    word_prefixes = ""
+
+                if lemma["_id"] != mix_word_segmented:
                     mix_word_segmented = mix_word_segmented + f" ({lemma['_id']})"
 
                 if word_index >= word_count_cutoff:
                     word_foreign = "native"
-                    mix_word = lemma["translation"].lower()
+                    mix_word = word_prefixes + "" + lemma["translation"].lower()
                     mix_word_translation = article["title_parsed_clean"][index]
 
                     mix_word_tooltip_1 = mix_word_translation
@@ -100,4 +107,6 @@ def index(request):
     )
     articles_to_render = articles_to_render[0:article_display_count]
     speech_voice = language_speech_mapping[language]
-    return render(request, "articles.html", {"articles": articles_to_render, "speech_voice": speech_voice})
+    return render(
+        request, "articles.html", {"articles": articles_to_render, "speech_voice": speech_voice}
+    )
