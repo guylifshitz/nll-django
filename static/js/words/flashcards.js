@@ -33,7 +33,6 @@ $(document).ready(function () {
       $("#top-word").text(word["translation"]);
       $("#bottom-word").text(foreign_word);
     }
-
   }
 
   function getRandomInt(min, max) {
@@ -71,12 +70,19 @@ $(document).ready(function () {
     }
   }
 
-  function change_mode(new_mode) {
-    mode = new_mode;
-    top_word_text = $("#top-word").text;
-    bottom_word_text = $("#bottom-word").text;
+  function change_mode() {
+    if (mode == "translation_first") {
+      mode = "foreign_first";
+    } else {
+      mode = "translation_first";
+    }
+
+    top_word_text = $("#top-word").text();
+    bottom_word_text = $("#bottom-word").text();
+    console.log(top_word_text);
     $("#top-word").text(bottom_word_text);
     $("#bottom-word").text(top_word_text);
+
   }
 
   function show_previous_word() {
@@ -150,15 +156,7 @@ $(document).ready(function () {
     show_previous_word();
   });
   $("#top-word").on("click", function () {
-    if (mode == "translation_first") {
-      mode = "foreign_first";
-      $("#top-word").text(word["word"]);
-      $("#bottom-word").text(word["translation"]);
-    } else {
-      mode = "translation_first";
-      $("#top-word").text(word["translation"]);
-      $("#bottom-word").text(word["word"]);
-    }
+    change_mode();
   });
 
   $(function () {
