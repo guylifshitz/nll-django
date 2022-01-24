@@ -1,4 +1,5 @@
 var mode = "foreign_first";
+var show_diacritic = false;
 var click_state = 0;
 var word_index = 0;
 var word;
@@ -21,11 +22,26 @@ $(document).ready(function () {
     }
   };
 
+  function toggle_diacritic() {
+    show_diacritic = !show_diacritic;
+    foreign_word = show_diacritic ? word["word_diacritic"] : word["word"];
+
+    if (mode == "foreign_first") {
+      $("#top-word").text(foreign_word);
+      $("#bottom-word").text(word["translation"]);
+    } else {
+      $("#top-word").text(word["translation"]);
+      $("#bottom-word").text(foreign_word);
+    }
+
+  }
+
   function getRandomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+
   function save_word() {
     add_word_to_array(word);
     $("#save-button").hide();
@@ -44,7 +60,7 @@ $(document).ready(function () {
       $("#next-button").addClass("next-button-next");
       $("#next-button").removeClass("next-button-translate");
       click_state = 1;
-      speak(word["word"], "ar-SA");
+      speak(word["word_diacritic"], speech_voice);
     } else {
       show_next_word();
       $("#next-button").text("^^^");
@@ -68,8 +84,15 @@ $(document).ready(function () {
     word = previous_word;
     var click_state = 0;
 
-    $("#top-word").text(word["word"]);
-    $("#bottom-word").text(word["translation"]);
+    foreign_word = show_diacritic ? word["word_diacritic"] : word["word"];
+
+    if (mode == "foreign_first") {
+      $("#top-word").text(foreign_word);
+      $("#bottom-word").text(word["translation"]);
+    } else {
+      $("#top-word").text(word["translation"]);
+      $("#bottom-word").text(foreign_word);
+    }
 
     definition_url =
       "https://en.wiktionary.org/wiki/" + word["word"] + "#Arabic";
@@ -91,12 +114,14 @@ $(document).ready(function () {
     }
 
     word = words[word_index];
+    foreign_word = show_diacritic ? word["word_diacritic"] : word["word"];
+
     if (mode == "foreign_first") {
-      $("#top-word").text(word["word"]);
+      $("#top-word").text(foreign_word);
       $("#bottom-word").text(word["translation"]);
     } else {
       $("#top-word").text(word["translation"]);
-      $("#bottom-word").text(word["word"]);
+      $("#bottom-word").text(foreign_word);
     }
 
     $("#bottom-word").hide();
@@ -146,8 +171,10 @@ $(document).ready(function () {
         show_previous_word();
       } else if (key == "83") {
         save_word();
+      } else if (key == "68") {
+        toggle_diacritic();
       } else if (key == "82") {
-        speak(word["word"], "ar-SA");
+        speak(word["word_diacritic"], speech_voice);
       }
     });
   });

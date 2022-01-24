@@ -8,16 +8,36 @@ $(document).ready(function () {
       .toggle();
     position_tooltips();
   }
-  $(".button_full_translation").on("click", show_full_translation);
+
+  function speak(text) {
+    var msg = new SpeechSynthesisUtterance();
+    msg.text = text;
+    msg.lang = speech_voice;
+    msg.rate = 0.8;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(msg);
+  }
+
+  function speak_title(event) {
+    title_text = $(event.target).parent().parent().parent().find(".title"). attr("text");
+    speak(title_text);
+  }
 
   function show_partial_translation(event) {
     $(event.target).parent().parent().parent().find(".title_mix").toggle();
     position_tooltips();
   }
-  $(".button_partial_translation").on("click", show_partial_translation);
 
-  $(".word").on("click", function(element){
-    tooltip2 =  element.target.nextElementSibling.getElementsByClassName("mix_tooltip_2")[0]
+  $(".button_partial_translation").on("click", show_partial_translation);
+  $(".button_full_translation").on("click", show_full_translation);
+
+  $(".button_speak").on("click", speak_title);
+
+  $(".word").on("click", function (element) {
+    tooltip2 =
+      element.target.nextElementSibling.getElementsByClassName(
+        "mix_tooltip_2"
+      )[0];
     $(tooltip2).toggle();
   });
 

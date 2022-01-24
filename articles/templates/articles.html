@@ -3,6 +3,10 @@
 <link rel="stylesheet" href="{% static 'css/articles/style.css' %}">
 <script src="{% static '/js/jquery-3.6.0.min.js' %}"></script>
 <script src="{% static '/js/articles/logic.js' %}"></script>
+<script>
+    var speech_voice = "{{speech_voice}}";
+</script>
+
 
 {% for article in articles %}
 
@@ -10,7 +14,7 @@
     <div class="articles">
         <div class="article" style="width: 100%; display: table;">
             <div style="width: 90%; display: table-cell;">
-                <div class="title">
+                <div class="title" text="{{ article.title }}">
                     {% for word in article.words %}
                     <span class="word" id="word_{{forloop.counter}}"> {{ word.word }} </span>
                     <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">{{word.translation}}</div>
@@ -44,6 +48,7 @@
             <div style="width: 10%; display: table-cell;">
                 <div class="button_partial_translation button">mix</div>
                 <div class="button_full_translation button">full</div>
+                <div class="button_speak button">speak</div>
             </div>
 
         </div>

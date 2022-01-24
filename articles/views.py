@@ -5,6 +5,8 @@ from words.models import Words
 import datetime
 import traceback
 
+language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
+
 def index(request):
 
     language = request.GET.get("language", "arabic")
@@ -97,4 +99,5 @@ def index(request):
         articles_to_render, key=lambda d: d["known_words_ratio"], reverse=True
     )
     articles_to_render = articles_to_render[0:article_display_count]
-    return render(request, "articles.html", {"articles": articles_to_render})
+    speech_voice = language_speech_mapping[language]
+    return render(request, "articles.html", {"articles": articles_to_render, "speech_voice": speech_voice})
