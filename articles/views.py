@@ -8,58 +8,66 @@ import mlconjug3
 
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
 
-def conjugate_verbs():
-    if article["title_parsed_POSTAG"][index] == "VB":
-        verb = lemma["translation"]
+conjugator = mlconjug3.Conjugator(language="en")
+
+
+def conjugate_verbs(translation, postag, features):
+    if postag == "VB":
+        print(translation, postag, features)
+        verb = translation
         if verb.startswith("to "):
             verb = verb.replace("to ", "")
-        feats = article["title_parsed_FEATS"][index]
 
         number = "s"
-        if "num=S" in feats:
+        if "num=S" in features:
             number = "s"
-        elif "num=P" in feats:
+        elif "num=P" in features:
             number = "p"
 
         person = "3"
-        if "per=1" in feats:
-            person = "1"     
-        elif "per=2" in feats:
-            person = "2"     
-        elif "per=3" in feats:
+        if "per=1" in features:
+            person = "1"
+        elif "per=2" in features:
+            person = "2"
+        elif "per=3" in features:
             person = "3"
 
         tense = "past"
-        if "tense=FUTURE" in feats:
+        if "tense=FUTURE" in features:
             tense = "future"
-        elif "tense=PAST" in feats:
+        elif "tense=PAST" in features:
             tense = "past"
-        elif "tense=IMPERATIVE" in feats:
+        elif "tense=IMPERATIVE" in features:
             tense = "imperative"
-        elif "tense=BEINONI" in feats:
+        elif "tense=BEINONI" in features:
             tense = "imperative"
         else:
             tense = "imperative"
 
         cong = conjugator.conjugate(verb)
         if not cong.predicted:
-            
+
             if tense == "future":
                 conjugated = "will " + verb
             if tense == "past":
-                conjugated = cong.conjug_info["indicative"]["indicative past tense"][f"{person}{number}"]
+                conjugated = cong.conjug_info["indicative"]["indicative past tense"][
+                    f"{person}{number}"
+                ]
             else:
                 conjugated = verb
-            print()
-            print()
-            print(lemma["translation"])
-            print(feats)
-            print(conjugated)
+            # print()
+            # print()
+            # print(translation)
+            # print(features)
+            # print(conjugated)
+            return conjugated
+        else:
+            return translation
+    else:
+        return translation
 
 
 def index(request):
-    conjugator = mlconjug3.Conjugator(language='en')
-
     language = request.GET.get("language", "arabic")
     word_count_cutoff = int(request.GET.get("word_count_cutoff", 10))
     start_date_cutoff = request.GET.get("start_date", "01-01-1900")
@@ -69,6 +77,7 @@ def index(request):
     articles = Rss_feeds.objects.filter(
         language=language, published_datetime__gte=start_date_cutoff, title_translation__ne=None
     )
+    articles = articles[0:100]
     print(f"Got {len(articles)} articles")
 
     words = Words.objects.filter(language=language).order_by("-count")
@@ -95,13 +104,16 @@ def index(request):
                 word_index = list(words_dict.keys()).index(lemma)
                 lemma = words_dict[lemma]
 
-                conjugate_verbs()
-
                 word_translation = lemma["translation"].lower()
+                print("form  ", article["title_parsed_clean"][index])
+                print("lemma ", lemma["_id"])
+                print(article["title_parsed_POSTAG"][index], article["title_parsed_FEATS"][index])
+                print()
+                word_translation = conjugate_verbs(word_translation, article["title_parsed_POSTAG"][index], article["title_parsed_FEATS"][index])
 
                 word_foreign = "foreign"
                 mix_word = article["title_parsed_clean"][index]
-                mix_word_translation = lemma["translation"].lower()
+                mix_word_translation = word_translation
                 mix_word_lemma = lemma["_id"]
                 mix_word_segmented = article["title_parsed_segmented"][index]
                 word_prefixes = article["title_parsed_prefixes"][index]
@@ -116,7 +128,7 @@ def index(request):
 
                 if word_index >= word_count_cutoff:
                     word_foreign = "native"
-                    mix_word = word_prefixes + "" + lemma["translation"].lower()
+                    mix_word = word_prefixes + "" + word_translation
                     mix_word_translation = article["title_parsed_clean"][index]
 
                     mix_word_tooltip_1 = mix_word_translation
