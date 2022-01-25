@@ -18,4 +18,5 @@ class Rss_feeds(Document):
     title_parsed_prefixes = fields.ListField()
     title_parsed_POSTAG = fields.ListField()
     title_parsed_FEATS = fields.ListField()
+    title_parsed_translation_override = fields.ListField()
     

@@ -4,27 +4,18 @@ from articles.models import Rss_feeds
 from words.models import Words
 import datetime
 import traceback
-import mlconjug3
 
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
 
-conjugator = mlconjug3.Conjugator(language="en")
-
-
-def conjugate_verbs(translation, postag, features):
+def add_verb_tenses(postag, features):
     if postag == "VB":
-        print(translation, postag, features)
-        verb = translation
-        if verb.startswith("to "):
-            verb = verb.replace("to ", "")
-
-        number = "s"
+        number = ""
         if "num=S" in features:
             number = "s"
         elif "num=P" in features:
             number = "p"
 
-        person = "3"
+        person = ""
         if "per=1" in features:
             person = "1"
         elif "per=2" in features:
@@ -32,40 +23,18 @@ def conjugate_verbs(translation, postag, features):
         elif "per=3" in features:
             person = "3"
 
-        tense = "past"
+        tense = ""
         if "tense=FUTURE" in features:
-            tense = "future"
+            tense = "futr"
         elif "tense=PAST" in features:
             tense = "past"
         elif "tense=IMPERATIVE" in features:
-            tense = "imperative"
+            tense = "impe"
         elif "tense=BEINONI" in features:
-            tense = "imperative"
-        else:
-            tense = "imperative"
+            tense = "bein"
 
-        cong = conjugator.conjugate(verb)
-        if not cong.predicted:
-
-            if tense == "future":
-                conjugated = "will " + verb
-            if tense == "past":
-                conjugated = cong.conjug_info["indicative"]["indicative past tense"][
-                    f"{person}{number}"
-                ]
-            else:
-                conjugated = verb
-            # print()
-            # print()
-            # print(translation)
-            # print(features)
-            # print(conjugated)
-            return conjugated
-        else:
-            return translation
-    else:
-        return translation
-
+        return tense + " " + person + number
+    return None
 
 def index(request):
     language = request.GET.get("language", "arabic")
@@ -77,7 +46,7 @@ def index(request):
     articles = Rss_feeds.objects.filter(
         language=language, published_datetime__gte=start_date_cutoff, title_translation__ne=None
     )
-    articles = articles[0:100]
+    articles = articles
     print(f"Got {len(articles)} articles")
 
     words = Words.objects.filter(language=language).order_by("-count")
@@ -105,11 +74,14 @@ def index(request):
                 lemma = words_dict[lemma]
 
                 word_translation = lemma["translation"].lower()
-                print("form  ", article["title_parsed_clean"][index])
-                print("lemma ", lemma["_id"])
-                print(article["title_parsed_POSTAG"][index], article["title_parsed_FEATS"][index])
-                print()
-                word_translation = conjugate_verbs(word_translation, article["title_parsed_POSTAG"][index], article["title_parsed_FEATS"][index])
+                translation_override = article["title_parsed_translation_override"][index]
+                if translation_override:
+                    word_translation = translation_override
+
+                # print("form  ", article["title_parsed_clean"][index])
+                # print("lemma ", lemma["_id"])
+                # print(article["title_parsed_POSTAG"][index], article["title_parsed_FEATS"][index])
+                # print()
 
                 word_foreign = "foreign"
                 mix_word = article["title_parsed_clean"][index]
@@ -141,6 +113,10 @@ def index(request):
 
                 # DEBUG
                 mix_word_tooltip_1 = mix_word_tooltip_1 + f" ({word_index})"
+
+                verb_tense = add_verb_tenses(article["title_parsed_POSTAG"][index], article["title_parsed_FEATS"][index])
+                if verb_tense:
+                    mix_word_tooltip_2 = f"{mix_word_tooltip_2} [{verb_tense}]" 
 
                 word_components = {
                     "word": article["title_parsed_clean"][index],

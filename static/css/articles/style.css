@@ -41,16 +41,16 @@
 .word {
   display: inline;
   margin-left: 7px;
-  /* margin: 10px; */
-  /* margin-right: 7px;*/
-  /* padding-left: 5px;
-  padding-right: 5px;  */
-}
-.word_foreign {
-  background-color: #8c8c8c33;
+  white-space: nowrap;
   border-radius: 3px;
   padding-left: 5px;
   padding-right: 5px;
+}
+.word_native{
+  background-color: #8c8c8c33;
+}
+.word_foreign {
+  background-color: #4a40a133;
 }
 .word:hover {
   background-color: violet;
