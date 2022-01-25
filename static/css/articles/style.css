@@ -53,7 +53,13 @@
   background-color: #8c8c8c33;
 }
 .word_foreign {
-  background-color: #4a40a133;
+  background-color: red;
+}
+.word_foreign_known {
+  background-color: #a6bcf0;
+}
+.word_foreign_practice {
+  background-color: #99d7fb;
 }
 .word:hover {
   background-color: violet;

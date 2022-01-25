@@ -26,7 +26,8 @@
                         ---
                         {{article.published_datetime}}
                         ---
-                        score: {{article.known_words_count}}
+                        known: {{article.known_words_count}}
+                        practice: {{article.practice_words_count}}
                         ---
                         <a href={{article.link}}> LINK </a>
                     </div>
@@ -34,19 +35,28 @@
 
                 <div class="title_mix">
                     {% for word in article.words %}
-                    {% if word.lemma_known %}
-                    <div class="word word_mix word_foreign" id="word_{{forloop.counter}}">{{word.word_foreign}}
+                    {% if word.lemma_known or word.lemma_practice %}
+                    <div class="word word_mix word_foreign word_foreign_{{word.lemma_known_status}}"
+                        id="word_{{forloop.counter}}">{{word.word_foreign}}
                     </div>
                     <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">
-                        <div class="mix_tooltip_1">{{word.token_segmented}} [{{word.lemma_foreign_diacritic}}]
-                            ({{word.lemma_foreign_index}})</div>
+                        <div class="mix_tooltip_1">
+                            <div>{{word.token_segmented}}</div>
+                            <div>[{{word.lemma_foreign_diacritic}}] ({{word.lemma_foreign_index}})</div>
+                            {% if word.verb_tense %}<div>[{{word.verb_tense}}]</div>{% endif %}
+                    </div>
+
                         <div class="mix_tooltip_2" hidden>{{word.token_prefixes}}{{word.word_translation}}</div>
                     </div>
                     {% else %}
-                    <div class="word word_mix word_native" id="word_{{forloop.counter}}">{{word.token_prefixes}}{{word.word_translation}}</div>
+                    <div class="word word_mix word_native" id="word_{{forloop.counter}}">
+                        {{word.token_prefixes}}{{word.word_translation}}</div>
                     <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">
                         <div class="mix_tooltip_1">
-                            {{word.word_foreign}} [{{word.lemma_foreign_diacritic}}] ({{word.lemma_foreign_index}})</div>
+                            <div>{{word.word_foreign}}</div>
+                            <div>[{{word.lemma_foreign_diacritic}}] ({{word.lemma_foreign_index}})</div>
+                            {% if word.verb_tense %}<div>[{{word.verb_tense}}]</div>{% endif %}
+                        </div>
                     </div>
                     {% endif %}
 

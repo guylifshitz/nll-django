@@ -25,7 +25,7 @@ def count_article_words(articles, cutoff):
     print(Counter(words))
 
 
-def add_verb_tenses(postag, features):
+def get_verb_tenses(postag, features):
     if postag == "VB":
         number = ""
         if "num=S" in features:
@@ -51,11 +51,11 @@ def add_verb_tenses(postag, features):
         elif "tense=BEINONI" in features:
             tense = "bein"
 
-        return tense + " " + person + number
+        return tense + "-" + person + number
     return None
 
 
-def build_article_words(article, words, word_count_cutoff):
+def build_article_words(article, words, word_known_count_cutoff, word_practice_count_cutoff):
 
     article_words = []
     for article_lemma_index, lemma_text in enumerate(article["title_parsed_lemma"]):
@@ -68,7 +68,14 @@ def build_article_words(article, words, word_count_cutoff):
             lemma_diacritic = lemma_text
         word_index = list(words.keys()).index(lemma_text)
         word_translation = lemma_obj["translation"].lower()
-        lemma_known = word_index <= word_count_cutoff
+        lemma_known = word_index <= word_known_count_cutoff
+        lemma_practice = word_known_count_cutoff <= word_index <= word_practice_count_cutoff
+        if lemma_practice:
+            lemma_known_status = "practice"
+        elif lemma_known:
+            lemma_known_status = "known"
+        else:
+            lemma_known_status = "unknown"
 
         #########
         # ARTICLE STUFF
@@ -80,7 +87,7 @@ def build_article_words(article, words, word_count_cutoff):
         if token_POS == "NNP":
             word_translation = f"##{word_foreign_flexion}##"
 
-        verb_tense = add_verb_tenses(token_POS, article["title_parsed_FEATS"][article_lemma_index])
+        verb_tense = get_verb_tenses(token_POS, article["title_parsed_FEATS"][article_lemma_index])
 
         token_prefixes = article["title_parsed_prefixes"][article_lemma_index]
         token_prefixes = ("".join(token_prefixes) + "+") if token_prefixes else ""
@@ -90,12 +97,17 @@ def build_article_words(article, words, word_count_cutoff):
         if translation_override:
             word_translation = translation_override
 
+        if token_POS == "CD":
+            word_translation = word_foreign_flexion
+
         word_components = {
             "word_foreign": word_foreign_flexion,
             "lemma_foreign": lemma_text,
             "lemma_foreign_diacritic": lemma_diacritic,
             "lemma_foreign_index": word_index,
             "lemma_known": lemma_known,
+            "lemma_practice": lemma_practice,
+            "lemma_known_status": lemma_known_status,
             "word_translation": word_translation,
             "token_segmented": token_segmented,
             "verb_tense": verb_tense,
@@ -108,7 +120,8 @@ def build_article_words(article, words, word_count_cutoff):
 
 def index(request):
     language = request.GET.get("language", "arabic")
-    word_count_cutoff = int(request.GET.get("word_count_cutoff", 50))
+    known_cutoff = int(request.GET.get("known_cutoff", 50))
+    practice_cutoff = int(request.GET.get("practice_cutoff", 50))
     start_date_cutoff = request.GET.get("start_date", "01-01-1900")
     start_date_cutoff = datetime.datetime.strptime(start_date_cutoff, "%d-%m-%Y")
     article_display_count = int(request.GET.get("count", 100))
@@ -136,12 +149,14 @@ def index(request):
             article_to_render["title_translation"] = article["title_translation"]
             article_to_render["link"] = article["link"]
 
-            article_words = build_article_words(article, words, word_count_cutoff)
+            article_words = build_article_words(article, words, known_cutoff, practice_cutoff)
             article_to_render["words"] = article_words
             known_words_count = sum([aw["lemma_known"] for aw in article_words])
+            practice_words_count = sum([aw["lemma_practice"] for aw in article_words])
 
             article_to_render["known_words_count"] = known_words_count
-            article_to_render["known_words_ratio"] = known_words_count / max(len(article_words), 1)
+            article_to_render["practice_words_count"] = practice_words_count
+            article_to_render["practice_words_ratio"] = practice_words_count / max(len(article_words), 1)
 
             articles_to_render.append(article_to_render)
         except Exception as e:
@@ -151,10 +166,10 @@ def index(request):
         articles_to_render, key=lambda d: d["published_datetime"], reverse=True
     )
     articles_to_render = sorted(
-        articles_to_render, key=lambda d: d["known_words_ratio"], reverse=True
+        articles_to_render, key=lambda d: d["practice_words_ratio"], reverse=True
     )
     articles_to_render = articles_to_render[0:article_display_count]
-    count_article_words(articles_to_render, word_count_cutoff)
+    count_article_words(articles_to_render, practice_cutoff)
     speech_voice = language_speech_mapping[language]
     return render(
         request, "articles.html", {"articles": articles_to_render, "speech_voice": speech_voice}
