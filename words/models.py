@@ -9,3 +9,4 @@ class Words(Document):
     translation = fields.StringField()
     count = fields.IntField()
     language = fields.StringField()    
+    word_diacritic =  fields.StringField()

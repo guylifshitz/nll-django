@@ -14,10 +14,10 @@
     <div class="articles">
         <div class="article" style="width: 100%; display: table;">
             <div style="width: 90%; display: table-cell;">
-                <div class="title" text="{{ article.title }}">
+                <div class="title" text="{{article.title}}">
                     {% for word in article.words %}
-                    <span class="word" id="word_{{forloop.counter}}"> {{ word.word }} </span>
-                    <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">{{word.translation}}</div>
+                    <span class="word" id="word_{{forloop.counter}}">{{word.word_foreign}}</span>
+                    <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">{{word.word_translation}}</div>
                     {%endfor %}
                     <div class="article_metadata">
                         {{article.source}}
@@ -34,15 +34,26 @@
 
                 <div class="title_mix">
                     {% for word in article.words %}
-                    <div class="word word_{{word.word_foreign}}" id="word_{{forloop.counter}}">{{ word.mix_word }}</div>
-                    <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">
-                        <div class="mix_tooltip_1">{{word.mix_word_tooltip_1}}</div>
-                        <div class="mix_tooltip_2" hidden>{{word.mix_word_tooltip_2}}</div>
+                    {% if word.lemma_known %}
+                    <div class="word word_mix word_{{word.word_foreign}}" id="word_{{forloop.counter}}">{{word.word_foreign}}
                     </div>
+                    <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">
+                        <div class="mix_tooltip_1">{{word.token_segmented}} [{{word.lemma_foreign_diacritic}}]
+                            ({{word.lemma_foreign_index}})</div>
+                        <div class="mix_tooltip_2" hidden>{{word.token_prefixes}}{{word.word_translation}}</div>
+                    </div>
+                    {% else %}
+                    <div class="word word_mix word_{{word.word_foreign}}" id="word_{{forloop.counter}}">{{word.token_prefixes}}{{word.word_translation}}</div>
+                    <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">
+                        <div class="mix_tooltip_1">
+                            {{word.word_foreign}} [{{word.lemma_foreign_diacritic}}] ({{word.lemma_foreign_index}})</div>
+                    </div>
+                    {% endif %}
+
                     {%endfor %}
                 </div>
                 <div class="title_translation" hidden>
-                    {{ article.title_translation}}
+                    {{article.title_translation}}
                 </div>
             </div>
             <div style="width: 10%; display: table-cell;">

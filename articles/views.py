@@ -1,4 +1,3 @@
-from django.http import HttpResponse
 from django.shortcuts import render
 from articles.models import Rss_feeds
 from words.models import Words
@@ -6,6 +5,25 @@ import datetime
 import traceback
 
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
+
+
+def model_result_to_dict(model_result):
+    out_dict = {}
+    for res in model_result:
+        out_dict[res["_id"]] = res
+    return out_dict
+
+
+def count_article_words(articles, cutoff):
+    words = []
+    for article in articles:
+        for word in article["words"]:
+            if word["lemma_foreign_index"] <= cutoff:
+                words.append(word["lemma_foreign"])
+    from collections import Counter
+
+    print(Counter(words))
+
 
 def add_verb_tenses(postag, features):
     if postag == "VB":
@@ -36,9 +54,61 @@ def add_verb_tenses(postag, features):
         return tense + " " + person + number
     return None
 
+
+def build_article_words(article, words, word_count_cutoff):
+
+    article_words = []
+    for article_lemma_index, lemma_text in enumerate(article["title_parsed_lemma"]):
+
+        ##########
+        # LEMMA STUFF
+        lemma_obj = words[lemma_text]
+        lemma_diacritic = lemma_obj["word_diacritic"]
+        if not lemma_diacritic:
+            lemma_diacritic = lemma_text
+        word_index = list(words.keys()).index(lemma_text)
+        word_translation = lemma_obj["translation"].lower()
+        lemma_known = word_index <= word_count_cutoff
+
+        #########
+        # ARTICLE STUFF
+        word_foreign_flexion = article["title_parsed_clean"][article_lemma_index]
+
+        token_segmented = article["title_parsed_segmented"][article_lemma_index]
+
+        token_POS = article["title_parsed_POSTAG"][article_lemma_index]
+        if token_POS == "NNP":
+            word_translation = f"##{word_foreign_flexion}##"
+
+        verb_tense = add_verb_tenses(token_POS, article["title_parsed_FEATS"][article_lemma_index])
+
+        token_prefixes = article["title_parsed_prefixes"][article_lemma_index]
+        token_prefixes = ("".join(token_prefixes) + "+") if token_prefixes else ""
+
+        # CUSTOM TRANSLATIONS (currently verbs that are precomputed, later maybe user suggested words)
+        translation_override = article["title_parsed_translation_override"][article_lemma_index]
+        if translation_override:
+            word_translation = translation_override
+
+        word_components = {
+            "word_foreign": word_foreign_flexion,
+            "lemma_foreign": lemma_text,
+            "lemma_foreign_diacritic": lemma_diacritic,
+            "lemma_foreign_index": word_index,
+            "lemma_known": lemma_known,
+            "word_translation": word_translation,
+            "token_segmented": token_segmented,
+            "verb_tense": verb_tense,
+            "token_prefixes": token_prefixes,
+        }
+        article_words.append(word_components)
+
+    return article_words
+
+
 def index(request):
     language = request.GET.get("language", "arabic")
-    word_count_cutoff = int(request.GET.get("word_count_cutoff", 10))
+    word_count_cutoff = int(request.GET.get("word_count_cutoff", 50))
     start_date_cutoff = request.GET.get("start_date", "01-01-1900")
     start_date_cutoff = datetime.datetime.strptime(start_date_cutoff, "%d-%m-%Y")
     article_display_count = int(request.GET.get("count", 100))
@@ -50,9 +120,8 @@ def index(request):
     print(f"Got {len(articles)} articles")
 
     words = Words.objects.filter(language=language).order_by("-count")
-    words_dict = {}
-    for word in words:
-        words_dict[word["_id"]] = word
+    words = model_result_to_dict(words)
+
     print(f"Got {len(words)} words")
 
     articles_to_render = []
@@ -67,74 +136,12 @@ def index(request):
             article_to_render["title_translation"] = article["title_translation"]
             article_to_render["link"] = article["link"]
 
-            words = []
-            known_words_count = 0
-            for index, lemma in enumerate(article["title_parsed_lemma"]):
-                word_index = list(words_dict.keys()).index(lemma)
-                lemma = words_dict[lemma]
+            article_words = build_article_words(article, words, word_count_cutoff)
+            article_to_render["words"] = article_words
+            known_words_count = sum([aw["lemma_known"] for aw in article_words])
 
-                word_translation = lemma["translation"].lower()
-                translation_override = article["title_parsed_translation_override"][index]
-                if translation_override:
-                    word_translation = translation_override
-
-                # print("form  ", article["title_parsed_clean"][index])
-                # print("lemma ", lemma["_id"])
-                # print(article["title_parsed_POSTAG"][index], article["title_parsed_FEATS"][index])
-                # print()
-
-                word_foreign = "foreign"
-                mix_word = article["title_parsed_clean"][index]
-                mix_word_translation = word_translation
-                mix_word_lemma = lemma["_id"]
-                mix_word_segmented = article["title_parsed_segmented"][index]
-                word_prefixes = article["title_parsed_prefixes"][index]
-
-                if word_prefixes:
-                    word_prefixes = "".join(word_prefixes) + "+"
-                else:
-                    word_prefixes = ""
-
-                if lemma["_id"] != mix_word_segmented:
-                    mix_word_segmented = mix_word_segmented + f" ({lemma['_id']})"
-
-                if word_index >= word_count_cutoff:
-                    word_foreign = "native"
-                    mix_word = word_prefixes + "" + word_translation
-                    mix_word_translation = article["title_parsed_clean"][index]
-
-                    mix_word_tooltip_1 = mix_word_translation
-                    mix_word_tooltip_2 = mix_word_segmented
-
-                else:
-                    mix_word_tooltip_1 = mix_word_segmented
-                    mix_word_tooltip_2 = mix_word_translation
-                    known_words_count = known_words_count + 1
-
-                # DEBUG
-                mix_word_tooltip_1 = mix_word_tooltip_1 + f" ({word_index})"
-
-                verb_tense = add_verb_tenses(article["title_parsed_POSTAG"][index], article["title_parsed_FEATS"][index])
-                if verb_tense:
-                    mix_word_tooltip_2 = f"{mix_word_tooltip_2} [{verb_tense}]" 
-
-                word_components = {
-                    "word": article["title_parsed_clean"][index],
-                    "lemma": lemma["_id"],
-                    "mix_word": mix_word,
-                    "mix_word_translation": mix_word_translation,
-                    "mix_word_lemma": mix_word_lemma,
-                    "mix_word_tooltip_1": mix_word_tooltip_1,
-                    "mix_word_tooltip_2": mix_word_tooltip_2,
-                    "mix_segmented": mix_word_segmented,
-                    "translation": word_translation,
-                    "word_foreign": word_foreign,
-                }
-                words.append(word_components)
-
-            article_to_render["words"] = words
             article_to_render["known_words_count"] = known_words_count
-            article_to_render["known_words_ratio"] = known_words_count / max(len(words), 1)
+            article_to_render["known_words_ratio"] = known_words_count / max(len(article_words), 1)
 
             articles_to_render.append(article_to_render)
         except Exception as e:
@@ -147,6 +154,7 @@ def index(request):
         articles_to_render, key=lambda d: d["known_words_ratio"], reverse=True
     )
     articles_to_render = articles_to_render[0:article_display_count]
+    count_article_words(articles_to_render, word_count_cutoff)
     speech_voice = language_speech_mapping[language]
     return render(
         request, "articles.html", {"articles": articles_to_render, "speech_voice": speech_voice}
