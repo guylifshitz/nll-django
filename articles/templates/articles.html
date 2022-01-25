@@ -35,7 +35,7 @@
                 <div class="title_mix">
                     {% for word in article.words %}
                     {% if word.lemma_known %}
-                    <div class="word word_mix word_{{word.word_foreign}}" id="word_{{forloop.counter}}">{{word.word_foreign}}
+                    <div class="word word_mix word_foreign" id="word_{{forloop.counter}}">{{word.word_foreign}}
                     </div>
                     <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">
                         <div class="mix_tooltip_1">{{word.token_segmented}} [{{word.lemma_foreign_diacritic}}]
@@ -43,7 +43,7 @@
                         <div class="mix_tooltip_2" hidden>{{word.token_prefixes}}{{word.word_translation}}</div>
                     </div>
                     {% else %}
-                    <div class="word word_mix word_{{word.word_foreign}}" id="word_{{forloop.counter}}">{{word.token_prefixes}}{{word.word_translation}}</div>
+                    <div class="word word_mix word_native" id="word_{{forloop.counter}}">{{word.token_prefixes}}{{word.word_translation}}</div>
                     <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">
                         <div class="mix_tooltip_1">
                             {{word.word_foreign}} [{{word.lemma_foreign_diacritic}}] ({{word.lemma_foreign_index}})</div>
