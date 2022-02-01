@@ -1,6 +1,7 @@
 {% load static %}
 
 <link rel="stylesheet" href="{% static 'css/articles/style.css' %}">
+<script src="http://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <script src="{% static '/js/jquery-3.6.0.min.js' %}"></script>
 <script src="{% static '/js/articles/logic.js' %}"></script>
 <script>
@@ -16,7 +17,7 @@
             <div style="width: 90%; display: table-cell;">
                 <div class="title" text="{{article.title}}">
                     {% for word in article.words %}
-                    <span class="word" id="word_{{forloop.counter}}">{{word.word_foreign}}</span>
+                    <span class="word" id="word_{{forloop.counter}}" original_txt="{{word.word_foreign}}">{{word.word_foreign}}</span>
                     <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">{{word.word_translation}}</div>
                     {%endfor %}
                     <div class="article_metadata">
@@ -37,23 +38,24 @@
                     {% for word in article.words %}
                     {% if word.lemma_known or word.lemma_practice %}
                     <div class="word word_mix word_foreign word_foreign_{{word.lemma_known_status}}"
-                        id="word_{{forloop.counter}}">{{word.word_foreign}}
-                    </div>
+                        id="word_{{forloop.counter}}" original_txt="{{word.word_foreign}}">{{word.word_foreign}}</div>
                     <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">
                         <div class="mix_tooltip_1">
                             <div>{{word.token_segmented}}</div>
                             <div>[{{word.lemma_foreign_diacritic}}] ({{word.lemma_foreign_index}})</div>
                             {% if word.verb_tense %}<div>[{{word.verb_tense}}]</div>{% endif %}
-                    </div>
+                        </div>
 
                         <div class="mix_tooltip_2" hidden>{{word.token_prefixes}}{{word.word_translation}}</div>
                     </div>
                     {% else %}
-                    <div class="word word_mix word_native" id="word_{{forloop.counter}}">
+                    <div class="word word_mix word_native" id="word_{{forloop.counter}}"
+                        original_txt="{{word.word_foreign}}">
                         {{word.token_prefixes}}{{word.word_translation}}</div>
                     <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">
                         <div class="mix_tooltip_1">
                             <div>{{word.word_foreign}}</div>
+                            <div>{{word.token_segmented}}</div>
                             <div>[{{word.lemma_foreign_diacritic}}] ({{word.lemma_foreign_index}})</div>
                             {% if word.verb_tense %}<div>[{{word.verb_tense}}]</div>{% endif %}
                         </div>

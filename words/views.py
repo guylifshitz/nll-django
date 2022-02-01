@@ -1,3 +1,4 @@
+from .forms import WordsForm
 from django.shortcuts import render
 from articles.models import Rss_feeds
 from words.models import Words
@@ -28,8 +29,8 @@ def get_words_to_show(language):
 
 def flashcards(request):
     language = request.GET.get("language", "arabic")
-    lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 10))
-    upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 20))
+    lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
+    upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
     words_to_show = get_words_to_show(language)
     words_to_show = sorted(words_to_show, key=lambda d: d["frequency"], reverse=True)
@@ -40,24 +41,59 @@ def flashcards(request):
         pd.DataFrame(words_to_show).to_csv("words.csv")
 
     words_to_show = words_to_show[lower_freq_cutoff:upper_freq_cutoff]
-    print(f"Last word frequency: {words_to_show[-1]['frequency']}")
 
-    speech_voice = language_speech_mapping[language]
+    speech_voice = language_speech_mapping.get(language, "en")
 
+    url_parameters = {
+        "lower_freq_cutoff": lower_freq_cutoff,
+        "upper_freq_cutoff": upper_freq_cutoff,
+        "language": language,
+    }
     return render(
-        request, "flashcards.html", {"words": words_to_show, "speech_voice": speech_voice}
+        request,
+        "flashcards.html",
+        {"words": words_to_show, "speech_voice": speech_voice, "url_parameters": url_parameters},
     )
 
 
 def index(request):
     language = request.GET.get("language", "arabic")
-    lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 10))
-    upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 20))
+
+    lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
+    upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
+
+    url_parameters = {
+        "lower_freq_cutoff": lower_freq_cutoff,
+        "upper_freq_cutoff": upper_freq_cutoff,
+        "language": language,
+    }
 
     words_to_show = get_words_to_show(language)
     words_to_show = sorted(words_to_show, key=lambda d: d["frequency"], reverse=True)
     words_to_show = words_to_show[lower_freq_cutoff:upper_freq_cutoff]
-    print("words_to_show")
-    print(words_to_show)
-    print(f"Last word frequency: {words_to_show[-1]['frequency']}")
-    return render(request, "index.html", {"words": words_to_show})
+    return render(
+        request,
+        "index.html",
+        {
+            "words": words_to_show,
+            "url_parameters": url_parameters,
+        },
+    )
+
+
+def configure(request):
+    language = request.GET.get("language", "arabic")
+    lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 50))
+    upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
+
+    # practice_cutoff
+
+    form = WordsForm(
+        initial={
+            "language": language,
+            "lower_freq_cutoff": lower_freq_cutoff,
+            "upper_freq_cutoff": upper_freq_cutoff,
+        }
+    )
+    return render(request, "words_configure.html", {"form": form})
+    # return render(request, "configure.html")

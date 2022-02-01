@@ -1,3 +1,4 @@
+from .forms import ArticlesForm
 from django.shortcuts import render
 from articles.models import Rss_feeds
 from words.models import Words
@@ -69,7 +70,7 @@ def build_article_words(article, words, word_known_count_cutoff, word_practice_c
         word_index = list(words.keys()).index(lemma_text)
         word_translation = lemma_obj["translation"].lower()
         lemma_known = word_index <= word_known_count_cutoff
-        lemma_practice = word_known_count_cutoff <= word_index <= word_practice_count_cutoff
+        lemma_practice = word_known_count_cutoff <= word_index < word_practice_count_cutoff
         if lemma_practice:
             lemma_known_status = "practice"
         elif lemma_known:
@@ -125,6 +126,7 @@ def index(request):
     start_date_cutoff = request.GET.get("start_date", "01-01-1900")
     start_date_cutoff = datetime.datetime.strptime(start_date_cutoff, "%d-%m-%Y")
     article_display_count = int(request.GET.get("count", 100))
+    sort_by_word = request.GET.get("sort_by_word", "False") == "True"
 
     articles = Rss_feeds.objects.filter(
         language=language, published_datetime__gte=start_date_cutoff, title_translation__ne=None
@@ -156,7 +158,9 @@ def index(request):
 
             article_to_render["known_words_count"] = known_words_count
             article_to_render["practice_words_count"] = practice_words_count
-            article_to_render["practice_words_ratio"] = practice_words_count / max(len(article_words), 1)
+            article_to_render["practice_words_ratio"] = practice_words_count / max(
+                len(article_words), 1
+            )
 
             articles_to_render.append(article_to_render)
         except Exception as e:
@@ -165,12 +169,57 @@ def index(request):
     articles_to_render = sorted(
         articles_to_render, key=lambda d: d["published_datetime"], reverse=True
     )
+
     articles_to_render = sorted(
         articles_to_render, key=lambda d: d["practice_words_ratio"], reverse=True
     )
+    if sort_by_word:
+        articles_to_render = sort_articles_by_word(articles_to_render)
+
     articles_to_render = articles_to_render[0:article_display_count]
     count_article_words(articles_to_render, practice_cutoff)
     speech_voice = language_speech_mapping[language]
     return render(
         request, "articles.html", {"articles": articles_to_render, "speech_voice": speech_voice}
     )
+
+
+def sort_articles_by_word(articles):
+    articles_per_lemma = {}
+    ret_articles = []
+    for article in articles:
+        for word in article["words"]:
+            if word["lemma_practice"]:
+                articles_per_lemma.setdefault(word["lemma_foreign"], []).append(article)
+
+    while len(articles_per_lemma) > 0:
+        for lemma in list(articles_per_lemma.keys()):
+            print(len(articles_per_lemma[lemma]))
+            art = articles_per_lemma[lemma].pop(0)
+            if art not in ret_articles:
+                art["title_translation"] = lemma + ":" + art["title_translation"]
+                ret_articles.append(art)
+            if len(articles_per_lemma[lemma]) == 0:
+                del articles_per_lemma[lemma]
+    return ret_articles
+
+
+def configure(request):
+    language = request.GET.get("language", "arabic")
+    known_cutoff = int(request.GET.get("known_cutoff", 50))
+    practice_cutoff = int(request.GET.get("practice_cutoff", 100))
+    start_date_cutoff = request.GET.get("start_date", "01-01-2022")
+    article_display_count = int(request.GET.get("count", 100))
+    sort_by_word = request.GET.get("sort_by_word", "False") == "False"
+
+    form = ArticlesForm(
+        initial={
+            "start_date": start_date_cutoff,
+            "language": language,
+            "known_cutoff": known_cutoff,
+            "practice_cutoff": practice_cutoff,
+            "article_display_count": article_display_count,
+            "sort_by_word": sort_by_word,
+        }
+    )
+    return render(request, "configure.html", {"form": form})
