@@ -3,7 +3,7 @@ var show_diacritic = false;
 var click_state = 0;
 var word_index = 0;
 var word;
-var previous_word;
+var previous_words = [];
 
 $(document).ready(function () {
   function speak(text, language) {
@@ -82,12 +82,16 @@ $(document).ready(function () {
     console.log(top_word_text);
     $("#top-word").text(bottom_word_text);
     $("#bottom-word").text(top_word_text);
-
   }
 
   function show_previous_word() {
-    word_index = word_index - 1;
-    word = previous_word;
+    if (previous_words.length === 0) {
+      return true;
+    }
+
+    prev_word = previous_words.pop();
+    words.splice(word_index, 0, prev_word);
+    word = words[word_index];
     var click_state = 0;
 
     foreign_word = show_diacritic ? word["word_diacritic"] : word["word"];
@@ -110,10 +114,11 @@ $(document).ready(function () {
   }
 
   function show_next_word() {
-    previous_word = word;
+    if (word) {
+      previous_words.push(word);
+    }
 
     word_index = word_index + 1;
-
     if (word_index >= words.length) {
       shuffleArray(words);
       word_index = 0;
@@ -137,7 +142,7 @@ $(document).ready(function () {
       "https://en.wiktionary.org/wiki/" + word["word"] + "#Arabic";
     $("#definition-button").attr("href", definition_url);
 
-    if (previous_word) {
+    if (previous_words.length > 0) {
       $("#back-button").show();
     }
     $("#save-button").show();
@@ -162,7 +167,7 @@ $(document).ready(function () {
   $(function () {
     $(window).keydown(function (e) {
       var key = e.which;
-      console.log(key);
+      // console.log(key);
       if (key == "32" || key == "13" || key == "39") {
         clicked_next_word();
       } else if (key == "37") {

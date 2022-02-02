@@ -40,7 +40,7 @@ def flashcards(request):
 
         pd.DataFrame(words_to_show).to_csv("words.csv")
 
-    words_to_show = words_to_show[lower_freq_cutoff:upper_freq_cutoff]
+    words_to_show = words_to_show[lower_freq_cutoff:upper_freq_cutoff+1]
 
     speech_voice = language_speech_mapping.get(language, "en")
 
@@ -70,7 +70,7 @@ def index(request):
 
     words_to_show = get_words_to_show(language)
     words_to_show = sorted(words_to_show, key=lambda d: d["frequency"], reverse=True)
-    words_to_show = words_to_show[lower_freq_cutoff:upper_freq_cutoff]
+    words_to_show = words_to_show[lower_freq_cutoff:upper_freq_cutoff+1]
     return render(
         request,
         "index.html",

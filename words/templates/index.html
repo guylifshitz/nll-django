@@ -21,7 +21,9 @@
                     <td class="line_element word_translation">
                         {{word.translation}}
                     </td>
-                </tr>
+                    <td class="line_element word_articles">
+                        <div><a href="{% url 'list_articles_config' %}?language={{url_parameters.language}}&known_cutoff={{word.index|add:-1}}&practice_cutoff={{word.index}}">PRACTICE ARTICLES</a></div>
+                    </tr>
                 {% endfor %}
             </table>
         </div>

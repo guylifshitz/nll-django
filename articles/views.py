@@ -19,7 +19,7 @@ def count_article_words(articles, cutoff):
     words = []
     for article in articles:
         for word in article["words"]:
-            if word["lemma_foreign_index"] <= cutoff:
+            if word["lemma_foreign_index"] < cutoff:
                 words.append(word["lemma_foreign"])
     from collections import Counter
 
@@ -70,7 +70,7 @@ def build_article_words(article, words, word_known_count_cutoff, word_practice_c
         word_index = list(words.keys()).index(lemma_text)
         word_translation = lemma_obj["translation"].lower()
         lemma_known = word_index <= word_known_count_cutoff
-        lemma_practice = word_known_count_cutoff <= word_index < word_practice_count_cutoff
+        lemma_practice = word_known_count_cutoff < word_index <= word_practice_count_cutoff
         if lemma_practice:
             lemma_known_status = "practice"
         elif lemma_known:
