@@ -123,10 +123,10 @@ def index(request):
     language = request.GET.get("language", "arabic")
     known_cutoff = int(request.GET.get("known_cutoff", 50))
     practice_cutoff = int(request.GET.get("practice_cutoff", 50))
-    start_date_cutoff = request.GET.get("start_date", "01-01-1900")
-    start_date_cutoff = datetime.datetime.strptime(start_date_cutoff, "%d-%m-%Y")
+    start_date_cutoff_raw = request.GET.get("start_date", "01-01-1900")
+    start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%d-%m-%Y")
     article_display_count = int(request.GET.get("count", 100))
-    sort_by_word = request.GET.get("sort_by_word", "False") == "True"
+    sort_by_word = request.GET.get("sort_by_word", "NOTESET") != "NOTESET"
 
     articles = Rss_feeds.objects.filter(
         language=language, published_datetime__gte=start_date_cutoff, title_translation__ne=None
@@ -179,8 +179,28 @@ def index(request):
     articles_to_render = articles_to_render[0:article_display_count]
     count_article_words(articles_to_render, practice_cutoff)
     speech_voice = language_speech_mapping[language]
+
+    form = ArticlesForm(
+        initial={
+            "start_date": start_date_cutoff_raw,
+            "language": language,
+            "known_cutoff": known_cutoff,
+            "practice_cutoff": practice_cutoff,
+            "article_display_count": article_display_count,
+            "sort_by_word": sort_by_word,
+        }
+    )
+
+    url_parameters = {
+        "known_cutoff": known_cutoff,
+        "practice_cutoff":  practice_cutoff,
+        "language": language,
+    }
+
     return render(
-        request, "articles.html", {"articles": articles_to_render, "speech_voice": speech_voice}
+        request,
+        "articles.html",
+        {"articles": articles_to_render, "speech_voice": speech_voice, "form": form, "url_parameters": url_parameters},
     )
 
 

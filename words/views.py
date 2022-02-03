@@ -71,12 +71,22 @@ def index(request):
     words_to_show = get_words_to_show(language)
     words_to_show = sorted(words_to_show, key=lambda d: d["frequency"], reverse=True)
     words_to_show = words_to_show[lower_freq_cutoff:upper_freq_cutoff+1]
+
+    form = WordsForm(
+        initial={
+            "language": language,
+            "lower_freq_cutoff": lower_freq_cutoff,
+            "upper_freq_cutoff": upper_freq_cutoff,
+        }
+    )
+
     return render(
         request,
         "index.html",
         {
             "words": words_to_show,
             "url_parameters": url_parameters,
+            "form": form
         },
     )
 

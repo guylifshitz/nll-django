@@ -9,15 +9,15 @@
 </script>
 
 
-{% for article in articles %}
-
 <div class="page">
     <div class="articles">
+        {% for article in articles %}
         <div class="article" style="width: 100%; display: table;">
             <div style="width: 90%; display: table-cell;">
                 <div class="title" text="{{article.title}}">
                     {% for word in article.words %}
-                    <span class="word" id="word_{{forloop.counter}}" original_txt="{{word.word_foreign}}">{{word.word_foreign}}</span>
+                    <span class="word" id="word_{{forloop.counter}}"
+                        original_txt="{{word.word_foreign}}">{{word.word_foreign}}</span>
                     <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">{{word.word_translation}}</div>
                     {%endfor %}
                     <div class="article_metadata">
@@ -75,8 +75,18 @@
             </div>
 
         </div>
+        {% empty %}
+        No articles to render.
+        {% endfor %}
+    </div>
+    <div class="articles-form">
+        <form action="" method="get">
+            <!-- {% csrf_token %} -->
+            {{ form }}
+            <input type="submit" value="Submit">
+        </form>
+
+        <a target="_blank" href="{% url 'words_index' %}?language={{url_parameters.language}}&lower_freq_cutoff={{url_parameters.known_cutoff}}&upper_freq_cutoff={{url_parameters.practice_cutoff}}">LIST</a>
+
     </div>
 </div>
-{% empty %}
-No articles to render.
-{% endfor %}

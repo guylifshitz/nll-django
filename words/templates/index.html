@@ -5,9 +5,6 @@
 
 <div class="page">
     <div class="card">
-        <div><a href="{% url 'words_config' %}?language={{url_parameters.language}}&lower_freq_cutoff={{url_parameters.lower_freq_cutoff}}&upper_freq_cutoff={{url_parameters.upper_freq_cutoff}}">SELECT WORDS </a></div>
-        <div><a href="{% url 'flashcards' %}?language={{url_parameters.language}}&lower_freq_cutoff={{url_parameters.lower_freq_cutoff}}&upper_freq_cutoff={{url_parameters.upper_freq_cutoff}}">FLASHCARDS</a></div>
-        <div><a href="{% url 'list_articles_config' %}?language={{url_parameters.language}}&known_cutoff={{url_parameters.lower_freq_cutoff}}&practice_cutoff={{url_parameters.upper_freq_cutoff}}">PRACTICE ARTICLES</a></div>
             <div>
             <table class="word_line" border="1">
                 {% for word in words %}
@@ -22,10 +19,26 @@
                         {{word.translation}}
                     </td>
                     <td class="line_element word_articles">
-                        <div><a href="{% url 'list_articles_config' %}?language={{url_parameters.language}}&known_cutoff={{word.index|add:-1}}&practice_cutoff={{word.index}}">PRACTICE ARTICLES</a></div>
+                        <div><a target="_blank" href="{% url 'list_articles_config' %}?language={{url_parameters.language}}&known_cutoff={{word.index|add:-1}}&practice_cutoff={{word.index}}">PRACTICE ARTICLES</a></div>
                     </tr>
                 {% endfor %}
             </table>
         </div>
+    </div>
+    <div class="wordslist-form">
+        <form action="" method="get">
+            <!-- {% csrf_token %} -->
+            {{ form }}
+            <input type="submit" value="Submit">
+        </form>
+
+        <br>
+        <div><a target="_blank" href="{% url 'words_config' %}?language={{url_parameters.language}}&lower_freq_cutoff={{url_parameters.lower_freq_cutoff}}&upper_freq_cutoff={{url_parameters.upper_freq_cutoff}}">SELECT WORDS </a></div>
+        <br>
+        <div><a target="_blank" href="{% url 'flashcards' %}?language={{url_parameters.language}}&lower_freq_cutoff={{url_parameters.lower_freq_cutoff}}&upper_freq_cutoff={{url_parameters.upper_freq_cutoff}}">FLASHCARDS</a></div>
+        <br>
+        <div><a target="_blank" href="{% url 'list_articles_config' %}?language={{url_parameters.language}}&known_cutoff={{url_parameters.lower_freq_cutoff}}&practice_cutoff={{url_parameters.upper_freq_cutoff}}">PRACTICE ARTICLES</a></div>
+        <br>
+
     </div>
 </div>

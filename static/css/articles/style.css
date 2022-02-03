@@ -2,6 +2,13 @@
   display: flex;
   justify-content: center;
 }
+.articles-form {
+  width: 100px;
+  float: right;
+  position: fixed;
+  right: 200;
+  top: 30px;
+}
 .articles {
   width: 50%;
   align-self: center;
@@ -44,12 +51,12 @@
   white-space: nowrap;
 }
 
-.word_mix{
+.word_mix {
   border-radius: 3px;
   padding-left: 5px;
   padding-right: 5px;
 }
-.word_native{
+.word_native {
   background-color: #8c8c8c33;
 }
 .word_foreign {

@@ -3,7 +3,6 @@ $(document).ready(function () {
     $(event.target)
       .parent()
       .parent()
-      .parent()
       .find(".title_translation")
       .toggle();
     position_tooltips();
@@ -22,14 +21,13 @@ $(document).ready(function () {
     title_text = $(event.target)
       .parent()
       .parent()
-      .parent()
       .find(".title")
       .attr("text");
     speak(title_text);
   }
 
   function show_partial_translation(event) {
-    $(event.target).parent().parent().parent().find(".title_mix").toggle();
+    $(event.target).parent().parent().find(".title_mix").toggle();
     position_tooltips();
   }
 

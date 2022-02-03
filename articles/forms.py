@@ -9,5 +9,5 @@ class ArticlesForm(forms.Form):
     known_cutoff = forms.IntegerField()
     practice_cutoff = forms.IntegerField()
     start_date = forms.DateField()
-    sort_by_word = forms.BooleanField()
+    sort_by_word = forms.BooleanField(required=False)
     article_display_count = forms.IntegerField()

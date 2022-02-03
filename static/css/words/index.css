@@ -12,6 +12,14 @@ a {
   margin-top: 50px;
 }
 
+.wordslist-form {
+  width: 100px;
+  float: right;
+  position: fixed;
+  right: 200;
+  top: 30px;
+}
+
 .card {
   width: 50%;
   height: fit-content;
