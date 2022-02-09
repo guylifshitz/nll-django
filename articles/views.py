@@ -125,11 +125,13 @@ def index(request):
     practice_cutoff = int(request.GET.get("practice_cutoff", 50))
     start_date_cutoff_raw = request.GET.get("start_date", "01-01-1900")
     start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%d-%m-%Y")
+    end_date_cutoff_raw = request.GET.get("end_date", "31-12-9999")
+    end_date_cutoff = datetime.datetime.strptime(end_date_cutoff_raw, "%d-%m-%Y")
     article_display_count = int(request.GET.get("count", 100))
     sort_by_word = request.GET.get("sort_by_word", "NOTESET") != "NOTESET"
 
     articles = Rss_feeds.objects.filter(
-        language=language, published_datetime__gte=start_date_cutoff, title_translation__ne=None
+        language=language, published_datetime__gte=start_date_cutoff, published_datetime__lte=end_date_cutoff, title_translation__ne=None
     )
     articles = articles
     print(f"Got {len(articles)} articles")

@@ -46,6 +46,13 @@ $(document).ready(function () {
     $("#save-button").hide();
   }
 
+  function remove_word() {
+    words.splice(word_index, 1);
+    word = null;
+    click_state = 0;
+    show_next_word();
+  }
+
   function add_word_to_array(word) {
     slice_index = getRandomInt(word_index, words.length);
     words.splice(slice_index, 0, word);
@@ -167,17 +174,19 @@ $(document).ready(function () {
   $(function () {
     $(window).keydown(function (e) {
       var key = e.which;
-      // console.log(key);
+      console.log(key);
       if (key == "32" || key == "13" || key == "39") {
         clicked_next_word();
       } else if (key == "37") {
         show_previous_word();
-      } else if (key == "83") {
+      } else if (key == "83" || key == "38") {
         save_word();
       } else if (key == "68") {
         toggle_diacritic();
       } else if (key == "82") {
         speak(word["word_diacritic"], speech_voice);
+      } else if (key == "8") {
+        remove_word();
       }
     });
   });
