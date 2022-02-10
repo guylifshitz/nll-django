@@ -4,6 +4,10 @@ from articles.models import Rss_feeds
 from words.models import Words
 import datetime
 import traceback
+import pandas as pd
+import matplotlib
+matplotlib.use('agg')
+import matplotlib.pyplot as plt
 
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
 
@@ -24,6 +28,27 @@ def count_article_words(articles, cutoff):
     from collections import Counter
 
     print(Counter(words))
+
+    # get per day
+    aa = []
+    for article in articles:
+        a = {}
+        a["published_datetime"] = article["published_datetime"]
+        for word in article["words"]:
+            if word["lemma_foreign_index"] < cutoff:
+                a[word["lemma_foreign"]] = 1
+        aa.append(a)
+
+    df = pd.DataFrame(aa)
+    df2 = df.groupby("published_datetime").count()
+    df2.sort_values("published_datetime").to_csv("debug/per_date_word_counts.csv")
+
+    for word in df2.columns:
+        plt.clf()
+        plot = df2[word].plot()
+        fig = plot.get_figure()
+        plt.title(word[::-1])
+        fig.savefig(f"debug/charts/{word}.png")  
 
 
 def get_verb_tenses(postag, features):
@@ -131,7 +156,10 @@ def index(request):
     sort_by_word = request.GET.get("sort_by_word", "NOTESET") != "NOTESET"
 
     articles = Rss_feeds.objects.filter(
-        language=language, published_datetime__gte=start_date_cutoff, published_datetime__lte=end_date_cutoff, title_translation__ne=None
+        language=language,
+        published_datetime__gte=start_date_cutoff,
+        published_datetime__lte=end_date_cutoff,
+        title_translation__ne=None,
     )
     articles = articles
     print(f"Got {len(articles)} articles")
@@ -175,11 +203,14 @@ def index(request):
     articles_to_render = sorted(
         articles_to_render, key=lambda d: d["practice_words_ratio"], reverse=True
     )
+
+    # DEBUG
+    # count_article_words(articles_to_render, practice_cutoff)
+
     if sort_by_word:
         articles_to_render = sort_articles_by_word(articles_to_render)
 
     articles_to_render = articles_to_render[0:article_display_count]
-    count_article_words(articles_to_render, practice_cutoff)
     speech_voice = language_speech_mapping[language]
 
     form = ArticlesForm(
@@ -195,14 +226,19 @@ def index(request):
 
     url_parameters = {
         "known_cutoff": known_cutoff,
-        "practice_cutoff":  practice_cutoff,
+        "practice_cutoff": practice_cutoff,
         "language": language,
     }
 
     return render(
         request,
         "articles.html",
-        {"articles": articles_to_render, "speech_voice": speech_voice, "form": form, "url_parameters": url_parameters},
+        {
+            "articles": articles_to_render,
+            "speech_voice": speech_voice,
+            "form": form,
+            "url_parameters": url_parameters,
+        },
     )
 
 
