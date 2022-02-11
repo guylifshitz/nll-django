@@ -4,10 +4,6 @@ from articles.models import Rss_feeds
 from words.models import Words
 import datetime
 import traceback
-import pandas as pd
-import matplotlib
-matplotlib.use('agg')
-import matplotlib.pyplot as plt
 
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
 
@@ -20,6 +16,11 @@ def model_result_to_dict(model_result):
 
 
 def count_article_words(articles, cutoff):
+    import pandas as pd
+    import matplotlib
+    matplotlib.use('agg')
+    import matplotlib.pyplot as plt
+
     words = []
     for article in articles:
         for word in article["words"]:
