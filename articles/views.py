@@ -31,22 +31,22 @@ def count_article_words(articles, cutoff):
     print(Counter(words))
 
     # get per day
-    aa = []
+    articles_word_holder = []
     for article in articles:
-        a = {}
-        a["published_datetime"] = article["published_datetime"]
+        article_word_holder = {}
+        article_word_holder["published_datetime"] = article["published_datetime"]
         for word in article["words"]:
             if word["lemma_foreign_index"] < cutoff:
-                a[word["lemma_foreign"]] = 1
-        aa.append(a)
+                article_word_holder[word["lemma_foreign"]] = 1
+        articles_word_holder.append(article_word_holder)
 
-    df = pd.DataFrame(aa)
-    df2 = df.groupby("published_datetime").count()
-    df2.sort_values("published_datetime").to_csv("debug/per_date_word_counts.csv")
+    articles_words = pd.DataFrame(articles_word_holder)
+    articles_words = articles_words.groupby("published_datetime").count()
+    articles_words.sort_values("published_datetime").to_csv("debug/per_date_word_counts.csv")
 
-    for word in df2.columns:
+    for word in articles_words.columns:
         plt.clf()
-        plot = df2[word].plot()
+        plot = articles_words[word].plot()
         fig = plot.get_figure()
         plt.title(word[::-1])
         fig.savefig(f"debug/charts/{word}.png")  

@@ -183,7 +183,7 @@ $(document).ready(function () {
         save_word();
       } else if (key == "68") {
         toggle_diacritic();
-      } else if (key == "82") {
+      } else if (key == "82" || key == "16") {
         speak(word["word_diacritic"], speech_voice);
       } else if (key == "8") {
         remove_word();
