@@ -5,13 +5,12 @@ from words.models import Words
 from mongoengine import Q
 from django.conf import settings
 
-import pandas as pd
-
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
 
 
 def calculate_word_distance(row):
     from fuzzywuzzy import fuzz
+    import pandas as pd
 
     idx = row.name
     dffs = []
@@ -40,7 +39,7 @@ def calculate_word_distances(words):
     word_distances["translation"] = word_distances.apply(lambda x: translations[x.name], axis=1)
     for col in word_distances.columns:
         word_distances = word_distances.sort_values(col, ascending=False)
-        if col !="translation" and word_distances[col].iloc[1] > 90 and len(col) > 2:
+        if col != "translation" and word_distances[col].iloc[1] > 90 and len(col) > 2:
             word_distances[[col, "translation"]].to_csv(
                 f"DEBUG/distances/{col}-{word_distances.iloc[0]['translation'].replace('/','-')}.csv"
             )
