@@ -1,9 +1,11 @@
-from .forms import ArticlesForm
+from .forms import ArticlesForm, ArticlesFormFromFile
 from django.shortcuts import render
 from articles.models import Rss_feeds
 from words.models import Words
 import datetime
 import traceback
+import pandas as pd
+from io import BytesIO
 
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
 
@@ -18,7 +20,7 @@ def model_result_to_dict(model_result):
 def count_article_words(articles, cutoff):
     import pandas as pd
     import matplotlib
-    matplotlib.use('agg')
+    matplotlib.use("agg")
     import matplotlib.pyplot as plt
 
     words = []
@@ -49,7 +51,7 @@ def count_article_words(articles, cutoff):
         plot = articles_words[word].plot()
         fig = plot.get_figure()
         plt.title(word[::-1])
-        fig.savefig(f"debug/charts/{word}.png")  
+        fig.savefig(f"debug/charts/{word}.png")
 
 
 def get_verb_tenses(postag, features):
@@ -82,7 +84,33 @@ def get_verb_tenses(postag, features):
     return None
 
 
-def build_article_words(article, words, word_known_count_cutoff, word_practice_count_cutoff):
+def get_word_known_categories_from_df(words, known_words_df):
+    word_known_category = {}
+
+    practice_words = known_words_df[known_words_df["TYPE"] == "PRACTICE"]["word"].values.tolist()
+    known_words = known_words_df[known_words_df["TYPE"] == "KNOWN"]["word"].values.tolist()
+    seen_words = known_words_df[known_words_df["TYPE"] == "SEEN"]["word"].values.tolist()
+
+    for word in known_words:
+        word_known_category[word] = "known"
+    for word in practice_words:
+        word_known_category[word] = "practice"
+    for word in seen_words:
+        word_known_category[word] = "seen"
+
+    return word_known_category
+
+
+def get_word_known_categories_from_cutoffs(words, known_cutoff, practice_cutoff):
+    word_known_category = {}
+    for word in words[0:known_cutoff]:
+        word_known_category[word["_id"]] = "known"
+    for word in words[known_cutoff:practice_cutoff]:
+        word_known_category[word["_id"]] = "practice"
+    return word_known_category
+
+
+def build_article_words(article, words, word_known_categories):
 
     article_words = []
     for article_lemma_index, lemma_text in enumerate(article["title_parsed_lemma"]):
@@ -95,14 +123,8 @@ def build_article_words(article, words, word_known_count_cutoff, word_practice_c
             lemma_diacritic = lemma_text
         word_index = list(words.keys()).index(lemma_text)
         word_translation = lemma_obj["translation"].lower()
-        lemma_known = word_index <= word_known_count_cutoff
-        lemma_practice = word_known_count_cutoff < word_index <= word_practice_count_cutoff
-        if lemma_practice:
-            lemma_known_status = "practice"
-        elif lemma_known:
-            lemma_known_status = "known"
-        else:
-            lemma_known_status = "unknown"
+
+        lemma_known_status = word_known_categories.get(lemma_text, "unknown")
 
         #########
         # ARTICLE STUFF
@@ -132,8 +154,9 @@ def build_article_words(article, words, word_known_count_cutoff, word_practice_c
             "lemma_foreign": lemma_text,
             "lemma_foreign_diacritic": lemma_diacritic,
             "lemma_foreign_index": word_index,
-            "lemma_known": lemma_known,
-            "lemma_practice": lemma_practice,
+            "lemma_known": lemma_known_status == "known",
+            "lemma_practice": lemma_known_status == "practice",
+            "lemma_seen": lemma_known_status == "seen",
             "lemma_known_status": lemma_known_status,
             "word_translation": word_translation,
             "token_segmented": token_segmented,
@@ -146,15 +169,33 @@ def build_article_words(article, words, word_known_count_cutoff, word_practice_c
 
 
 def index(request):
-    language = request.GET.get("language", "arabic")
-    known_cutoff = int(request.GET.get("known_cutoff", 50))
-    practice_cutoff = int(request.GET.get("practice_cutoff", 50))
-    start_date_cutoff_raw = request.GET.get("start_date", "01-01-1900")
-    start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%d-%m-%Y")
-    end_date_cutoff_raw = request.GET.get("end_date", "31-12-9999")
-    end_date_cutoff = datetime.datetime.strptime(end_date_cutoff_raw, "%d-%m-%Y")
-    article_display_count = int(request.GET.get("count", 100))
-    sort_by_word = request.GET.get("sort_by_word", "NOTESET") != "NOTESET"
+
+    if request.method == "POST":
+        form = ArticlesFormFromFile(request.POST, request.FILES)
+        print("form.is_valid()", form.is_valid())
+        print("form.errors", form.errors)
+        if form.is_valid():
+            data = request.FILES["file"].read()
+            known_words_df = pd.read_csv(BytesIO(data))
+
+            language = request.POST.get("language", "arabic")
+            start_date_cutoff_raw = request.POST.get("start_date", "01-01-1900")
+            start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%d-%m-%Y")
+            end_date_cutoff_raw = request.POST.get("end_date", "31-12-9999")
+            end_date_cutoff = datetime.datetime.strptime(end_date_cutoff_raw, "%d-%m-%Y")
+            article_display_count = int(request.POST.get("count", 100))
+            sort_by_word = request.POST.get("sort_by_word", "NOTESET") != "NOTESET"
+
+    if request.method == "GET":
+        language = request.GET.get("language", "arabic")
+        known_cutoff = int(request.GET.get("known_cutoff", 50))
+        practice_cutoff = int(request.GET.get("practice_cutoff", 50))
+        start_date_cutoff_raw = request.GET.get("start_date", "01-01-1900")
+        start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%d-%m-%Y")
+        end_date_cutoff_raw = request.GET.get("end_date", "31-12-9999")
+        end_date_cutoff = datetime.datetime.strptime(end_date_cutoff_raw, "%d-%m-%Y")
+        article_display_count = int(request.GET.get("count", 100))
+        sort_by_word = request.GET.get("sort_by_word", "NOTESET") != "NOTESET"
 
     articles = Rss_feeds.objects.filter(
         language=language,
@@ -166,8 +207,13 @@ def index(request):
     print(f"Got {len(articles)} articles")
 
     words = Words.objects.filter(language=language).order_by("-count")
+    if request.method == "POST":
+        word_known_categories = get_word_known_categories_from_df(words, known_words_df)
+    else:
+        word_known_categories = get_word_known_categories_from_cutoffs(
+            words, known_cutoff, practice_cutoff
+        )
     words = model_result_to_dict(words)
-
     print(f"Got {len(words)} words")
 
     articles_to_render = []
@@ -182,10 +228,11 @@ def index(request):
             article_to_render["title_translation"] = article["title_translation"]
             article_to_render["link"] = article["link"]
 
-            article_words = build_article_words(article, words, known_cutoff, practice_cutoff)
+            article_words = build_article_words(article, words, word_known_categories)
             article_to_render["words"] = article_words
             known_words_count = sum([aw["lemma_known"] for aw in article_words])
             practice_words_count = sum([aw["lemma_practice"] for aw in article_words])
+            seen_words_count = sum([aw["lemma_seen"] for aw in article_words])
 
             article_to_render["known_words_count"] = known_words_count
             article_to_render["practice_words_count"] = practice_words_count
@@ -214,22 +261,26 @@ def index(request):
     articles_to_render = articles_to_render[0:article_display_count]
     speech_voice = language_speech_mapping[language]
 
-    form = ArticlesForm(
-        initial={
-            "start_date": start_date_cutoff_raw,
-            "language": language,
+    if request.method == "GET":
+        form = ArticlesForm(
+            initial={
+                "start_date": start_date_cutoff_raw,
+                "language": language,
+                "known_cutoff": known_cutoff,
+                "practice_cutoff": practice_cutoff,
+                "article_display_count": article_display_count,
+                "sort_by_word": sort_by_word,
+            }
+        )
+
+        url_parameters = {
             "known_cutoff": known_cutoff,
             "practice_cutoff": practice_cutoff,
-            "article_display_count": article_display_count,
-            "sort_by_word": sort_by_word,
+            "language": language,
         }
-    )
-
-    url_parameters = {
-        "known_cutoff": known_cutoff,
-        "practice_cutoff": practice_cutoff,
-        "language": language,
-    }
+    else:
+        form = None
+        url_parameters = None
 
     return render(
         request,
@@ -281,4 +332,12 @@ def configure(request):
             "sort_by_word": sort_by_word,
         }
     )
-    return render(request, "configure.html", {"form": form})
+    form_from_file = ArticlesFormFromFile(
+        initial={
+            "start_date": start_date_cutoff,
+            "language": language,
+            "article_display_count": article_display_count,
+            "sort_by_word": sort_by_word,
+        }
+    )
+    return render(request, "configure.html", {"form": form, "form2": form_from_file})

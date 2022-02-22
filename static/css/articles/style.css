@@ -65,6 +65,9 @@
 .word_foreign_known {
   background-color: #ccd6ee;
 }
+.word_foreign_seen {
+  background-color: #eecccc;
+}
 .word_foreign_practice {
   background-color: #99d7fb;
 }

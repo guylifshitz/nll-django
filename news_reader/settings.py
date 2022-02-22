@@ -145,3 +145,5 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # django_heroku.settings(locals())
+
+DATE_INPUT_FORMATS = ['%d-%m-%Y']

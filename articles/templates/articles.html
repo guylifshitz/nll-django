@@ -36,7 +36,7 @@
 
                 <div class="title_mix">
                     {% for word in article.words %}
-                    {% if word.lemma_known or word.lemma_practice %}
+                    {% if word.lemma_known or word.lemma_practice or word.lemma_seen %}
                     <div class="word word_mix word_foreign word_foreign_{{word.lemma_known_status}}"
                         id="word_{{forloop.counter}}" original_txt="{{word.word_foreign}}">{{word.word_foreign}}</div>
                     <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">
