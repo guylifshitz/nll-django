@@ -59,12 +59,6 @@ def index(request):
     lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
     upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
-    url_parameters = {
-        "lower_freq_cutoff": lower_freq_cutoff,
-        "upper_freq_cutoff": upper_freq_cutoff,
-        "language": language,
-    }
-
     words_to_show = get_words_to_show(language)
     words_to_show = sorted(words_to_show, key=lambda d: d["frequency"], reverse=True)
     words_to_show = words_to_show[lower_freq_cutoff : (upper_freq_cutoff + 1)]
@@ -80,7 +74,11 @@ def index(request):
             "upper_freq_cutoff": upper_freq_cutoff,
         }
     )
-
+    url_parameters = {
+        "lower_freq_cutoff": lower_freq_cutoff,
+        "upper_freq_cutoff": upper_freq_cutoff,
+        "language": language,
+    }
     return render(
         request,
         "index.html",
