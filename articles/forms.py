@@ -8,6 +8,7 @@ class ArticlesFormFromFile(forms.Form):
     language = forms.ChoiceField(choices=languages)
 
     start_date = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS)
+    end_date = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS)
     sort_by_word = forms.BooleanField(required=False)
     article_display_count = forms.IntegerField()
 
@@ -22,5 +23,6 @@ class ArticlesForm(forms.Form):
     known_cutoff = forms.IntegerField()
     practice_cutoff = forms.IntegerField()
     start_date = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS)
+    end_date = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS)
     sort_by_word = forms.BooleanField(required=False)
     article_display_count = forms.IntegerField()

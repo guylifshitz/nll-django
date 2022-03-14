@@ -284,12 +284,14 @@ def configure(request):
     known_cutoff = int(request.GET.get("known_cutoff", 50))
     practice_cutoff = int(request.GET.get("practice_cutoff", 100))
     start_date_cutoff = request.GET.get("start_date", "01-01-2022")
+    end_date_cutoff = request.GET.get("end_date", "01-01-2022")
     article_display_count = int(request.GET.get("count", 100))
     sort_by_word = request.GET.get("sort_by_word", "False") == "False"
 
     form = ArticlesForm(
         initial={
             "start_date": start_date_cutoff,
+            "end_date": end_date_cutoff,
             "language": language,
             "known_cutoff": known_cutoff,
             "practice_cutoff": practice_cutoff,
@@ -300,6 +302,7 @@ def configure(request):
     form_from_file = ArticlesFormFromFile(
         initial={
             "start_date": start_date_cutoff,
+            "end_date": end_date_cutoff,
             "language": language,
             "article_display_count": article_display_count,
             "sort_by_word": sort_by_word,
