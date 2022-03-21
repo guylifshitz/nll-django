@@ -6,9 +6,14 @@ import datetime
 import traceback
 import pandas as pd
 from io import BytesIO
-
+from collections import defaultdict
 
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
+
+default_end_date = datetime.datetime.now()
+default_start_date = default_end_date - datetime.timedelta(days=7)
+default_end_date = default_end_date.strftime("%d-%m-%Y")
+default_start_date = default_start_date.strftime("%d-%m-%Y")
 
 
 def model_result_to_dict(model_result):
@@ -143,9 +148,9 @@ def index(request):
             known_words_df = pd.read_csv(BytesIO(data))
 
             language = request.POST.get("language", "arabic")
-            start_date_cutoff_raw = request.POST.get("start_date", "01-01-1900")
+            start_date_cutoff_raw = request.POST.get("start_date", default_start_date)
             start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%d-%m-%Y")
-            end_date_cutoff_raw = request.POST.get("end_date", "31-12-9999")
+            end_date_cutoff_raw = request.POST.get("end_date", default_end_date)
             end_date_cutoff = datetime.datetime.strptime(end_date_cutoff_raw, "%d-%m-%Y")
             article_display_count = int(request.POST.get("count", 100))
             sort_by_word = request.POST.get("sort_by_word", "NOTESET") != "NOTESET"
@@ -154,9 +159,9 @@ def index(request):
         language = request.GET.get("language", "arabic")
         known_cutoff = int(request.GET.get("known_cutoff", 50))
         practice_cutoff = int(request.GET.get("practice_cutoff", 50))
-        start_date_cutoff_raw = request.GET.get("start_date", "01-01-1900")
+        start_date_cutoff_raw = request.GET.get("start_date", default_start_date)
         start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%d-%m-%Y")
-        end_date_cutoff_raw = request.GET.get("end_date", "31-12-9999")
+        end_date_cutoff_raw = request.GET.get("end_date", default_end_date)
         end_date_cutoff = datetime.datetime.strptime(end_date_cutoff_raw, "%d-%m-%Y")
         article_display_count = int(request.GET.get("count", 100))
         sort_by_word = request.GET.get("sort_by_word", "NOTESET") != "NOTESET"
@@ -181,13 +186,17 @@ def index(request):
     print(f"Got {len(words)} words")
 
     articles_to_render = []
+    article_sources = defaultdict(dict)
+
     for article in articles:
         try:
             article_to_render = {}
             article_to_render["title"] = article["title"]
             article_to_render["title_parsed_clean"] = article["title_parsed_clean"]
-            article_to_render["source"] = article["source"]
+            article_to_render["feed_source"] = article["source"]
             article_to_render["feed_name"] = article["feed_name"]
+            article_sources[article["source"]][article["feed_name"]] = 1
+
             article_to_render["published_datetime"] = article["published_datetime"]
             article_to_render["title_translation"] = article["title_translation"]
             article_to_render["link"] = article["link"]
@@ -230,6 +239,7 @@ def index(request):
         form = ArticlesForm(
             initial={
                 "start_date": start_date_cutoff_raw,
+                "end_date": end_date_cutoff_raw,
                 "language": language,
                 "known_cutoff": known_cutoff,
                 "practice_cutoff": practice_cutoff,
@@ -255,6 +265,7 @@ def index(request):
             "speech_voice": speech_voice,
             "form": form,
             "url_parameters": url_parameters,
+            "article_sources": article_sources.keys(),
         },
     )
 
@@ -283,8 +294,8 @@ def configure(request):
     language = request.GET.get("language", "arabic")
     known_cutoff = int(request.GET.get("known_cutoff", 50))
     practice_cutoff = int(request.GET.get("practice_cutoff", 100))
-    start_date_cutoff = request.GET.get("start_date", "01-01-2022")
-    end_date_cutoff = request.GET.get("end_date", "01-01-2022")
+    start_date_cutoff = request.GET.get("start_date", default_start_date)
+    end_date_cutoff = request.GET.get("end_date", default_end_date)
     article_display_count = int(request.GET.get("count", 100))
     sort_by_word = request.GET.get("sort_by_word", "False") == "False"
 

@@ -12,7 +12,8 @@
 <div class="page">
     <div class="articles">
         {% for article in articles %}
-        <div class="article" style="width: 100%; display: table;">
+        <div class="article" style="width: 100%; display: table;" feed_source="{{article.feed_source}}"
+            feed_name="{{article.feed_name}}">
             <div style="width: 90%; display: table-cell;">
                 <div class="title" text="{{article.title}}">
                     {% for word in article.words %}
@@ -21,7 +22,7 @@
                     <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">{{word.word_translation}}</div>
                     {%endfor %}
                     <div class="article_metadata">
-                        {{article.source}}
+                        {{article.feed_source}}
                         --
                         {{article.feed_name}}
                         ---
@@ -42,7 +43,7 @@
                     <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">
                         <div class="mix_tooltip_1">
                             <div>{{word.token_segmented}}</div>
-                            <div>[{{word.lemma_foreign_diacritic}}] </div> 
+                            <div>[{{word.lemma_foreign_diacritic}}] </div>
                             {% if word.verb_tense %}<div>[{{word.verb_tense}}]</div>{% endif %}
                             <div>(#{{word.lemma_foreign_index}})</div>
                         </div>
@@ -57,7 +58,7 @@
                         <div class="mix_tooltip_1">
                             <div>{{word.word_foreign}}</div>
                             <div>{{word.token_segmented}}</div>
-                            <div>[{{word.lemma_foreign_diacritic}}] </div> 
+                            <div>[{{word.lemma_foreign_diacritic}}] </div>
                             {% if word.verb_tense %}<div>[{{word.verb_tense}}]</div>{% endif %}
                             <div>(#{{word.lemma_foreign_index}})</div>
                         </div>
@@ -80,15 +81,26 @@
         {% empty %}
         No articles to render.
         {% endfor %}
-    </div>
-    <div class="articles-form">
-        <form action="" method="get">
-            <!-- {% csrf_token %} -->
-            {{ form }}
-            <input type="submit" value="Submit">
-        </form>
+        <div class="articles_right_panel">
+            <div class="article_source_checkboxes right_panel_section">
+                <b>Sources:</b><br>
+                {% for source in article_sources %}
+                <input type="checkbox" id="source_{{source}}" name="source_{{source}}" source="{{source}}" checked
+                    onclick="clicked_source(this)">
+                <label for=" source_{{source}}">{{source}}</label>
+                <br>
+                {% endfor %}
+            </div>
 
-        <a target="_blank" href="{% url 'words_index' %}?language={{url_parameters.language}}&lower_freq_cutoff={{url_parameters.known_cutoff}}&upper_freq_cutoff={{url_parameters.practice_cutoff}}">LIST</a>
-
+            <div class="articles-form right_panel_section">
+                <b>Form:</b>
+                <form action="" method="get">
+                    <!-- {% csrf_token %} -->
+                    {{ form }}
+                    <input type="submit" value="Submit">
+                </form>
+                <a target="_blank"
+                    href="{% url 'words_index' %}?language={{url_parameters.language}}&lower_freq_cutoff={{url_parameters.known_cutoff}}&upper_freq_cutoff={{url_parameters.practice_cutoff}}">LIST</a>
+            </div>
+        </div>
     </div>
-</div>

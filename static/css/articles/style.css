@@ -2,12 +2,18 @@
   display: flex;
   justify-content: center;
 }
-.articles-form {
+.articles_right_panel {
   width: 100px;
   float: right;
   position: fixed;
   right: 200;
   top: 30px;
+}
+.right_panel_section{
+  margin-top: 15px;
+  margin-bottom: 15px;
+  background-color: #d3d3d3;
+  border-radius: 5px;
 }
 .articles {
   width: 50%;

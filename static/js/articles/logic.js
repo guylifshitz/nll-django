@@ -1,10 +1,6 @@
 $(document).ready(function () {
   function show_full_translation(event) {
-    $(event.target)
-      .parent()
-      .parent()
-      .find(".title_translation")
-      .toggle();
+    $(event.target).parent().parent().find(".title_translation").toggle();
     position_tooltips();
   }
 
@@ -18,11 +14,7 @@ $(document).ready(function () {
   }
 
   function speak_title(event) {
-    title_text = $(event.target)
-      .parent()
-      .parent()
-      .find(".title")
-      .attr("text");
+    title_text = $(event.target).parent().parent().find(".title").attr("text");
     speak(title_text);
   }
 
@@ -72,3 +64,9 @@ $(document).ready(function () {
     }
   });
 });
+
+function clicked_source(element) {
+  $(".article")
+    .filter('[feed_source="' + element.getAttribute("source") + '"]')
+    .toggle(element.checked);
+}
