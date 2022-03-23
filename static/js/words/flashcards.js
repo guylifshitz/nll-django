@@ -50,6 +50,7 @@ $(document).ready(function () {
     words.splice(word_index, 1);
     word = null;
     click_state = 0;
+    word_index = word_index - 1;
     show_next_word();
   }
 

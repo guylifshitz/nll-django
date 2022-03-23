@@ -70,12 +70,14 @@ def get_word_known_categories_from_df(words, known_words_df):
     return word_known_category
 
 
-def get_word_known_categories_from_cutoffs(words, known_cutoff, practice_cutoff):
+def get_word_known_categories_from_cutoffs(words, known_cutoff, practice_cutoff, seen_cutoff):
     word_known_category = {}
     for word in words[0:known_cutoff]:
         word_known_category[word["_id"]] = "known"
     for word in words[known_cutoff:practice_cutoff]:
         word_known_category[word["_id"]] = "practice"
+    for word in words[practice_cutoff:seen_cutoff]:
+        word_known_category[word["_id"]] = "seen"
     return word_known_category
 
 
@@ -159,6 +161,7 @@ def index(request):
         language = request.GET.get("language", "arabic")
         known_cutoff = int(request.GET.get("known_cutoff", 50))
         practice_cutoff = int(request.GET.get("practice_cutoff", 50))
+        seen_cutoff = int(request.GET.get("seen_cutoff", 50))
         start_date_cutoff_raw = request.GET.get("start_date", default_start_date)
         start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%d-%m-%Y")
         end_date_cutoff_raw = request.GET.get("end_date", default_end_date)
@@ -180,7 +183,7 @@ def index(request):
         word_known_categories = get_word_known_categories_from_df(words, known_words_df)
     else:
         word_known_categories = get_word_known_categories_from_cutoffs(
-            words, known_cutoff, practice_cutoff
+            words, known_cutoff, practice_cutoff, seen_cutoff
         )
     words = model_result_to_dict(words)
     print(f"Got {len(words)} words")
@@ -209,9 +212,13 @@ def index(request):
 
             article_to_render["known_words_count"] = known_words_count
             article_to_render["practice_words_count"] = practice_words_count
+            article_to_render["seen_words_count"] = seen_words_count
             article_to_render["practice_words_ratio"] = practice_words_count / max(
                 len(article_words), 1
             )
+            article_to_render["known_practice_seen_words_ratio"] = (
+                known_words_count + practice_words_count + seen_words_count
+            ) / max(len(article_words), 1)
 
             articles_to_render.append(article_to_render)
         except Exception as e:
@@ -219,6 +226,10 @@ def index(request):
 
     articles_to_render = sorted(
         articles_to_render, key=lambda d: d["published_datetime"], reverse=True
+    )
+
+    articles_to_render = sorted(
+        articles_to_render, key=lambda d: d["known_practice_seen_words_ratio"], reverse=True
     )
 
     articles_to_render = sorted(
@@ -243,6 +254,7 @@ def index(request):
                 "language": language,
                 "known_cutoff": known_cutoff,
                 "practice_cutoff": practice_cutoff,
+                "seen_cutoff": seen_cutoff,
                 "article_display_count": article_display_count,
                 "sort_by_word": sort_by_word,
             }
@@ -251,6 +263,7 @@ def index(request):
         url_parameters = {
             "known_cutoff": known_cutoff,
             "practice_cutoff": practice_cutoff,
+            "seen_cutoff": seen_cutoff,
             "language": language,
         }
     else:
@@ -294,6 +307,7 @@ def configure(request):
     language = request.GET.get("language", "arabic")
     known_cutoff = int(request.GET.get("known_cutoff", 50))
     practice_cutoff = int(request.GET.get("practice_cutoff", 100))
+    seen_cutoff = int(request.GET.get("seen_cutoff", practice_cutoff))
     start_date_cutoff = request.GET.get("start_date", default_start_date)
     end_date_cutoff = request.GET.get("end_date", default_end_date)
     article_display_count = int(request.GET.get("count", 100))
@@ -306,6 +320,7 @@ def configure(request):
             "language": language,
             "known_cutoff": known_cutoff,
             "practice_cutoff": practice_cutoff,
+            "seen_cutoff": seen_cutoff,
             "article_display_count": article_display_count,
             "sort_by_word": sort_by_word,
         }
