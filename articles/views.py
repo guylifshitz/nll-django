@@ -104,8 +104,15 @@ def build_article_words(article, words, word_known_categories):
         token_segmented = article["title_parsed_segmented"][article_lemma_index]
 
         token_POS = article["title_parsed_POSTAG"][article_lemma_index]
+        
+        # NNP = proper noun
         if token_POS == "NNP":
             word_translation = f"##{word_foreign_flexion}##"
+            word_foreign_flexion = f"##{word_foreign_flexion}##"
+
+        # CD = cardinal digit?
+        if token_POS == "CD":
+            word_translation = word_foreign_flexion
 
         verb_tense = get_verb_tenses(token_POS, article["title_parsed_FEATS"][article_lemma_index])
 
@@ -116,9 +123,6 @@ def build_article_words(article, words, word_known_categories):
         translation_override = article["title_parsed_translation_override"][article_lemma_index]
         if translation_override:
             word_translation = translation_override
-
-        if token_POS == "CD":
-            word_translation = word_foreign_flexion
 
         word_components = {
             "word_foreign": word_foreign_flexion,
@@ -220,7 +224,8 @@ def index(request):
                 known_words_count + practice_words_count + seen_words_count
             ) / max(len(article_words), 1)
 
-            articles_to_render.append(article_to_render)
+            if article_to_render["words"] and article_to_render["practice_words_count"] > 0:
+                articles_to_render.append(article_to_render)
         except Exception as e:
             traceback.print_exc()
 
@@ -234,6 +239,13 @@ def index(request):
 
     articles_to_render = sorted(
         articles_to_render, key=lambda d: d["practice_words_ratio"], reverse=True
+    )
+
+    articles_to_render = sorted(
+        articles_to_render,
+        key=lambda d: len(d["words"])
+        - (d["known_words_count"] + d["seen_words_count"] + d["practice_words_count"]),
+        reverse=False,
     )
 
     # DEBUG
