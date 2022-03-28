@@ -47,13 +47,12 @@
                             {% if word.verb_tense %}<div>[{{word.verb_tense}}]</div>{% endif %}
                             <div>(#{{word.lemma_foreign_index}})</div>
                         </div>
-
-                        <div class="mix_tooltip_2" hidden>{{word.token_prefixes}}{{word.word_translation}}</div>
+                        <div class="mix_tooltip_2" hidden>{{word.token_prefixes}}{{word.word_translation}}<div>!!!{{word.flexion_translation}}!!!!</div></div>
                     </div>
                     {% else %}
                     <div class="word word_mix word_native" id="word_{{forloop.counter}}"
                         original_txt="{{word.word_foreign}}">
-                        {{word.token_prefixes}}{{word.word_translation}}</div>
+                        {{word.flexion_translation}}</div>
                     <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">
                         <div class="mix_tooltip_1">
                             <div>{{word.word_foreign}}</div>
@@ -61,6 +60,7 @@
                             <div>[{{word.lemma_foreign_diacritic}}] </div>
                             {% if word.verb_tense %}<div>[{{word.verb_tense}}]</div>{% endif %}
                             <div>(#{{word.lemma_foreign_index}})</div>
+                            {{word.token_prefixes}}{{word.word_translation}}
                         </div>
                     </div>
                     {% endif %}

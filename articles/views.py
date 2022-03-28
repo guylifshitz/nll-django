@@ -1,7 +1,7 @@
 from .forms import ArticlesForm, ArticlesFormFromFile
 from django.shortcuts import render
 from articles.models import Rss_feeds
-from words.models import Words
+from words.models import Words, Flexions
 import datetime
 import traceback
 import pandas as pd
@@ -81,7 +81,7 @@ def get_word_known_categories_from_cutoffs(words, known_cutoff, practice_cutoff,
     return word_known_category
 
 
-def build_article_words(article, words, word_known_categories):
+def build_article_words(article, words, word_known_categories, flexions):
 
     article_words = []
     for article_lemma_index, lemma_text in enumerate(article["title_parsed_lemma"]):
@@ -100,15 +100,21 @@ def build_article_words(article, words, word_known_categories):
         #########
         # ARTICLE STUFF
         word_foreign_flexion = article["title_parsed_clean"][article_lemma_index]
+        flexion_translation = flexions.get(word_foreign_flexion, {"translation_google": "NONE"})[
+            "translation_google"
+        ].lower()
 
         token_segmented = article["title_parsed_segmented"][article_lemma_index]
 
         token_POS = article["title_parsed_POSTAG"][article_lemma_index]
-        
+
         # NNP = proper noun
+        is_proper_noun = False
         if token_POS == "NNP":
             word_translation = f"##{word_foreign_flexion}##"
+            flexion_translation = f"##{word_foreign_flexion}##"
             word_foreign_flexion = f"##{word_foreign_flexion}##"
+            is_proper_noun = True
 
         # CD = cardinal digit?
         if token_POS == "CD":
@@ -126,6 +132,7 @@ def build_article_words(article, words, word_known_categories):
 
         word_components = {
             "word_foreign": word_foreign_flexion,
+            "flexion_translation": flexion_translation,
             "lemma_foreign": lemma_text,
             "lemma_foreign_diacritic": lemma_diacritic,
             "lemma_foreign_index": word_index,
@@ -136,6 +143,7 @@ def build_article_words(article, words, word_known_categories):
             "word_translation": word_translation,
             "token_segmented": token_segmented,
             "verb_tense": verb_tense,
+            "is_proper_noun": is_proper_noun,
             "token_prefixes": token_prefixes,
         }
         article_words.append(word_components)
@@ -183,6 +191,9 @@ def index(request):
     print(f"Got {len(articles)} articles")
 
     words = Words.objects.filter(language=language).order_by("-count")
+    flexions = Flexions.objects.filter(language=language)
+    flexions = model_result_to_dict(flexions)
+
     if request.method == "POST":
         word_known_categories = get_word_known_categories_from_df(words, known_words_df)
     else:
@@ -208,7 +219,7 @@ def index(request):
             article_to_render["title_translation"] = article["title_translation"]
             article_to_render["link"] = article["link"]
 
-            article_words = build_article_words(article, words, word_known_categories)
+            article_words = build_article_words(article, words, word_known_categories, flexions)
             article_to_render["words"] = article_words
             known_words_count = sum([aw["lemma_known"] for aw in article_words])
             practice_words_count = sum([aw["lemma_practice"] for aw in article_words])
