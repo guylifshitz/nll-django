@@ -7,7 +7,7 @@
   float: right;
   position: fixed;
   right: 200;
-  top: 30px;
+  top: 30px;  
 }
 .right_panel_section{
   margin-top: 15px;
@@ -112,4 +112,28 @@
 }
 .button_full_translation {
   background-color: bad3da;
+}
+
+.section_flexion{
+  background-color: #b2d6f6;
+  border-radius: 5px;
+  outline: 1px black ridge;
+}
+.section_lemma {
+  background-color: #b2f6e0;
+  border-radius: 5px;
+  outline: 1px black ridge;
+}
+.section_pos {
+  background-color: #d8f6b2;
+  border-radius: 5px;
+  outline: 1px black ridge;
+}
+.section_trans {
+  background-color: #fff9e2;
+  border-radius: 5px;
+  outline: 1px black ridge;
+}
+.is_proper_noun{
+  background-color: #d8f6b2;
 }

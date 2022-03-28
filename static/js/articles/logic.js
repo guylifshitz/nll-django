@@ -56,11 +56,9 @@ $(document).ready(function () {
       html_txt = $(event.target).attr("original_txt");
       speak(html_txt);
     } else {
-      tooltip2 =
-        event.target.nextElementSibling.getElementsByClassName(
-          "mix_tooltip_2"
-        )[0];
-      $(tooltip2).toggle();
+      Array.from(
+        event.target.nextElementSibling.getElementsByClassName("mix_tooltip_2")
+      ).forEach((tooltip2) => $(tooltip2).toggle());
     }
   });
 });
