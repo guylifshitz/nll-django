@@ -19,7 +19,8 @@
                         {{word.translation}}
                     </td>
                     <td class="line_element word_articles">
-                        <div><a target="_blank" href="{% url 'list_articles_config' %}?language={{url_parameters.language}}&known_cutoff={{word.index}}&practice_cutoff={{word.index|add:1}}&seen_cutoff={{url_parameters.upper_freq_cutoff}}">PRACTICE ARTICLES</a></div>
+                        <div><a target="_blank" href="{% url 'list_articles_config' %}?language={{url_parameters.language}}&known_cutoff={{word.index}}&practice_cutoff={{word.index|add:1}}&seen_cutoff={{url_parameters.upper_freq_cutoff}}">-examples</a></div>
+                        <div><a target="_blank" href="https://en.wiktionary.org/wiki/{{word.word}}#{{url_parameters.language|title}}">-def</a></div>
                     </tr>
                 {% endfor %}
             </table>

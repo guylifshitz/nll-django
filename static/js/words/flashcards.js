@@ -150,6 +150,23 @@ $(document).ready(function () {
       "https://en.wiktionary.org/wiki/" + word["word"] + "#Arabic";
     $("#definition-button").attr("href", definition_url);
 
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const language = urlParams.get("language");
+    var base_url = window.location.origin + "/articles/config";
+    $("#examples-button").attr(
+      "href",
+      base_url +
+        "?language=" +
+        language +
+        "&known_cutoff=" +
+        word.index +
+        "&practice_cutoff=" +
+        (word.index + 1) +
+        "&seen_cutoff=500"
+    );
+
+
     if (previous_words.length > 0) {
       $("#back-button").show();
     }
