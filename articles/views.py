@@ -23,34 +23,38 @@ def model_result_to_dict(model_result):
     return out_dict
 
 
-def get_verb_tenses(postag, features):
-    if postag == "VB":
-        number = ""
-        if "num=S" in features:
-            number = "s"
-        elif "num=P" in features:
-            number = "p"
+def format_features(postag, features):
+    number = ""
+    if "num=S" in features:
+        number = "s"
+    elif "num=P" in features:
+        number = "p"
 
-        person = ""
-        if "per=1" in features:
-            person = "1"
-        elif "per=2" in features:
-            person = "2"
-        elif "per=3" in features:
-            person = "3"
+    gender = ""
+    if "gen=M" in features:
+        gender = "m."
+    elif "gen=F" in features:
+        gender = "f."
 
-        tense = ""
-        if "tense=FUTURE" in features:
-            tense = "futr"
-        elif "tense=PAST" in features:
-            tense = "past"
-        elif "tense=IMPERATIVE" in features:
-            tense = "impe"
-        elif "tense=BEINONI" in features:
-            tense = "bein"
+    person = ""
+    if "per=1" in features:
+        person = "1"
+    elif "per=2" in features:
+        person = "2"
+    elif "per=3" in features:
+        person = "3"
 
-        return tense + "-" + person + number
-    return None
+    tense = ""
+    if "tense=FUTURE" in features:
+        tense = "futr"
+    elif "tense=PAST" in features:
+        tense = "past"
+    elif "tense=IMPERATIVE" in features:
+        tense = "impe"
+    elif "tense=BEINONI" in features:
+        tense = "bein"
+
+    return "".join([gender, tense, person, number])
 
 
 def get_word_known_categories_from_df(words, known_words_df):
@@ -100,9 +104,9 @@ def build_article_words(article, words, word_known_categories, flexions):
         #########
         # ARTICLE STUFF
         word_foreign_flexion = article["title_parsed_clean"][article_lemma_index]
-        flexion_translation = flexions.get(word_foreign_flexion, {"translation_google": "NONE"})[
-            "translation_google"
-        ].lower()
+        flexion_translation = flexions.get(
+            word_foreign_flexion, {"translation_google": "[[ERROR]]"}
+        )["translation_google"].lower()
 
         token_segmented = article["title_parsed_segmented"][article_lemma_index]
 
@@ -116,11 +120,16 @@ def build_article_words(article, words, word_known_categories, flexions):
             # word_foreign_flexion = f"##{word_foreign_flexion}##"
             is_proper_noun = True
 
+        is_prep_pronoun = False
+        if token_POS == "S_PRN":
+            is_prep_pronoun = True
+
         # CD = cardinal digit?
         if token_POS == "CD":
             word_translation = word_foreign_flexion
 
-        verb_tense = get_verb_tenses(token_POS, article["title_parsed_FEATS"][article_lemma_index])
+        features = article["title_parsed_FEATS"][article_lemma_index]
+        features = format_features(token_POS, features)
 
         token_prefixes = article["title_parsed_prefixes"][article_lemma_index]
         token_prefixes = ("".join(token_prefixes) + "+") if token_prefixes else ""
@@ -142,8 +151,10 @@ def build_article_words(article, words, word_known_categories, flexions):
             "lemma_known_status": lemma_known_status,
             "word_translation": word_translation,
             "token_segmented": token_segmented,
-            "verb_tense": verb_tense,
+            # "verb_tense": verb_tense,
             "is_proper_noun": is_proper_noun,
+            "is_prep_pronoun": is_prep_pronoun,
+            "features": features, 
             "token_prefixes": token_prefixes,
         }
         article_words.append(word_components)
