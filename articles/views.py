@@ -24,6 +24,9 @@ def model_result_to_dict(model_result):
 
 
 def format_features(postag, features):
+    if not features:
+        return ""
+
     number = ""
     if "num=S" in features:
         number = "s"
@@ -177,7 +180,7 @@ def index(request):
             start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%d-%m-%Y")
             end_date_cutoff_raw = request.POST.get("end_date", default_end_date)
             end_date_cutoff = datetime.datetime.strptime(end_date_cutoff_raw, "%d-%m-%Y")
-            article_display_count = int(request.POST.get("count", 100))
+            article_display_count = int(request.POST.get("article_display_count", 100))
             sort_by_word = request.POST.get("sort_by_word", "NOTESET") != "NOTESET"
 
     if request.method == "GET":
@@ -189,30 +192,91 @@ def index(request):
         start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%d-%m-%Y")
         end_date_cutoff_raw = request.GET.get("end_date", default_end_date)
         end_date_cutoff = datetime.datetime.strptime(end_date_cutoff_raw, "%d-%m-%Y")
-        article_display_count = int(request.GET.get("count", 100))
+        article_display_count = int(request.GET.get("article_display_count", 100))
         sort_by_word = request.GET.get("sort_by_word", "NOTESET") != "NOTESET"
 
-    articles = Rss_feeds.objects.filter(
+    if request.method == "POST":
+        query_words = known_words_df[known_words_df["TYPE"] == "PRACTICE"]["word"].values.tolist()
+    else:
+        query_words = (
+            Words.objects.filter(language=language)
+            .order_by("-count")
+            .skip(known_cutoff)
+            .limit(practice_cutoff - known_cutoff)
+        )
+        query_words = model_result_to_dict(query_words)
+        query_words = list(query_words.keys())
+
+    cursor = Rss_feeds.objects.filter(
         language=language,
         published_datetime__gte=start_date_cutoff,
         published_datetime__lte=end_date_cutoff,
         title_translation__ne=None,
+        title_parsed_lemma={"$elemMatch": {"$in": query_words}},
+    ).aggregate(
+        [
+            {"$match": {"language": "hebrew", "title_parsed_lemma": {"$type": "array"}}},
+            {
+                "$project": {
+                    "title_parsed_lemma": "$title_parsed_lemma",
+                    "title": "$title_parsed_lemma",
+                    "found_lemmas": {
+                        "$filter": {
+                            "input": "$title_parsed_lemma",
+                            "as": "thing",
+                            "cond": {"$in": ["$$thing", query_words]},
+                        }
+                    },
+                }
+            },
+            {
+                "$project": {
+                    "title_parsed_lemma": {"$size": "$title_parsed_lemma"},
+                    "found_lemmas": {"$size": "$found_lemmas"},
+                    "delta": {
+                        "$subtract": [
+                            {"$size": "$title_parsed_lemma"},
+                            {"$size": "$found_lemmas"},
+                        ]
+                    },
+                }
+            },
+            {"$match": {"found_lemmas": {"$gt": 0}}},
+            {"$sort": {"delta": 1, "found_lemmas": -1}},
+            {"$limit": article_display_count},
+        ]
     )
-    articles = articles
+
+    article_ids = []
+    for r in cursor:
+        article_ids.append(r["_id"])
+
+    article_ids = article_ids[0:article_display_count]
+    articles = Rss_feeds.objects.filter(link={"$in": article_ids})
+
     print(f"Got {len(articles)} articles")
 
-    words = Words.objects.filter(language=language).order_by("-count")
-    flexions = Flexions.objects.filter(language=language)
-    flexions = model_result_to_dict(flexions)
+    lemmas = set()
+    flexions = set()
+    for article in articles:
+        lemmas = lemmas | set(article["title_parsed_lemma"])
+        flexions = flexions | set(article["title_parsed_clean"])
+
+    lemmas = Words.objects.filter(language=language, _id={"$in": list(lemmas)})
 
     if request.method == "POST":
-        word_known_categories = get_word_known_categories_from_df(words, known_words_df)
+        word_known_categories = get_word_known_categories_from_df(lemmas, known_words_df)
     else:
         word_known_categories = get_word_known_categories_from_cutoffs(
-            words, known_cutoff, practice_cutoff, seen_cutoff
+            lemmas, known_cutoff, practice_cutoff, seen_cutoff
         )
-    words = model_result_to_dict(words)
-    print(f"Got {len(words)} words")
+
+    lemmas = model_result_to_dict(lemmas)
+    print(f"Got {len(lemmas)} lemmas")
+
+    flexions = Flexions.objects.filter(language=language, _id={"$in": list(flexions)})
+    flexions = model_result_to_dict(flexions)
+    print(f"Got {len(flexions)} flexions")
 
     articles_to_render = []
     article_sources = defaultdict(dict)
@@ -231,7 +295,7 @@ def index(request):
             article_to_render["title_translation"] = article["title_translation"]
             article_to_render["link"] = article["link"]
 
-            article_words = build_article_words(article, words, word_known_categories, flexions)
+            article_words = build_article_words(article, lemmas, word_known_categories, flexions)
             article_to_render["words"] = article_words
             known_words_count = sum([aw["lemma_known"] for aw in article_words])
             practice_words_count = sum([aw["lemma_practice"] for aw in article_words])
@@ -249,7 +313,7 @@ def index(request):
 
             if article_to_render["words"] and article_to_render["practice_words_count"] > 0:
                 articles_to_render.append(article_to_render)
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
 
     articles_to_render = sorted(
@@ -328,7 +392,6 @@ def sort_articles_by_word(articles):
 
     while len(articles_per_lemma) > 0:
         for lemma in list(articles_per_lemma.keys()):
-            print(len(articles_per_lemma[lemma]))
             art = articles_per_lemma[lemma].pop(0)
             if art not in ret_articles:
                 art["title_translation"] = lemma + ":" + art["title_translation"]
@@ -345,7 +408,7 @@ def configure(request):
     seen_cutoff = int(request.GET.get("seen_cutoff", practice_cutoff))
     start_date_cutoff = request.GET.get("start_date", default_start_date)
     end_date_cutoff = request.GET.get("end_date", default_end_date)
-    article_display_count = int(request.GET.get("count", 100))
+    article_display_count = int(request.GET.get("article_display_count", 100))
     sort_by_word = request.GET.get("sort_by_word", "False") == "False"
 
     form = ArticlesForm(
