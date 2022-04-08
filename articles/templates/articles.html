@@ -91,13 +91,6 @@
                 <label for=" source_{{source}}">{{source}}</label>
                 <br>
 
-                {% for feed_name in source_feeds %}
-                <input type="checkbox" id="feed_name_{{feed_name}}" name="feed_{{feed_name}}" feed_name="{{feed_name}}"
-                    checked onclick="clicked_feed_name(this)">
-                <label for=" feed_name_{{feed_name}}">{{feed_name}}</label>
-                <br>
-                {% endfor %}
-                <br>
                 {% endfor %}
             </div>
 
