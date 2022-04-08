@@ -1,3 +1,14 @@
+function position_tooltips() {
+  var tooltips = $(".word_tooltip");
+  $.each(tooltips, function (index, tooltip) {
+    var box = tooltip.previousElementSibling.getBoundingClientRect();
+    tooltip.style.position = "absolute";
+    tooltip.style.top = box.top + 20 + window.scrollY + "px";
+    tooltip.style.left = box.left + (box.right - box.left) / 2 - 50 + "px";
+  });
+}
+
+
 $(document).ready(function () {
   function show_full_translation(event) {
     $(event.target).parent().parent().find(".title_translation").toggle();
@@ -9,14 +20,14 @@ $(document).ready(function () {
     // Perform type conversions.
     str = String(str);
     pos = Number(pos) >>> 0;
-  
+
     // Search for the word's beginning and end.
     var left = str.slice(0, pos + 1).search(/\S+$/),
-        right = str.slice(pos).search(/\s/);
-  
+      right = str.slice(pos).search(/\s/);
+
     // The last word in the string is a special case.
     if (right < 0) {
-        return str.slice(left);
+      return str.slice(left);
     }
     // Return the word, using the located bounds to extract it from the string.
     return str.slice(left, right + pos);
@@ -25,7 +36,7 @@ $(document).ready(function () {
   function getWordIndexAtCharIndex(str, pos) {
     str = String(str);
     pos = Number(pos) >>> 0;
-  
+
     text_so_far = str.slice(0, pos);
     num_words_so_far = text_so_far.split(" ").length;
 
@@ -33,12 +44,14 @@ $(document).ready(function () {
   }
 
   function speak_title(speakElement) {
-
     bigstring = "";
-    speakElement.find(".title").find(".word").each(function(index, item){
-      console.log(item);
-      bigstring += $(item).text() + " ";
-    })
+    speakElement
+      .find(".title")
+      .find(".word")
+      .each(function (index, item) {
+        console.log(item);
+        bigstring += $(item).text() + " ";
+      });
 
     var msg = new SpeechSynthesisUtterance();
     msg.text = bigstring;
@@ -46,22 +59,20 @@ $(document).ready(function () {
     msg.rate = 0.5;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(msg);
-    
-    msg.onboundary = function(event){
 
+    msg.onboundary = function (event) {
       console.log(event.charIndex);
       console.log(getWordAt(bigstring, event.charIndex));
 
       word_idx = getWordIndexAtCharIndex(bigstring, event.charIndex);
-      idOfChild = "word_"+(word_idx);
-      speakElement.find("#"+idOfChild).css( "color", "white");
-    }
+      idOfChild = "word_" + word_idx;
+      speakElement.find("#" + idOfChild).css("color", "white");
+    };
 
-    msg.onend = function(event) {
-      $('.word').css("color" , "black");
+    msg.onend = function (event) {
+      $(".word").css("color", "black");
       console.log("DONE");
-    }
-
+    };
   }
 
   function speak(text) {
@@ -73,9 +84,8 @@ $(document).ready(function () {
     window.speechSynthesis.speak(msg);
   }
 
-
   function speak_title_helper(event) {
-    div =  $(event.target).parent().parent();
+    div = $(event.target).parent().parent();
     speak_title(div);
   }
 
@@ -89,15 +99,6 @@ $(document).ready(function () {
 
   $(".button_speak").on("click", speak_title_helper);
 
-  function position_tooltips() {
-    var tooltips = $(".word_tooltip");
-    $.each(tooltips, function (index, tooltip) {
-      var box = tooltip.previousElementSibling.getBoundingClientRect();
-      tooltip.style.position = "absolute";
-      tooltip.style.top = box.top + 20 + window.scrollY + "px";
-      tooltip.style.left = box.left + (box.right - box.left) / 2 - 50 + "px";
-    });
-  }
   position_tooltips();
   window.addEventListener("resize", position_tooltips, true);
 
@@ -128,4 +129,14 @@ function clicked_source(element) {
   $(".article")
     .filter('[feed_source="' + element.getAttribute("source") + '"]')
     .toggle(element.checked);
+
+    position_tooltips();
+}
+
+function clicked_feed_name(element) {
+  $(".article[feed_name*='" + element.getAttribute("feed_name") + "']").toggle(
+    element.checked
+  );
+  
+  position_tooltips();
 }

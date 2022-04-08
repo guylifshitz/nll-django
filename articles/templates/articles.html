@@ -13,7 +13,7 @@
     <div class="articles">
         {% for article in articles %}
         <div class="article" style="width: 100%; display: table;" feed_source="{{article.feed_source}}"
-            feed_name="{{article.feed_name}}">
+            feed_name="{% for feed_name in article.feed_names %}{{feed_name}} {%endfor %}">
             <div style="width: 90%; display: table-cell;">
                 <div class="title" text="{{article.title}}">
                     {% for word in article.words %}
@@ -24,7 +24,7 @@
                     <div class="article_metadata">
                         {{article.feed_source}}
                         --
-                        {{article.feed_name}}
+                        {% for feed_name in article.feed_names %}{{feed_name}} {%endfor %}
                         ---
                         {{article.published_datetime}}
                         ---
@@ -38,15 +38,16 @@
                 <div class="title_mix">
                     {% for word in article.words %}
                     {% if word.lemma_known or word.lemma_practice or word.lemma_seen or word.is_proper_noun %}
-                    <div dir="rtl" class="word word_mix word_foreign word_foreign_{{word.lemma_known_status}} {% if word.is_proper_noun %}is_proper_noun{% endif %}"
+                    <div dir="rtl"
+                        class="word word_mix word_foreign word_foreign_{{word.lemma_known_status}} {% if word.is_proper_noun %}is_proper_noun{% endif %}"
                         id="word_{{forloop.counter}}" original_txt="{{word.word_foreign}}">{{word.word_foreign}}</div>
                     {% else %}
                     <div class="word word_mix word_native" id="word_{{forloop.counter}}"
                         original_txt="{{word.word_foreign}}">
                         {{word.flexion_translation}}</div>
-                    {% endif %} 
+                    {% endif %}
 
-                        <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">
+                    <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">
                         <div class="mix_tooltip_1">
                             <div class="section_flexion">{{word.word_foreign}}</div>
                             <div class="section_lemma">
@@ -84,13 +85,22 @@
         <div class="articles_right_panel">
             <div class="article_source_checkboxes right_panel_section">
                 <b>Sources:</b><br>
-                {% for source in article_sources %}
+                {% for source, source_feeds in article_sources.items %}
                 <input type="checkbox" id="source_{{source}}" name="source_{{source}}" source="{{source}}" checked
                     onclick="clicked_source(this)">
                 <label for=" source_{{source}}">{{source}}</label>
                 <br>
+
+                {% for feed_name in source_feeds %}
+                <input type="checkbox" id="feed_name_{{feed_name}}" name="feed_{{feed_name}}" feed_name="{{feed_name}}"
+                    checked onclick="clicked_feed_name(this)">
+                <label for=" feed_name_{{feed_name}}">{{feed_name}}</label>
+                <br>
+                {% endfor %}
+                <br>
                 {% endfor %}
             </div>
+
 
             <div class="articles-form right_panel_section">
                 <b>Form:</b>

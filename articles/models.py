@@ -4,7 +4,7 @@ class Rss_feeds(Document):
     meta = {"strict": False}
 
     source = fields.StringField()
-    feed_name = fields.StringField()
+    feed_name = fields.ListField()
 
     language = fields.StringField()
     published_datetime = fields.DateField()

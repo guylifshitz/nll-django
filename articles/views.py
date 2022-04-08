@@ -154,7 +154,7 @@ def build_article_words(article, words, word_known_categories, flexions):
             # "verb_tense": verb_tense,
             "is_proper_noun": is_proper_noun,
             "is_prep_pronoun": is_prep_pronoun,
-            "features": features, 
+            "features": features,
             "token_prefixes": token_prefixes,
         }
         article_words.append(word_components)
@@ -223,8 +223,9 @@ def index(request):
             article_to_render["title"] = article["title"]
             article_to_render["title_parsed_clean"] = article["title_parsed_clean"]
             article_to_render["feed_source"] = article["source"]
-            article_to_render["feed_name"] = article["feed_name"]
-            article_sources[article["source"]][article["feed_name"]] = 1
+            article_to_render["feed_names"] = article["feed_name"]
+            for feed_name in article["feed_name"]:
+                article_sources[article["source"]][feed_name] = 1
 
             article_to_render["published_datetime"] = article["published_datetime"]
             article_to_render["title_translation"] = article["title_translation"]
@@ -312,7 +313,7 @@ def index(request):
             "speech_voice": speech_voice,
             "form": form,
             "url_parameters": url_parameters,
-            "article_sources": article_sources.keys(),
+            "article_sources": dict(article_sources),
         },
     )
 
