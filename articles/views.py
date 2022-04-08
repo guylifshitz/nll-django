@@ -79,12 +79,13 @@ def get_word_known_categories_from_df(words, known_words_df):
 
 def get_word_known_categories_from_cutoffs(words, known_cutoff, practice_cutoff, seen_cutoff):
     word_known_category = {}
-    for word in words[0:known_cutoff]:
-        word_known_category[word["_id"]] = "known"
-    for word in words[known_cutoff:practice_cutoff]:
-        word_known_category[word["_id"]] = "practice"
-    for word in words[practice_cutoff:seen_cutoff]:
-        word_known_category[word["_id"]] = "seen"
+    for word in words:
+        if word["rank"] <= known_cutoff:
+            word_known_category[word["_id"]] = "known"
+        elif known_cutoff < word["rank"] <= practice_cutoff:
+            word_known_category[word["_id"]] = "practice"
+        elif practice_cutoff < word["rank"] <= seen_cutoff:
+            word_known_category[word["_id"]] = "seen"
     return word_known_category
 
 
@@ -99,7 +100,7 @@ def build_article_words(article, words, word_known_categories, flexions):
         lemma_diacritic = lemma_obj["word_diacritic"]
         if not lemma_diacritic:
             lemma_diacritic = lemma_text
-        word_index = list(words.keys()).index(lemma_text)
+        word_rank = lemma_obj["rank"]
         word_translation = lemma_obj["translation"].lower()
 
         lemma_known_status = word_known_categories.get(lemma_text, "unknown")
@@ -147,7 +148,7 @@ def build_article_words(article, words, word_known_categories, flexions):
             "flexion_translation": flexion_translation,
             "lemma_foreign": lemma_text,
             "lemma_foreign_diacritic": lemma_diacritic,
-            "lemma_foreign_index": word_index,
+            "lemma_foreign_index": word_rank,
             "lemma_known": lemma_known_status == "known",
             "lemma_practice": lemma_known_status == "practice",
             "lemma_seen": lemma_known_status == "seen",
@@ -199,10 +200,12 @@ def index(request):
         query_words = known_words_df[known_words_df["TYPE"] == "PRACTICE"]["word"].values.tolist()
     else:
         query_words = (
-            Words.objects.filter(language=language)
+            Words.objects.filter(
+                language=language,
+                rank__gt=known_cutoff,
+                rank__lte=practice_cutoff,
+            )
             .order_by("-count")
-            .skip(known_cutoff)
-            .limit(practice_cutoff - known_cutoff)
         )
         query_words = model_result_to_dict(query_words)
         query_words = list(query_words.keys())
