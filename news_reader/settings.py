@@ -31,7 +31,12 @@ DEBUG = os.environ.get("DEBUG") != "False"
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "local")
 
-ALLOWED_HOSTS = ["localhost", "news-lang-learn-staging.herokuapp.com", "192.168.0.17"]
+ALLOWED_HOSTS = [
+    "localhost",
+    "news-lang-learn-staging.herokuapp.com",
+    "news-lang-learn-prod.herokuapp.com",
+    "192.168.0.17",
+]
 
 
 # Application definition
@@ -146,4 +151,4 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # django_heroku.settings(locals())
 
-DATE_INPUT_FORMATS = ['%d-%m-%Y']
+DATE_INPUT_FORMATS = ["%d-%m-%Y"]
