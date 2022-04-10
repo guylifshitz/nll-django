@@ -1,6 +1,7 @@
 {% load static %}
 
 <link rel="stylesheet" href="{% static 'css/words/style.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
 <script src="{% static '/js/jquery-3.6.0.min.js' %}"></script>
 <script src="{% static 'js/words/flashcards.js' %}"></script>
 <script>
@@ -38,9 +39,13 @@
                             <div class="button">def.
                             </div>
                         </a>
-                        <a id="examples-button" class="button" target="_blank" href="">exp.</a>
+                        <a id="examples-button" class="button" target="_blank" href="">ex.</a>
+                        <div id="save_button_2" class="button" onclick="clicked_update(2)">😀Know</div>
+                        <div id="save_button_1" class="button" onclick="clicked_update(1)">😐</div>
+                        <div id="save_button_0" class="button" onclick="clicked_update(0)">😵Dont know</div>
                 </div>
             </div>
         </div>
-        <a target="_blank" href="{% url 'words_index' %}?language={{url_parameters.language}}&lower_freq_cutoff={{url_parameters.lower_freq_cutoff}}&upper_freq_cutoff={{url_parameters.upper_freq_cutoff}}">LIST</a>
+        <a target="_blank"
+            href="{% url 'words_index' %}?language={{url_parameters.language}}&lower_freq_cutoff={{url_parameters.lower_freq_cutoff}}&upper_freq_cutoff={{url_parameters.upper_freq_cutoff}}">LIST</a>
     </div>

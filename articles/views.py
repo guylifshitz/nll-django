@@ -204,6 +204,8 @@ def index(request):
                 language=language,
                 rank__gt=known_cutoff,
                 rank__lte=practice_cutoff,
+                # rank__gt=0,
+                # rank__lte=seen_cutoff,
             )
             .order_by("-count")
         )
@@ -237,7 +239,7 @@ def index(request):
                     "title_parsed_lemma": {"$size": "$title_parsed_lemma"},
                     "found_lemmas": {"$size": "$found_lemmas"},
                     "delta": {
-                        "$subtract": [
+                        "$divide": [
                             {"$size": "$title_parsed_lemma"},
                             {"$size": "$found_lemmas"},
                         ]
@@ -256,7 +258,7 @@ def index(request):
 
     article_ids = article_ids[0:article_display_count]
     articles = Rss_feeds.objects.filter(link={"$in": article_ids})
-
+    
     print(f"Got {len(articles)} articles")
 
     lemmas = set()
@@ -307,8 +309,8 @@ def index(request):
             article_to_render["known_words_count"] = known_words_count
             article_to_render["practice_words_count"] = practice_words_count
             article_to_render["seen_words_count"] = seen_words_count
-            article_to_render["practice_words_ratio"] = practice_words_count / max(
-                len(article_words), 1
+            article_to_render["practice_words_ratio"] = int(practice_words_count / max(
+                len(article_words), 1) * 100
             )
             article_to_render["known_practice_seen_words_ratio"] = (
                 known_words_count + practice_words_count + seen_words_count
@@ -319,6 +321,8 @@ def index(request):
         except Exception:
             traceback.print_exc()
 
+    articles_to_render = filter(lambda a: a["practice_words_count"] > 0, articles_to_render)
+
     articles_to_render = sorted(
         articles_to_render, key=lambda d: d["published_datetime"], reverse=True
     )
@@ -327,16 +331,19 @@ def index(request):
         articles_to_render, key=lambda d: d["known_practice_seen_words_ratio"], reverse=True
     )
 
+    # articles_to_render = sorted(
+    #     articles_to_render, key=lambda d: d["practice_words_ratio"], reverse=True
+    # )
     articles_to_render = sorted(
-        articles_to_render, key=lambda d: d["practice_words_ratio"], reverse=True
+        articles_to_render, key=lambda d: d["practice_words_count"], reverse=True
     )
 
-    articles_to_render = sorted(
-        articles_to_render,
-        key=lambda d: len(d["words"])
-        - (d["known_words_count"] + d["seen_words_count"] + d["practice_words_count"]),
-        reverse=False,
-    )
+    # articles_to_render = sorted(
+    #     articles_to_render,
+    #     key=lambda d: len(d["words"])
+    #     - (d["known_words_count"] + d["seen_words_count"] + d["practice_words_count"]),
+    #     reverse=False,
+    # )
 
     # DEBUG
     # import debug

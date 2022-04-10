@@ -22,6 +22,35 @@ $(document).ready(function () {
     }
   };
 
+  function setup_buttons() {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const language = urlParams.get("language");
+    var base_url = window.location.origin + "/articles/config";
+    var seen_cutoff = Math.max(word.index + 1, 500);
+
+    $("#examples-button").attr(
+      "href",
+      base_url +
+        "?language=" +
+        language +
+        "&known_cutoff=" +
+        (word.index - 1) +
+        "&practice_cutoff=" +
+        word.index +
+        "&seen_cutoff=" +
+        seen_cutoff
+    );
+
+    $("#save_button_" + 0).css("background-color", "#bad3da");
+    $("#save_button_" + 1).css("background-color", "#bad3da");
+    $("#save_button_" + 2).css("background-color", "#bad3da");
+
+    definition_url =
+      "https://en.wiktionary.org/wiki/" + word["word"] + "#Arabic";
+    $("#definition-button").attr("href", definition_url);
+  }
+
   function toggle_diacritic() {
     show_diacritic = !show_diacritic;
     foreign_word = show_diacritic ? word["word_diacritic"] : word["word"];
@@ -112,9 +141,7 @@ $(document).ready(function () {
       $("#bottom-word").text(foreign_word);
     }
 
-    definition_url =
-      "https://en.wiktionary.org/wiki/" + word["word"] + "#Arabic";
-    $("#definition-button").attr("href", definition_url);
+    setup_buttons();
 
     $("#bottom-word").hide();
     $("#bottom-word-holder").show();
@@ -146,26 +173,7 @@ $(document).ready(function () {
     $("#bottom-word").hide();
     $("#bottom-word-holder").show();
 
-    definition_url =
-      "https://en.wiktionary.org/wiki/" + word["word"] + "#Arabic";
-    $("#definition-button").attr("href", definition_url);
-
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    const language = urlParams.get("language");
-    var base_url = window.location.origin + "/articles/config";
-    $("#examples-button").attr(
-      "href",
-      base_url +
-        "?language=" +
-        language +
-        "&known_cutoff=" +
-        word.index +
-        "&practice_cutoff=" +
-        (word.index + 1) +
-        "&seen_cutoff=500"
-    );
-
+    setup_buttons();
 
     if (previous_words.length > 0) {
       $("#back-button").show();
@@ -205,7 +213,26 @@ $(document).ready(function () {
         speak(word["word_diacritic"], speech_voice);
       } else if (key == "8") {
         remove_word();
+      } else if (key == "49") {
+        clicked_update(0);
+      } else if (key == "50") {
+        clicked_update(1);
+      } else if (key == "51") {
+        clicked_update(2);
       }
     });
   });
 });
+
+async function clicked_update(rating) {
+  const db = await idb.openDB("testDB", 1, {
+    upgrade(db) {
+      const store = db.createObjectStore("bllooop", {
+        keyPath: "word",
+      });
+    },
+  });
+
+  $("#save_button_" + rating).css("background-color", "red");
+  await db.put("bllooop", { rating: rating, word: word.word });
+}

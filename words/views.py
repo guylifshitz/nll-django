@@ -17,7 +17,7 @@ def get_words_to_show(language):
             "translation": word["translation"],
             "frequency": word["count"],
             "language": word["language"],
-            "index": idx,
+            "index": word["rank"],
         }
         if not word["word_diacritic"]:
             word_to_show["word_diacritic"] = word_to_show["word"]
