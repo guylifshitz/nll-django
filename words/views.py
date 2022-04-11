@@ -15,10 +15,15 @@ def get_words_to_show(language):
             "word": word["_id"],
             "word_diacritic": word["word_diacritic"],
             "translation": word["translation"],
+            "root": word["root"],
             "frequency": word["count"],
             "language": word["language"],
             "index": word["rank"],
         }
+
+        if not word["root"]:
+            word_to_show["root"] = ""
+
         if not word["word_diacritic"]:
             word_to_show["word_diacritic"] = word_to_show["word"]
         words_to_show.append(word_to_show)

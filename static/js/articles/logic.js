@@ -8,8 +8,20 @@ function position_tooltips() {
   });
 }
 
-
 $(document).ready(function () {
+  function google_translate_word() {
+    html_txt = $(event.target).attr("original_txt");
+
+    var url =
+      "https://translation.googleapis.com/language/translate/v2?key=AIzaSyDFM-_ShPiWSGtCtiDidNXa_CagmuM2Jk4";
+    url += "&source=he";
+    url += "&target=en";
+    url += "&q=" + html_txt;
+    $.get(url, function (data, status) {
+      alert(html_txt + ":  " + data.data.translations[0].translatedText);
+    });
+  }
+
   function show_full_translation(event) {
     $(event.target).parent().parent().find(".title_translation").toggle();
     position_tooltips();
@@ -105,15 +117,8 @@ $(document).ready(function () {
   $(".word").click(function (event) {
     if (event.altKey) {
       html_txt = $(event.target).attr("original_txt");
-
-      var url =
-        "https://translation.googleapis.com/language/translate/v2?key=AIzaSyDFM-_ShPiWSGtCtiDidNXa_CagmuM2Jk4";
-      url += "&source=he";
-      url += "&target=en";
-      url += "&q=" + html_txt;
-      $.get(url, function (data, status) {
-        alert(html_txt + ":  " + data.data.translations[0].translatedText);
-      });
+      show_edit_popup(html_txt);
+      // google_translate_word();
     } else if (event.shiftKey) {
       html_txt = $(event.target).attr("original_txt");
       speak(html_txt);
@@ -130,13 +135,43 @@ function clicked_source(element) {
     .filter('[feed_source="' + element.getAttribute("source") + '"]')
     .toggle(element.checked);
 
-    position_tooltips();
+  position_tooltips();
 }
 
 function clicked_feed_name(element) {
   $(".article[feed_name*='" + element.getAttribute("feed_name") + "']").toggle(
     element.checked
   );
-  
+
   position_tooltips();
+}
+
+async function clicked_update(rating) {
+  const db = await idb.openDB("testDB", 1, {
+    upgrade(db) {
+      const store = db.createObjectStore("bllooop", {
+        keyPath: "word",
+      });
+    },
+  });
+
+  $("#rating_button_0").css("background-color", "#bad3da");
+  $("#rating_button_1").css("background-color", "#bad3da");
+  $("#rating_button_2").css("background-color", "#bad3da");
+
+  $("#rating_button_" + rating).css("background-color", "red");
+
+  var word = $("#word_correction_word").attr("word");
+  await db.put("bllooop", { rating: rating, word: word });
+}
+
+function show_edit_popup(word) {
+  $("#word_correction_popup").show();
+  $("#word_correction_word").text(word);
+}
+function hide_edit_popup() {
+  $("#word_correction_popup").hide();
+  $("#rating_button_0").css("background-color", "#bad3da");
+  $("#rating_button_1").css("background-color", "#bad3da");
+  $("#rating_button_2").css("background-color", "#bad3da");
 }

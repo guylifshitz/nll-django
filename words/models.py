@@ -8,6 +8,7 @@ class Words(Document):
     _id = fields.StringField()
     word_diacritic = fields.StringField()
     translation = fields.StringField()
+    root = fields.StringField()
     rank = fields.IntField()
     count = fields.IntField()
     language = fields.StringField()

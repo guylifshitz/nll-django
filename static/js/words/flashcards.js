@@ -92,13 +92,21 @@ $(document).ready(function () {
     if (click_state == 0) {
       $("#bottom-word").show();
       $("#bottom-word-holder").hide();
+
       $("#next-button").text(">>>");
       $("#next-button").addClass("next-button-next");
       $("#next-button").removeClass("next-button-translate");
       click_state = 1;
       speak(word["word_diacritic"], speech_voice);
+      root = word["root"];
+      if (root == ""){
+        root = "- - -"
+      }
+      $("#word-root").text(root);
+
     } else {
       show_next_word();
+      $("#word-root").text("- - -");
       $("#next-button").text("^^^");
       $("#next-button").removeClass("next-button-next");
       $("#next-button").addClass("next-button-translate");
@@ -129,7 +137,8 @@ $(document).ready(function () {
     prev_word = previous_words.pop();
     words.splice(word_index, 0, prev_word);
     word = words[word_index];
-    var click_state = 0;
+
+    click_state = 0;
 
     foreign_word = show_diacritic ? word["word_diacritic"] : word["word"];
 
@@ -140,6 +149,8 @@ $(document).ready(function () {
       $("#top-word").text(word["translation"]);
       $("#bottom-word").text(foreign_word);
     }
+
+    $("#word-root").text("- - -");
 
     setup_buttons();
 
@@ -235,4 +246,30 @@ async function clicked_update(rating) {
 
   $("#save_button_" + rating).css("background-color", "red");
   await db.put("bllooop", { rating: rating, word: word.word });
+}
+
+async function filter_words_by_rating(rating) {
+  const db = await idb.openDB("testDB", 1, {
+    upgrade(db) {
+      const store = db.createObjectStore("bllooop", {
+        keyPath: "word",
+      });
+    },
+  });
+
+  words.forEach(async (w) => {
+    w = w["word"]
+    res = await db.get("bllooop", w);
+    if (res) {
+      if (res["rating"] == rating) {
+        removeWordFromWords(w);
+      }
+    }
+  });
+}
+
+function removeWordFromWords(w) {
+  words = words.filter(function (value) {
+    return value["word"] !== w;
+  });
 }

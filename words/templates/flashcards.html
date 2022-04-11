@@ -20,7 +20,6 @@
         <div class="flashcard-bottom-word" id="bottom-word-holder">
             ???
         </div>
-
         <div class="flashcard-buttons">
             <div>
                 <div class="button flashcard-button" id="next-button">
@@ -46,6 +45,15 @@
                 </div>
             </div>
         </div>
+
         <a target="_blank"
             href="{% url 'words_index' %}?language={{url_parameters.language}}&lower_freq_cutoff={{url_parameters.lower_freq_cutoff}}&upper_freq_cutoff={{url_parameters.upper_freq_cutoff}}">LIST</a>
     </div>
+
+    <div  class="flashcard-bottom-word" id="word-root">
+        ROOT
+    </div>
+    <div class="button" onclick="filter_words_by_rating(2)">Remove 😀</div>
+    <div class="button" onclick="filter_words_by_rating(1)">Remove  😐</div>
+    <div class="button" onclick="filter_words_by_rating(0)">Remove 😵Dont know</div>
+

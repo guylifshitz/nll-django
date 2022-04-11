@@ -3,6 +3,7 @@
   justify-content: center;
   font-family: sans-serif;
 }
+
 .articles_right_panel {
   width: 100px;
   float: right;
@@ -10,21 +11,25 @@
   right: 200;
   top: 30px;
 }
+
 .right_panel_section {
   margin-top: 15px;
   margin-bottom: 15px;
   background-color: #d3d3d3;
   border-radius: 5px;
 }
+
 .articles {
   width: 50%;
   align-self: center;
 }
+
 .article {
   margin-top: 15px;
   margin-bottom: 15px;
   font-size: 18px;
 }
+
 .title {
   background-color: #cfd8dc;
   border-radius: 5px;
@@ -32,24 +37,29 @@
   padding: 10px;
   direction: rtl;
 }
+
 .title_translation {
   border-radius: 5px;
   background-color: #bad3da;
   padding: 10px;
 }
+
 .title_mix {
   direction: rtl;
   border-radius: 5px;
   background-color: #e5ffe5;
   padding: 10px;
 }
+
 .title_mix_segmented {
   background-color: #caffca;
 }
+
 .article_metadata {
   direction: ltr;
   font-size: 10px;
 }
+
 .word_tooltip {
   display: none;
 }
@@ -65,26 +75,32 @@
   padding-left: 5px;
   padding-right: 5px;
 }
+
 .word_native {
   background-color: #8c8c8c33;
 }
+
 .word_foreign {
   background-color: red;
 }
+
 .word_foreign_known {
   background-color: #ccd6ee;
 }
+
 .word_foreign_seen {
   background-color: #eecccc;
 }
+
 .word_foreign_practice {
   background-color: #99d7fb;
 }
+
 .word:hover {
   background-color: violet;
 }
 
-.word:hover + .word_tooltip {
+.word:hover+.word_tooltip {
   position: absolute;
   border-radius: 10px;
   display: block;
@@ -113,6 +129,7 @@
 .button_partial_translation {
   background-color: e5ffe5;
 }
+
 .button_full_translation {
   background-color: bad3da;
 }
@@ -122,21 +139,64 @@
   border-radius: 5px;
   outline: 1px black ridge;
 }
+
 .section_lemma {
   background-color: #b2f6e0;
   border-radius: 5px;
   outline: 1px black ridge;
 }
+
 .section_pos {
   background-color: #d8f6b2;
   border-radius: 5px;
   outline: 1px black ridge;
 }
+
 .section_trans {
   background-color: #fff9e2;
   border-radius: 5px;
   outline: 1px black ridge;
 }
+
 .is_proper_noun {
   background-color: #d8f6b2;
 }
+
+.word_correction {
+  position: fixed;
+  top: 123px;
+  left: 50%;
+  border-radius: 10px;
+  display: block;
+  color: rgb(38, 38, 38);
+  background-color: rgb(228, 148, 225);
+  height: fit-content;
+  width: fit-content;
+  text-align: center;
+  padding: 20px;
+}
+
+.word_correction_word {
+  font-size: 30px;
+  padding: 10px;
+}
+
+.word_correction_rating {
+  background-color: #bad3da;
+  outline: 1px black ridge;
+  border-radius: 20px;
+  padding: 10px;
+  margin: 10px;
+
+}
+
+.blocker {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  content: ' ';
+  background: rgba(0, 0, 0, .5);
+}
+
