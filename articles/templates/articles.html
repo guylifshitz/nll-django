@@ -21,9 +21,12 @@
                 😵Dont know
             </div>
             <div id="rating_button_1" class="word_correction_rating" onclick="clicked_update(1)">
-                😐
+                😔
             </div>
             <div id="rating_button_2" class="word_correction_rating" onclick="clicked_update(2)">
+                😐
+            </div>
+            <div id="rating_button_3" class="word_correction_rating" onclick="clicked_update(3)">
                 😀Know
             </div>
             <div class="word_correction_rating" onclick="hide_edit_popup()">
@@ -31,6 +34,7 @@
             </div>
         </div>
     </div>
+
 
     <div class="articles">
         {% for article in articles %}
@@ -52,7 +56,8 @@
                         ---
                         known: {{article.known_words_count}}
                         practice: {{article.practice_words_count}}
-                        ratio: {{article.practice_words_ratio}}
+                        ratio1: {{article.practice_words_ratio}}
+                        ratio2: {{article.known_practice_seen_words_ratio}}
                         ---
                         <a target="_blank" href={{article.link}}> LINK </a>
                     </div>

@@ -23,6 +23,7 @@ $(document).ready(function () {
   };
 
   function setup_buttons() {
+    $("#set-words-count").val(words.length);
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const language = urlParams.get("language");
@@ -45,6 +46,7 @@ $(document).ready(function () {
     $("#save_button_" + 0).css("background-color", "#bad3da");
     $("#save_button_" + 1).css("background-color", "#bad3da");
     $("#save_button_" + 2).css("background-color", "#bad3da");
+    $("#save_button_" + 3).css("background-color", "#bad3da");
 
     definition_url =
       "https://en.wiktionary.org/wiki/" + word["word"] + "#Arabic";
@@ -99,11 +101,10 @@ $(document).ready(function () {
       click_state = 1;
       speak(word["word_diacritic"], speech_voice);
       root = word["root"];
-      if (root == ""){
-        root = "- - -"
+      if (root == "") {
+        root = "- - -";
       }
       $("#word-root").text(root);
-
     } else {
       show_next_word();
       $("#word-root").text("- - -");
@@ -224,12 +225,14 @@ $(document).ready(function () {
         speak(word["word_diacritic"], speech_voice);
       } else if (key == "8") {
         remove_word();
-      } else if (key == "49") {
-        clicked_update(0);
-      } else if (key == "50") {
-        clicked_update(1);
-      } else if (key == "51") {
-        clicked_update(2);
+        //   } else if (key == "49") {
+        //     clicked_update(0);
+        //   } else if (key == "50") {
+        //     clicked_update(1);
+        //   } else if (key == "51") {
+        //     clicked_update(2);
+        // } else if (key == "51") {
+        //   clicked_update(2);
       }
     });
   });
@@ -243,6 +246,11 @@ async function clicked_update(rating) {
       });
     },
   });
+
+  $("#save_button_" + 0).css("background-color", "#bad3da");
+  $("#save_button_" + 1).css("background-color", "#bad3da");
+  $("#save_button_" + 2).css("background-color", "#bad3da");
+  $("#save_button_" + 3).css("background-color", "#bad3da");
 
   $("#save_button_" + rating).css("background-color", "red");
   await db.put("bllooop", { rating: rating, word: word.word });
@@ -258,7 +266,7 @@ async function filter_words_by_rating(rating) {
   });
 
   words.forEach(async (w) => {
-    w = w["word"]
+    w = w["word"];
     res = await db.get("bllooop", w);
     if (res) {
       if (res["rating"] == rating) {
@@ -272,4 +280,37 @@ function removeWordFromWords(w) {
   words = words.filter(function (value) {
     return value["word"] !== w;
   });
+}
+
+function update_root() {
+  console.log("update_root");
+
+  let new_root = document.getElementById("new_root").value;
+  w = word.word;
+
+  data = {
+    new_user_root: new_root,
+  };
+  $.ajax({
+    type: "PATCH",
+    url: "http://localhost:8001/api/words/" + w + "/",
+    data: JSON.stringify(data),
+    processData: false,
+    contentType: "application/json",
+  })
+    .done(function () {
+      alert("success");
+    })
+    .fail(function () {
+      alert("error");
+    })
+    .always(function () {
+      // alert("complete");
+    });
+}
+
+
+function set_words_count(){
+  let words_count = document.getElementById("set-words-count").value;
+  words = words.slice(0, words_count);
 }

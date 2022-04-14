@@ -199,18 +199,28 @@ def index(request):
     if request.method == "POST":
         query_words = known_words_df[known_words_df["TYPE"] == "PRACTICE"]["word"].values.tolist()
     else:
-        query_words = (
-            Words.objects.filter(
-                language=language,
-                rank__gt=known_cutoff,
-                rank__lte=practice_cutoff,
-                # rank__gt=0,
-                # rank__lte=seen_cutoff,
-            )
-            .order_by("-count")
-        )
+        query_words = Words.objects.filter(
+            language=language,
+            rank__gt=known_cutoff,
+            rank__lte=practice_cutoff,
+            # rank__gt=0,
+            # rank__lte=seen_cutoff,
+        ).order_by("-count")
         query_words = model_result_to_dict(query_words)
         query_words = list(query_words.keys())
+
+        # sort_query_words = (
+        #     Words.objects.filter(
+        #         language=language,
+        #         # rank__gt=known_cutoff,
+        #         # rank__lte=practice_cutoff,
+        #         rank__gt=0,
+        #         rank__lte=seen_cutoff,
+        #     )
+        #     .order_by("-count")
+        # )
+        # sort_query_words = model_result_to_dict(sort_query_words)
+        # sort_query_words = list(sort_query_words.keys())
 
     cursor = Rss_feeds.objects.filter(
         language=language,
@@ -258,7 +268,7 @@ def index(request):
 
     article_ids = article_ids[0:article_display_count]
     articles = Rss_feeds.objects.filter(link={"$in": article_ids})
-    
+
     print(f"Got {len(articles)} articles")
 
     lemmas = set()
@@ -305,16 +315,27 @@ def index(request):
             known_words_count = sum([aw["lemma_known"] for aw in article_words])
             practice_words_count = sum([aw["lemma_practice"] for aw in article_words])
             seen_words_count = sum([aw["lemma_seen"] for aw in article_words])
+            # proper_nouns_count = sum([aw["is_proper_noun"] for aw in article_words])
 
             article_to_render["known_words_count"] = known_words_count
             article_to_render["practice_words_count"] = practice_words_count
             article_to_render["seen_words_count"] = seen_words_count
-            article_to_render["practice_words_ratio"] = int(practice_words_count / max(
-                len(article_words), 1) * 100
+            # article_to_render["proper_nouns_count"] = proper_nouns_count
+            article_to_render["practice_words_ratio"] = int(
+                practice_words_count / max(len(article_words), 1) * 100
             )
-            article_to_render["known_practice_seen_words_ratio"] = (
-                known_words_count + practice_words_count + seen_words_count
-            ) / max(len(article_words), 1)
+            article_to_render["known_practice_seen_words_ratio"] = int(
+                (
+                    (
+                        known_words_count
+                        + practice_words_count
+                        + seen_words_count
+                        # + proper_nouns_count
+                    )
+                    / max(len(article_words), 1)
+                )
+                * 100
+            )
 
             if article_to_render["words"] and article_to_render["practice_words_count"] > 0:
                 articles_to_render.append(article_to_render)
@@ -334,9 +355,9 @@ def index(request):
     # articles_to_render = sorted(
     #     articles_to_render, key=lambda d: d["practice_words_ratio"], reverse=True
     # )
-    articles_to_render = sorted(
-        articles_to_render, key=lambda d: d["practice_words_count"], reverse=True
-    )
+    # articles_to_render = sorted(
+    #     articles_to_render, key=lambda d: d["practice_words_count"], reverse=True
+    # )
 
     # articles_to_render = sorted(
     #     articles_to_render,

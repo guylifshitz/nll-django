@@ -19,6 +19,7 @@ import words.views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/", include("api.urls")),
     path("articles/", include("articles.urls")),
     path("words/", include("words.urls")),
     path("", words.views.configure, name="homepage"),

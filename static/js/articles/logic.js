@@ -158,10 +158,11 @@ async function clicked_update(rating) {
   $("#rating_button_0").css("background-color", "#bad3da");
   $("#rating_button_1").css("background-color", "#bad3da");
   $("#rating_button_2").css("background-color", "#bad3da");
+  $("#rating_button_3").css("background-color", "#bad3da");
 
   $("#rating_button_" + rating).css("background-color", "red");
 
-  var word = $("#word_correction_word").attr("word");
+  var word = $("#word_correction_word").text();
   await db.put("bllooop", { rating: rating, word: word });
 }
 
@@ -174,4 +175,5 @@ function hide_edit_popup() {
   $("#rating_button_0").css("background-color", "#bad3da");
   $("#rating_button_1").css("background-color", "#bad3da");
   $("#rating_button_2").css("background-color", "#bad3da");
+  $("#rating_button_3").css("background-color", "#bad3da");
 }

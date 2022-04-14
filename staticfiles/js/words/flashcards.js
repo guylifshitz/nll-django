@@ -152,3 +152,18 @@ $(document).ready(function () {
     });
   });
 });
+
+function update_root() {
+  console.log("update_root");
+  data = {
+    new_user_root: "test",
+  };
+
+  $.post(
+    "http://localhost:8001/apii/words/%D7%A9%D7%9C/",
+    function (data, status) {
+      console.log(res);
+      console.log(status);
+    }
+  );
+}
