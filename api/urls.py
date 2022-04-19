@@ -8,11 +8,18 @@ class WordsSerializer(serializers.DocumentSerializer):
     new_user_root = rest_framework.serializers.CharField(
         max_length=300, allow_blank=True, write_only=True
     )
+    new_user_translation = rest_framework.serializers.CharField(
+        max_length=300, allow_blank=True, write_only=True
+    )
 
     class Meta:
         model = Words
-        fields = ["_id", "new_user_root"]
-        extra_kwargs = {"new_user_root": {"read_only": True}}
+        fields = ["_id", "new_user_root", "new_user_translation"]
+        # fields = ["_id", "new_user_translation"]
+        extra_kwargs = {
+            "new_user_root": {"read_only": True},
+            "new_user_translation": {"read_only": True},
+        }
 
     # def validate(self, attrs):
     #     # attrs.pop("new_user_root", None)
@@ -26,6 +33,11 @@ class WordsSerializer(serializers.DocumentSerializer):
         new_user_root = validated_data.get("new_user_root", None)
         if new_user_root:
             instance.user_roots.append(new_user_root)
+
+        new_user_translation = validated_data.get("new_user_translation", None)
+        if new_user_translation:
+            instance.user_translations.append(new_user_translation)
+
         instance.save()
         return instance
 
