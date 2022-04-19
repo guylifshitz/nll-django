@@ -7,8 +7,7 @@ from django.conf import settings
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
 
 
-def get_words_to_show(language):
-    words = Words.objects(language=language).order_by("-count")
+def build_words_to_show(words):
     words_to_show = []
     for idx, word in enumerate(words):
         word_to_show = {
@@ -19,6 +18,8 @@ def get_words_to_show(language):
             "frequency": word["count"],
             "language": word["language"],
             "index": word["rank"],
+            "user_translations": word["user_translations"],
+            "user_roots": word["user_roots"],
         }
 
         if not word["root"]:
@@ -31,30 +32,44 @@ def get_words_to_show(language):
 
 
 def flashcards(request):
-    language = request.GET.get("language", "arabic")
-    lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
-    upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
+    if request.method == "GET":
+        language = request.GET.get("language", "arabic")
+        lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
+        upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
-    words_to_show = get_words_to_show(language)
-    words_to_show = sorted(words_to_show, key=lambda d: d["frequency"], reverse=True)
+        words = Words.objects(language=language).order_by("-count")
+        words_to_show = build_words_to_show(words)
+        words_to_show = sorted(words_to_show, key=lambda d: d["frequency"], reverse=True)
+        words_to_show = words_to_show[lower_freq_cutoff : (upper_freq_cutoff + 1)]
 
-    if settings.ENVIRONMENT == "local":
-        import pandas as pd
+        url_parameters = {
+            "lower_freq_cutoff": lower_freq_cutoff,
+            "upper_freq_cutoff": upper_freq_cutoff,
+            "language": language,
+        }
+    elif request.method == "POST":
+        language = request.POST.get("language", "arabic")
 
-        pd.DataFrame(words_to_show).to_csv("words.csv")
+        words_to_show = []
 
-    words_to_show = words_to_show[lower_freq_cutoff : (upper_freq_cutoff + 1)]
+        for key, value in request.POST.items():
+            if key.startswith("select-word-"):
+                words_to_show.append(value)
+
+        words = Words.objects.filter(language=language, _id={"$in": words_to_show})
+        words_to_show = build_words_to_show(words)
+        url_parameters = {
+            "lower_freq_cutoff": 0,
+            "upper_freq_cutoff": 0,
+            "language": language,
+        }
 
     speech_voice = language_speech_mapping.get(language, "en")
 
-    url_parameters = {
-        "lower_freq_cutoff": lower_freq_cutoff,
-        "upper_freq_cutoff": upper_freq_cutoff,
-        "language": language,
-    }
     return render(
         request,
-        "flashcards.html",
+        "flashcards_new.html",
+        # "flashcards.html",
         {"words": words_to_show, "speech_voice": speech_voice, "url_parameters": url_parameters},
     )
 
@@ -64,7 +79,8 @@ def index(request):
     lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
     upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
-    words_to_show = get_words_to_show(language)
+    words = Words.objects(language=language).order_by("-count")
+    words_to_show = build_words_to_show(words)
     words_to_show = sorted(words_to_show, key=lambda d: d["frequency"], reverse=True)
     words_to_show = words_to_show[lower_freq_cutoff : (upper_freq_cutoff + 1)]
 
@@ -86,7 +102,7 @@ def index(request):
     }
     return render(
         request,
-        "index.html",
+        "index_new.html",
         {"words": words_to_show, "url_parameters": url_parameters, "form": form},
     )
 

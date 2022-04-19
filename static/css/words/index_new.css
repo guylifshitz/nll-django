@@ -1,0 +1,134 @@
+html {
+  font-size: 62.5%;
+  height: 100%;
+}
+
+body {
+  display: flex;
+  background-color: #E7E9EB;
+  height: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+
+.page {
+  margin: auto;
+  font-size: 3rem;
+  width: min(90%, 30em);
+}
+
+@media only screen and (max-width: 40rem) {
+  .page {
+    font-size: 3rem;
+    width: min(90%, 30em);
+  }
+}
+
+.card {
+  margin: auto;
+  background-color: white;
+  box-shadow: 0 0 2rem rgb(0, 0, 0, 0.9);
+  border-radius: 10px;
+  padding: 5rem;
+  margin-bottom: 5rem;
+  margin-top: 5rem;
+}
+
+.word-line {
+  display: grid;
+  justify-content: space-between;
+  align-content: center;
+  align-items: center;
+  grid-template-columns: 10% 10% 20% 20% 20% 10% 10%;
+}
+
+.word-line-element {
+  text-align: center;
+}
+
+.rating-buttons {
+  display: flex;
+}
+
+.buttons {
+  display: flex;
+}
+
+.button {
+  box-shadow: 2px 2px 3px black;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: fit-content;
+  padding: 0.5rem;
+  border-radius: 5px;
+  background-color: rgb(220, 220, 220);
+  cursor: pointer;
+  margin: 1rem;
+}
+
+.button:hover {
+  background-color: rgb(166, 166, 166);
+}
+
+.button-checked {
+  background-color: rgb(166, 166, 166);
+}
+
+.button-disabled {
+  background-color: rgb(95, 95, 95);
+}
+
+.button-rating-1 {
+  background-color: red;
+}
+
+.button-rating-2 {
+  background-color: orange;
+}
+
+.button-rating-3 {
+  background-color: yellow;
+}
+
+.button-rating-4 {
+  background-color: green;
+  color: white;
+}
+
+.button-rating-5 {
+  background-color: blue;
+  color: white;
+}
+
+.button-rating:not(.rating-checked) {
+  opacity: 0.1;
+}
+
+.rating-checked {
+  outline: rgb(34, 144, 20);
+  outline-style: solid;
+  outline-width: 5px;
+}
+
+.select-word-checkbox {
+  height: 25px;
+  width: 25px;
+  background-color: #eee;
+}
+
+/* On mouse-over, add a grey background color */
+.select-word-checkbox:hover {
+  background-color: #ccc;
+}
+
+/* When the checkbox is checked, add a blue background */
+.select-word-checkbox input:checked {
+  background-color: #2196F3;
+}

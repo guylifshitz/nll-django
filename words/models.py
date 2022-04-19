@@ -12,9 +12,10 @@ class Words(Document):
     rank = fields.IntField()
     count = fields.IntField()
     language = fields.StringField()
-    
+
     user_translations = fields.ListField()
     user_roots = fields.ListField()
+
 
 class Flexions(Document):
     _id = fields.StringField()
