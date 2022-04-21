@@ -33,14 +33,17 @@ def build_words_to_show(words):
 
 def flashcards(request):
     if request.method == "GET":
-        language = request.GET.get("language", "arabic")
+        language = request.GET.get("language", "hebrew")
         lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
         upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
-        words = Words.objects(language=language).order_by("-count")
+        words = Words.objects.filter(
+            language=language,
+            rank__gt=lower_freq_cutoff,
+            rank__lte=upper_freq_cutoff,
+        ).order_by("rank")
         words_to_show = build_words_to_show(words)
         words_to_show = sorted(words_to_show, key=lambda d: d["frequency"], reverse=True)
-        words_to_show = words_to_show[lower_freq_cutoff : (upper_freq_cutoff + 1)]
 
         url_parameters = {
             "lower_freq_cutoff": lower_freq_cutoff,
@@ -48,7 +51,7 @@ def flashcards(request):
             "language": language,
         }
     elif request.method == "POST":
-        language = request.POST.get("language", "arabic")
+        language = request.POST.get("language", "hebrew")
 
         words_to_show = []
 
@@ -75,14 +78,16 @@ def flashcards(request):
 
 
 def index(request):
-    language = request.GET.get("language", "arabic")
+    language = request.GET.get("language", "hebrew")
     lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
     upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
-    words = Words.objects(language=language).order_by("-count")
+    words = Words.objects.filter(
+        language=language,
+        rank__gt=lower_freq_cutoff,
+        rank__lte=upper_freq_cutoff,
+    ).order_by("rank")
     words_to_show = build_words_to_show(words)
-    words_to_show = sorted(words_to_show, key=lambda d: d["frequency"], reverse=True)
-    words_to_show = words_to_show[lower_freq_cutoff : (upper_freq_cutoff + 1)]
 
     # DEBUG
     # import debug
@@ -105,18 +110,3 @@ def index(request):
         "index_new.html",
         {"words": words_to_show, "url_parameters": url_parameters, "form": form},
     )
-
-
-def configure(request):
-    language = request.GET.get("language", "arabic")
-    lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 50))
-    upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
-
-    form = WordsForm(
-        initial={
-            "language": language,
-            "lower_freq_cutoff": lower_freq_cutoff,
-            "upper_freq_cutoff": upper_freq_cutoff,
-        }
-    )
-    return render(request, "words_configure.html", {"form": form})

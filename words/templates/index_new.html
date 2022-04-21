@@ -13,63 +13,48 @@
 
 <body>
     <div class="page">
-        <div class="rating-buttons word-line-element">
-            Select:
-            <div id="button-rating-1" class="button button-rating-1" onclick="select_by_filter(1)">
-                1
-            </div>
-            <div id="button-rating-2" class="button  button-rating-2" onclick="select_by_filter(2)">
-                2
-            </div>
-            <div id="button-rating-3" class="button  button-rating-3 " onclick="select_by_filter(3)">
-                3
-            </div>
-            <div id="button-rating-4" class="button  button-rating-4" onclick="select_by_filter(4)">
-                4
-            </div>
-            <div id="button-rating-5" class="button  button-rating-5" onclick="select_by_filter(5)">
-                5
-            </div>
+
+        <button onclick="export_words_to_csv()">Export words</button>
+
+        <div class="button" onclick="show_articles_popup()">
+            Articles
         </div>
-        <div class="rating-buttons word-line-element">
-            DeSelect:
-            <div id="button-rating-1" class="button button-rating-1" onclick="deselect_by_filter(1)">
-                1
-            </div>
-            <div id="button-rating-2" class="button  button-rating-2" onclick="deselect_by_filter(2)">
-                2
-            </div>
-            <div id="button-rating-3" class="button  button-rating-3 " onclick="deselect_by_filter(3)">
-                3
-            </div>
-            <div id="button-rating-4" class="button  button-rating-4" onclick="deselect_by_filter(4)">
-                4
-            </div>
-            <div id="button-rating-5" class="button  button-rating-5" onclick="deselect_by_filter(5)">
-                5
-            </div>
-        </div>
-        <div>
-            <div class="button" onclick="clear_selection()">Clear selection</div>
-            <div class="button" onclick="select_all()">Select All</div>
+
+        <div class="wordslist-form">
+            <form action="" method="get">
+                {% csrf_token %}
+                {{ form }}
+                <input type="submit" value="Submit">
+            </form>
         </div>
 
         <form class="card" method="POST">
             {% csrf_token %}
-            <!-- <div class="buttons"> -->
-            <!-- <button class="button" method = "GET" action = "" > -->
             <button class="button" formaction="{% url 'flashcards' %}">
                 Flashcards
             </button>
-            <button class="button" formaction="ARTICLEs">
-                Articles
-            </button>
-            <input type="hidden" name="language" value="{{url_parameters.language}}"> 
-            <!-- </div> -->
+            <div class="word-line">
+                <input type="checkbox" id="select-deselect-all" class="select-deselet-checkbox" onclick="select_all()">
+                <div></div>
+                <div class="rating-buttons ">
+                    <input type="checkbox" id="select-deselect-rating-1"
+                        class="select-deselet-checkbox select-deselect-rating-1" onclick="select_by_filter(1)">
+                    <input type="checkbox" id="select-deselect-rating-2"
+                        class="select-deselet-checkbox select-deselect-rating-2" onclick="select_by_filter(2)">
+                    <input type="checkbox" id="select-deselect-rating-3"
+                        class="select-deselet-checkbox select-deselect-rating-3" onclick="select_by_filter(3)">
+                    <input type="checkbox" id="select-deselect-rating-4"
+                        class="select-deselet-checkbox select-deselect-rating-4" onclick="select_by_filter(4)">
+                    <input type="checkbox" id="select-deselect-rating-5"
+                        class="select-deselet-checkbox select-deselect-rating-5" onclick="select_by_filter(5)">
+                </div>
+            </div>
+
+            <input type="hidden" name="language" value="{{url_parameters.language}}">
             {% for word in words %}
             <div class="word-line">
                 <div class="word-line-element">
-                    <input type="checkbox" class="select-word-checkbox" id="select-word-{{word.word}}"
+                    <input type="checkbox" class="select-word-checkbox" id="select-word-{{word.word}}" rating=""
                         name="select-word-{{word.word}}" value="{{word.word}}">
                     <label for="select-word-{{word.word}}"></label>
                 </div>
@@ -102,16 +87,57 @@
                     {{word.word_diacritic}}
                 </div>
                 <div class="word-line-element">
-                    {{word.translation}}
+                    <div>{{word.translation}}</div>
                 </div>
-                <a id="open-dictionary" class="button" target="_blank" href="https://en.wiktionary.org/wiki/{{word.word}}#{{url_parameters.language|title}}">
+                <div class="word-line-element">
+                    <div>{{word.root}}</div>
+                </div>
+                <div class="button fa fa-ellipsis-h"></div>
+                <!-- <a id="open-dictionary" class="button" target="_blank"
+                    href="https://en.wiktionary.org/wiki/{{word.word}}#{{url_parameters.language|title}}">
                     <i class="fa fa-wikipedia-w"></i>
                 </a>
                 <a id="open-examples" class="button" target="_blank" href="">
                     <i class="fa fa-tasks"></i>
-                </a>
+                </a> -->
             </div>
+            <div class="line-seperator"></div>
             {% endfor %}
         </form>
+    </div>
+
+
+    <div id="articles-popup" class="popup" hidden>
+        <div class="blocker" onclick="hide_popups()"></div>
+        <div class="popup-content" id="article-popup">
+            See Articles
+            <form action="{% url 'list_articles' %}" id="ART_FORM" method="post">
+                {% csrf_token %}
+                <div>Selected words: </div>
+                <div id="words-selected-count">###</div>
+                <!-- <div id="words-selected-count" onclick="postit('{{csrf_token}}')">###</div> -->
+                <!-- <div id="words-selected-count" onclick="postit2('{{csrf_token}}')">###</div> -->
+                <div>
+                    <input type="checkbox" class="XXX" id="XXX" name="XXX1" value="XXXX">
+                    <label for="XXX1">Limit known words in range </label>
+                </div>
+                <div>
+                    <input type="checkbox" class="XXX" id="include-unrated" name="XXX2" value="XXXX">
+                    <label for="XXX2">Include unrated words </label>
+                </div>
+
+                <input type="number" id="articles-count" name="article_display_count" value=100>
+                <input type="date" id="start-date" name="start_date">
+                <input type="date" id="end-date" name="end_date">
+                <input type="hidden" id="practice_words" name="practice_words" value="">
+                <input type="hidden" id="known_words" name="known_words" value="">
+
+
+                <button class="button" id="SUB_ARTICLES">
+                    Articles
+                </button>
+
+            </form>
+        </div>
     </div>
 </body>

@@ -1,4 +1,4 @@
-from .forms import ArticlesForm, ArticlesFormFromFile
+from .forms import ArticlesForm, ArticlesFormFromPOST
 from django.shortcuts import render
 from articles.models import Rss_feeds
 from words.models import Words, Flexions
@@ -7,6 +7,7 @@ import traceback
 import pandas as pd
 from io import BytesIO
 from collections import defaultdict
+import json
 
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
 
@@ -35,9 +36,9 @@ def format_features(postag, features):
 
     gender = ""
     if "gen=M" in features:
-        gender = "m."
+        gender = "m"
     elif "gen=F" in features:
-        gender = "f."
+        gender = "f"
 
     person = ""
     if "per=1" in features:
@@ -49,23 +50,31 @@ def format_features(postag, features):
 
     tense = ""
     if "tense=FUTURE" in features:
-        tense = "futr"
+        tense = "futr."
     elif "tense=PAST" in features:
-        tense = "past"
+        tense = "past."
     elif "tense=IMPERATIVE" in features:
-        tense = "impe"
+        tense = "impe."
     elif "tense=BEINONI" in features:
-        tense = "bein"
+        tense = "bein."
 
-    return "".join([gender, tense, person, number])
+    return "".join([tense, person, gender, number])
 
 
 def get_word_known_categories_from_df(words, known_words_df):
-    word_known_category = {}
 
     practice_words = known_words_df[known_words_df["TYPE"] == "PRACTICE"]["word"].values.tolist()
     known_words = known_words_df[known_words_df["TYPE"] == "KNOWN"]["word"].values.tolist()
     seen_words = known_words_df[known_words_df["TYPE"] == "SEEN"]["word"].values.tolist()
+
+    word_known_category = get_word_known_categories_from_lists(
+        words, known_words, practice_words, seen_words
+    )
+    return word_known_category
+
+
+def get_word_known_categories_from_lists(words, known_words, practice_words, seen_words):
+    word_known_category = {}
 
     for word in known_words:
         word_known_category[word] = "known"
@@ -169,23 +178,37 @@ def build_article_words(article, words, word_known_categories, flexions):
 def index(request):
 
     if request.method == "POST":
-        form = ArticlesFormFromFile(request.POST, request.FILES)
-        print("form.is_valid()", form.is_valid())
-        print("form.errors", form.errors)
-        if form.is_valid():
-            data = request.FILES["file"].read()
-            known_words_df = pd.read_csv(BytesIO(data))
+        form = ArticlesFormFromPOST(request.POST)
 
-            language = request.POST.get("language", "arabic")
-            start_date_cutoff_raw = request.POST.get("start_date", default_start_date)
-            start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%d-%m-%Y")
-            end_date_cutoff_raw = request.POST.get("end_date", default_end_date)
-            end_date_cutoff = datetime.datetime.strptime(end_date_cutoff_raw, "%d-%m-%Y")
-            article_display_count = int(request.POST.get("article_display_count", 100))
-            sort_by_word = request.POST.get("sort_by_word", "NOTESET") != "NOTESET"
+        language = request.POST.get("language", "hebrew")
+
+        practice_words = request.POST.get("practice_words")
+        practice_words = json.loads(practice_words)
+
+        known_words = request.POST.get("known_words")
+        known_words = json.loads(known_words)
+        start_date_cutoff_raw = request.POST.get("start_date", default_start_date)
+        start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%Y-%m-%d")
+        end_date_cutoff_raw = request.POST.get("end_date", default_end_date)
+        end_date_cutoff = datetime.datetime.strptime(end_date_cutoff_raw, "%Y-%m-%d")
+        article_display_count = int(request.POST.get("article_display_count", 100))
+        sort_by_word = request.POST.get("sort_by_word", "NOTESET") != "NOTESET"
+
+        # if form.is_valid():
+        # print(form)
+        # print("request.POST", request.POST)
+        # data = request.
+        # # known_words_df = pd.read_csv(BytesIO(data))
+        # known_words_df = known_words_json
+        # language = request.POST.get("language", "hebrew")
+        # start_date_cutoff_raw = request.POST.get("start_date", default_start_date)
+        # start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%d-%m-%Y")
+        # end_date_cutoff_raw = request.POST.get("end_date", default_end_date)
+        # end_date_cutoff = datetime.datetime.strptime(end_date_cutoff_raw, "%d-%m-%Y")
+        # article_display_count = int(request.POST.get("article_display_count", 100))
 
     if request.method == "GET":
-        language = request.GET.get("language", "arabic")
+        language = request.GET.get("language", "hebrew")
         known_cutoff = int(request.GET.get("known_cutoff", 50))
         practice_cutoff = int(request.GET.get("practice_cutoff", 50))
         seen_cutoff = int(request.GET.get("seen_cutoff", 50))
@@ -197,7 +220,8 @@ def index(request):
         sort_by_word = request.GET.get("sort_by_word", "NOTESET") != "NOTESET"
 
     if request.method == "POST":
-        query_words = known_words_df[known_words_df["TYPE"] == "PRACTICE"]["word"].values.tolist()
+        # query_words = known_words_df[known_words_df["TYPE"] == "PRACTICE"]["word"].values.tolist()
+        query_words = practice_words
     else:
         query_words = Words.objects.filter(
             language=language,
@@ -209,18 +233,18 @@ def index(request):
         query_words = model_result_to_dict(query_words)
         query_words = list(query_words.keys())
 
-        # sort_query_words = (
-        #     Words.objects.filter(
-        #         language=language,
-        #         # rank__gt=known_cutoff,
-        #         # rank__lte=practice_cutoff,
-        #         rank__gt=0,
-        #         rank__lte=seen_cutoff,
-        #     )
-        #     .order_by("-count")
-        # )
-        # sort_query_words = model_result_to_dict(sort_query_words)
-        # sort_query_words = list(sort_query_words.keys())
+    # sort_query_words = (
+    #     Words.objects.filter(
+    #         language=language,
+    #         # rank__gt=known_cutoff,
+    #         # rank__lte=practice_cutoff,
+    #         rank__gt=0,
+    #         rank__lte=seen_cutoff,
+    #     )
+    #     .order_by("-count")
+    # )
+    # sort_query_words = model_result_to_dict(sort_query_words)
+    # sort_query_words = list(sort_query_words.keys())
 
     cursor = Rss_feeds.objects.filter(
         language=language,
@@ -280,7 +304,10 @@ def index(request):
     lemmas = Words.objects.filter(language=language, _id={"$in": list(lemmas)})
 
     if request.method == "POST":
-        word_known_categories = get_word_known_categories_from_df(lemmas, known_words_df)
+        # word_known_categories = get_word_known_categories_from_df(lemmas, known_words_df)
+        word_known_categories = get_word_known_categories_from_lists(
+            lemmas, known_words, practice_words, []
+        )
     else:
         word_known_categories = get_word_known_categories_from_cutoffs(
             lemmas, known_cutoff, practice_cutoff, seen_cutoff
@@ -433,7 +460,7 @@ def sort_articles_by_word(articles):
 
 
 def configure(request):
-    language = request.GET.get("language", "arabic")
+    language = request.GET.get("language", "hebrew")
     known_cutoff = int(request.GET.get("known_cutoff", 50))
     practice_cutoff = int(request.GET.get("practice_cutoff", 100))
     seen_cutoff = int(request.GET.get("seen_cutoff", practice_cutoff))

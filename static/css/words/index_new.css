@@ -1,10 +1,13 @@
+.TODO {
+  background-color: red;
+}
+
 html {
   font-size: 62.5%;
   height: 100%;
 }
 
 body {
-  display: flex;
   background-color: #E7E9EB;
   height: 100%;
 }
@@ -17,15 +20,8 @@ a {
 
 .page {
   margin: auto;
-  font-size: 3rem;
-  width: min(90%, 30em);
-}
-
-@media only screen and (max-width: 40rem) {
-  .page {
-    font-size: 3rem;
-    width: min(90%, 30em);
-  }
+  font-size: 2.5rem;
+  width: min(90%, 40em);
 }
 
 .card {
@@ -43,7 +39,17 @@ a {
   justify-content: space-between;
   align-content: center;
   align-items: center;
-  grid-template-columns: 10% 10% 20% 20% 20% 10% 10%;
+  grid-template-columns: 5% 5% 20% 15% 15% 10% 10% 10%;
+  margin-top: 0.3em;
+  margin-bottom: 0.3em;
+}
+
+.word-line-selected {
+  background-color: #ececec;
+}
+
+.line-seperator {
+  border-bottom: 1px solid #cecece;
 }
 
 .word-line-element {
@@ -70,7 +76,6 @@ a {
   border-radius: 5px;
   background-color: rgb(220, 220, 220);
   cursor: pointer;
-  margin: 1rem;
 }
 
 .button:hover {
@@ -114,13 +119,18 @@ a {
 .rating-checked {
   outline: rgb(34, 144, 20);
   outline-style: solid;
-  outline-width: 5px;
+  outline-width: 0.2rem;
 }
 
 .select-word-checkbox {
-  height: 25px;
-  width: 25px;
+  height: 2.5em;
+  width: 2.5em;
   background-color: #eee;
+}
+
+.select-deselet-checkbox {
+  height: 35px;
+  width: 35px;
 }
 
 /* On mouse-over, add a grey background color */
@@ -131,4 +141,29 @@ a {
 /* When the checkbox is checked, add a blue background */
 .select-word-checkbox input:checked {
   background-color: #2196F3;
+}
+
+
+.popup-content {
+  position: fixed;
+  top: 123px;
+  left: 50%;
+  background-color: white;
+  height: fit-content;
+  width: fit-content;
+  font-size: 3rem;
+  border-radius: 10px;
+  color: rgb(38, 38, 38);
+  text-align: center;
+  padding: 20px;
+}
+
+.blocker {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  content: ' ';
+  background: rgba(0, 0, 0, .5);
 }

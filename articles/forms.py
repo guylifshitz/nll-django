@@ -27,3 +27,18 @@ class ArticlesForm(forms.Form):
     end_date = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS)
     sort_by_word = forms.BooleanField(required=False)
     article_display_count = forms.IntegerField()
+
+
+class ArticlesFormFromPOST(forms.Form):
+
+    # languages = (("arabic", "Arabic"), ("hebrew", "Hebrew"))
+    # language = forms.ChoiceField(choices=languages)
+
+    start_date = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS)
+    end_date = forms.DateField(input_formats=settings.DATE_INPUT_FORMATS)
+    sort_by_word = forms.BooleanField(required=False)
+    
+    article_display_count = forms.IntegerField()
+
+    practice_words = forms.Textarea()
+    known_words = forms.Textarea()
