@@ -14,7 +14,8 @@
 <body>
     <div class="page">
 
-        <button onclick="export_words_to_csv()">Export words</button>
+        <button onclick="export_word_ratings()">Export ratings</button>
+        <button onclick="import_word_ratings()">Import ratings</button>
 
         <div class="button" onclick="show_articles_popup()">
             Articles
@@ -22,7 +23,7 @@
 
         <div class="wordslist-form">
             <form action="" method="get">
-                {% csrf_token %}
+                <!-- {% csrf_token %} -->
                 {{ form }}
                 <input type="submit" value="Submit">
             </form>
@@ -92,14 +93,15 @@
                 <div class="word-line-element">
                     <div>{{word.root}}</div>
                 </div>
-                <div class="button fa fa-ellipsis-h"></div>
-                <!-- <a id="open-dictionary" class="button" target="_blank"
+                <!-- <div class="button fa fa-ellipsis-h"></div> -->
+                <a id="open-dictionary" class="button" target="_blank"
                     href="https://en.wiktionary.org/wiki/{{word.word}}#{{url_parameters.language|title}}">
                     <i class="fa fa-wikipedia-w"></i>
                 </a>
-                <a id="open-examples" class="button" target="_blank" href="">
+                <div id="open-examples" class="button" target="_blank"
+                    onclick="examples_word('{{word.word}}', '{{csrf_token}}')">
                     <i class="fa fa-tasks"></i>
-                </a> -->
+                </div>
             </div>
             <div class="line-seperator"></div>
             {% endfor %}

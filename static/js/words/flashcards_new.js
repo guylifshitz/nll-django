@@ -308,6 +308,7 @@ function update_root() {
     contentType: "application/json",
   })
     .done(function () {
+      // TODO update the root in the flashcards.
       alert("success");
     })
     .fail(function () {
