@@ -8,12 +8,12 @@
     <script src="{% static 'js/words/index_new.js' %}"></script>
     <script>
         var words = {{ words | safe }};
+        var words_to_show_dict = {{ words_to_show_dict | safe}}
     </script>
 </head>
 
 <body>
     <div class="page">
-
         <button onclick="export_word_ratings()">Export ratings</button>
         <button onclick="import_word_ratings()">Import ratings</button>
 
@@ -49,61 +49,64 @@
                     <input type="checkbox" id="select-deselect-rating-5"
                         class="select-deselet-checkbox select-deselect-rating-5" onclick="select_by_filter(5)">
                 </div>
+                <div></div>
+                <div>
+                    <input type="checkbox" id="filter-unselected" class="select-deselet-checkbox"
+                        onclick="hide_unselected()">
+                    <label for="filter-unselected">Filter unselected</label>
+                </div>
             </div>
 
             <input type="hidden" name="language" value="{{url_parameters.language}}">
             {% for word in words %}
-            <div class="word-line">
-                <div class="word-line-element">
-                    <input type="checkbox" class="select-word-checkbox" id="select-word-{{word.word}}" rating=""
-                        name="select-word-{{word.word}}" value="{{word.word}}">
-                    <label for="select-word-{{word.word}}"></label>
-                </div>
-                <div class="word-line-element">
-                    {{word.index}}
-                </div>
-                <div class="rating-buttons word-line-element">
-                    <div id="button-rating-1-{{word.word}}" class="button button-rating button-rating-1"
-                        onclick="clicked_update('{{word.word}}', 1)">
-                        1
+            <div>
+                <div class="word-line">
+                    <div class="word-line-element">
+                        <input type="checkbox" class="select-word-checkbox" id="select-word-{{word.word}}" rating=""
+                            name="select-word-{{word.word}}" value="{{word.word}}">
+                        <label for="select-word-{{word.word}}"></label>
                     </div>
-                    <div id="button-rating-2-{{word.word}}" class="button button-rating button-rating-2"
-                        onclick="clicked_update('{{word.word}}', 2)">
-                        2
+                    <div class="word-line-element">
+                        {{word.index}}
                     </div>
-                    <div id="button-rating-3-{{word.word}}" class="button button-rating button-rating-3 "
-                        onclick="clicked_update('{{word.word}}', 3)">
-                        3
+                    <div class="rating-buttons word-line-element">
+                        <div id="button-rating-1-{{word.word}}" class="button button-rating button-rating-1"
+                            onclick="clicked_update('{{word.word}}', 1)">
+                            1
+                        </div>
+                        <div id="button-rating-2-{{word.word}}" class="button button-rating button-rating-2"
+                            onclick="clicked_update('{{word.word}}', 2)">
+                            2
+                        </div>
+                        <div id="button-rating-3-{{word.word}}" class="button button-rating button-rating-3 "
+                            onclick="clicked_update('{{word.word}}', 3)">
+                            3
+                        </div>
+                        <div id="button-rating-4-{{word.word}}" class="button button-rating button-rating-4"
+                            onclick="clicked_update('{{word.word}}', 4)">
+                            4
+                        </div>
+                        <div id="button-rating-5-{{word.word}}" class="button button-rating button-rating-5"
+                            onclick="clicked_update('{{word.word}}', 5)">
+                            5
+                        </div>
                     </div>
-                    <div id="button-rating-4-{{word.word}}" class="button button-rating button-rating-4"
-                        onclick="clicked_update('{{word.word}}', 4)">
-                        4
+                    <div class="word-line-element">
+                        {{word.word_diacritic}}
                     </div>
-                    <div id="button-rating-5-{{word.word}}" class="button button-rating button-rating-5"
-                        onclick="clicked_update('{{word.word}}', 5)">
-                        5
+                    <div class="word-line-element">
+                        <div>{{word.translation}}</div>
+                    </div>
+                    <div class="word-line-element">
+                        <div id="{{word.word}}-root">{{word.root}}</div>
+                    </div>
+                    <div class="fa fa-ellipsis-h show_context_menu" onclick="show_context_menu(this)"
+                        word="{{word.word}}" root="{{word.root}}" user_roots="{{word.user_roots}}"
+                        translation=" {{word.translation}}" user_translations="{{word.user_translations}}">
                     </div>
                 </div>
-                <div class="word-line-element">
-                    {{word.word_diacritic}}
-                </div>
-                <div class="word-line-element">
-                    <div>{{word.translation}}</div>
-                </div>
-                <div class="word-line-element">
-                    <div>{{word.root}}</div>
-                </div>
-                <!-- <div class="button fa fa-ellipsis-h"></div> -->
-                <a id="open-dictionary" class="button" target="_blank"
-                    href="https://en.wiktionary.org/wiki/{{word.word}}#{{url_parameters.language|title}}">
-                    <i class="fa fa-wikipedia-w"></i>
-                </a>
-                <div id="open-examples" class="button" target="_blank"
-                    onclick="examples_word('{{word.word}}', '{{csrf_token}}')">
-                    <i class="fa fa-tasks"></i>
-                </div>
+                <div class="line-seperator"></div>
             </div>
-            <div class="line-seperator"></div>
             {% endfor %}
         </form>
     </div>
@@ -142,4 +145,45 @@
             </form>
         </div>
     </div>
+
+    <div id="edit-popup" class="popup" hidden>
+        <div class="blocker" onclick="hide_edit_popup()"></div>
+        <div class="popup-content">
+            <div id="popup-word">-----</div>
+
+            <div id="existing-translations">-----</div>
+            <div id="translation">-----</div>
+            <div class="form-box">
+                <label for="new_translation">new translation:</label>
+                <input type="text" id="new_translation" name="new_translation" list="existing_translations_list" autocomplete="off">
+                <datalist id="existing_translations_list">
+                </datalist>
+                <button id="word-translation-submit" onclick="update_translation()">Update Translation</button>
+            </div>
+
+            <div id="root">-----</div>
+            <div id="existing-roots">-----</div>
+            <div class="form-box">
+                <label for="new_root">new root:</label>
+                <input type="text" id="new_root" name="new_root" list="existing_roots_list" autocomplete="off">
+                <datalist id="existing_roots_list">
+                </datalist>
+                <button id="word-root-submit" onclick="update_root()">Update Root</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="context-menu" id="context-menu" hidden>
+        <div class="context-menu-element" onclick="context_menu_edit_word()">
+            edit word
+        </div>
+        <div class="context-menu-element" target="_blank"
+            onclick="context_menu_open_definition(this, '{{url_parameters.language|title}}')">
+            Definition
+        </div>
+        <div class="context-menu-element" onclick="context_menu_examples_word(this, '{{csrf_token}}')">
+            see examples
+        </div>
+    </div>
+
 </body>
