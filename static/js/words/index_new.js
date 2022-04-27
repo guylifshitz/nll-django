@@ -1,3 +1,5 @@
+var words;
+
 async function get_db() {
   const db = await idb.openDB("news-lang-learn", 1, {
     upgrade(db) {
@@ -143,6 +145,7 @@ function download(filename, text) {
 }
 
 $(document).ready(function () {
+  words = JSON.parse(document.getElementById('words-data').textContent);
   initialize_ratings();
   monitor_checkboxes();
 
