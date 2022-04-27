@@ -59,6 +59,9 @@ function set_word_top_bottom_root() {
   if (root == "") {
     root = "---";
   }
+
+  $("#new_root").val("");
+  $("#new_translation").val("");
 }
 
 function refresh_ui(ui_to_show) {

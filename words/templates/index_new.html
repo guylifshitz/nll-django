@@ -151,18 +151,26 @@
         <div class="popup-content">
             <div id="popup-word">-----</div>
 
-            <div id="existing-translations">-----</div>
-            <div id="translation">-----</div>
+            <div>
+                <div>translation:</div>
+                <div id="translation">-----</div>
+            </div>
+            <div id="existing-translations" class="existing-entries">-----</div>
+
             <div class="form-box">
                 <label for="new_translation">new translation:</label>
-                <input type="text" id="new_translation" name="new_translation" list="existing_translations_list" autocomplete="off">
+                <input type="text" id="new_translation" name="new_translation" list="existing_translations_list"
+                    autocomplete="off">
                 <datalist id="existing_translations_list">
                 </datalist>
                 <button id="word-translation-submit" onclick="update_translation()">Update Translation</button>
             </div>
 
-            <div id="root">-----</div>
-            <div id="existing-roots">-----</div>
+            <div>
+                <div>root:</div>
+                <div id="root">-----</div>
+            </div>
+            <div id="existing-roots" class="existing-entries">-----</div>
             <div class="form-box">
                 <label for="new_root">new root:</label>
                 <input type="text" id="new_root" name="new_root" list="existing_roots_list" autocomplete="off">

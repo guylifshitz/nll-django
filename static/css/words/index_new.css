@@ -148,6 +148,7 @@ a {
   position: fixed;
   top: 123px;
   left: 50%;
+  transform: translateX(-50%);
   background-color: white;
   height: fit-content;
   width: fit-content;
@@ -193,4 +194,18 @@ a {
 
 .context-menu-element:hover {
   background-color: #ddd
+}
+
+
+.existing-entries {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.existing-entry {
+  background-color: rgb(170, 184, 244);
+  border-radius: 10px;
+  padding: 0.5rem;
 }

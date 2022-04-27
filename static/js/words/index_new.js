@@ -13,13 +13,17 @@ async function initialize_ratings() {
   const db = await get_db();
 
   for (const word of words) {
+    // TODO handle better the escpaing of '
     res = await db.get("lemmas", word["word"]);
     if (res) {
       rating = res.rating;
-      $("#button-rating-" + rating + "-" + word["word"]).addClass(
-        "rating-checked"
+      $(
+        "#button-rating-" + rating + "-" + word["word"].replace("'", "\\'")
+      ).addClass("rating-checked");
+      $("#select-word-" + word["word"].replace("'", "\\'")).attr(
+        "rating",
+        rating
       );
-      $("#select-word-" + word["word"]).attr("rating", rating);
       monitor_checkboxes_rating();
     }
   }
@@ -349,20 +353,25 @@ function hide_unselected() {
 function show_edit_popup(word) {
   $("#popup-word").text(word.word);
   $("#root").text(word.root);
-  $("#existing-roots").text(word.user_roots);
   $("#translation").text(word.translation);
   $("#existing-translations").text(word.user_translations);
-  $(".popup").show();
+  $("#edit-popup").show();
 
   var datalist = $("#existing_translations_list");
   datalist.empty();
+  $("#existing-translations").empty();
   word.user_translations.forEach(function (t) {
+    $("#existing-translations").append(
+      "<div class='existing-entry'>" + t + "</div>"
+    );
     datalist.append("<option value='" + t + "'>");
   });
 
   var datalist = $("#existing_roots_list");
   datalist.empty();
+  $("#existing-roots").empty();
   word.user_roots.forEach(function (r) {
+    $("#existing-roots").append("<div class='existing-entry'>" + r + "</div>");
     datalist.append("<option value='" + r + "'>");
   });
 }
@@ -384,6 +393,7 @@ async function examples_word(practice_word, token) {
   var form = document.createElement("form");
 
   form.setAttribute("method", "post");
+  form.setAttribute("target", "_blank");
   form.setAttribute("action", "articles/index");
 
   var token_input = document.createElement("input");
