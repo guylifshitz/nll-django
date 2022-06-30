@@ -1,3 +1,4 @@
+from numpy import sort, source
 from .forms import WordsForm
 from django.shortcuts import render
 from words.models import Words
@@ -7,14 +8,47 @@ from django.conf import settings
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
 
 
-def build_words_to_show(words):
+def model_result_to_dict(model_result, key="_id"):
+    out_dict = {}
+    for res in model_result:
+        out_dict[res[key]] = res
+    return out_dict
+
+
+def get_root(word):
+    root = word["root"]
+
+    if not root:
+        if word["user_roots"]:
+            hyphens = ["־", "–", "-"]
+            root = word["user_roots"][-1]
+            root = root.replace(" ", "")
+            for h in hyphens:
+                root = root.replace(h, " - ")
+    if not root:
+        root = ""
+
+    return root
+
+
+def get_translation(word):
+    translation = word["translation"]
+    if word["user_translations"]:
+        translation = word["user_translations"][-1]
+    if not translation:
+        translation = ""
+
+    return translation
+
+
+def build_words_to_show(words, sort_source=None):
     words_to_show = []
     for idx, word in enumerate(words):
         word_to_show = {
             "word": word["_id"],
             "word_diacritic": word["word_diacritic"],
-            "translation": word["translation"],
-            "root": word["root"],
+            "translation": get_translation(word),
+            "root": get_root(word),
             "frequency": word["count"],
             "language": word["language"],
             "index": word["rank"],
@@ -22,8 +56,9 @@ def build_words_to_show(words):
             "user_roots": word["user_roots"],
         }
 
-        if not word["root"]:
-            word_to_show["root"] = ""
+        if sort_source == "open_subtitles":
+            word_to_show["index"] = (word["rank_open_subtitles"],)
+            word_to_show["frequency"] = word["count_open_subtitles"]
 
         if not word["word_diacritic"]:
             word_to_show["word_diacritic"] = word_to_show["word"]
@@ -41,7 +76,7 @@ def flashcards(request):
             language=language,
             rank__gt=lower_freq_cutoff,
             rank__lte=upper_freq_cutoff,
-        ).order_by("rank")
+        ).order_by("rank_open_subtitles")
         words_to_show = build_words_to_show(words)
         words_to_show = sorted(words_to_show, key=lambda d: d["frequency"], reverse=True)
 
@@ -73,21 +108,38 @@ def flashcards(request):
         request,
         "flashcards_new.html",
         # "flashcards.html",
-        {"words": words_to_show, "speech_voice": speech_voice, "url_parameters": url_parameters},
+        {
+            "words": words_to_show,
+            "words_to_show_dict": model_result_to_dict(words_to_show, "word"),
+            "speech_voice": speech_voice,
+            "url_parameters": url_parameters,
+        },
     )
 
 
 def index(request):
+
+    sort_source = ""
+
     language = request.GET.get("language", "hebrew")
     lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
     upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
-    words = Words.objects.filter(
-        language=language,
-        rank__gt=lower_freq_cutoff,
-        rank__lte=upper_freq_cutoff,
-    ).order_by("rank")
-    words_to_show = build_words_to_show(words)
+    words = None
+    if sort_source == "open_subtitles":
+        words = Words.objects.filter(
+            language=language,
+            rank_open_subtitles__gt=lower_freq_cutoff,
+            rank_open_subtitles__lte=upper_freq_cutoff,
+        ).order_by("rank_open_subtitles")
+    else:
+        words = Words.objects.filter(
+            language=language,
+            rank__gt=lower_freq_cutoff,
+            rank__lte=upper_freq_cutoff,
+        ).order_by("rank")
+
+    words_to_show = build_words_to_show(words, sort_source=sort_source)
 
     # DEBUG
     # import debug
@@ -108,5 +160,10 @@ def index(request):
     return render(
         request,
         "index_new.html",
-        {"words": words_to_show, "url_parameters": url_parameters, "form": form},
+        {
+            "words": words_to_show,
+            "words_to_show_dict": model_result_to_dict(words_to_show, "word"),
+            "url_parameters": url_parameters,
+            "form": form,
+        },
     )

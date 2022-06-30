@@ -13,7 +13,7 @@
     <div class="card">
         <button onclick="clicked_update(this)">Show ratings</button>
         <button onclick="export_words_to_csv()">Export words</button>
-        
+
         <div>
             <table class="word_line" border="1">
                 {% for word in words %}
@@ -21,6 +21,10 @@
                 <tr id="row_{{word.word}}">
                     <td class="line_element word_idx">
                         {{word.index}}
+                    </td>
+                    <td class="line_element word_idx">
+                        <input type="checkbox" id="select-word-{{word.word}}" name="select-word-{{word.word}}" value="select-word-{{word.word}}">
+                        <label for="select-word-{{word.word}}">select</label>
                     </td>
                     <td>
                         <label class="line_element" for="super-happy-{{word.index}}">:

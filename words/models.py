@@ -11,6 +11,8 @@ class Words(Document):
     root = fields.StringField()
     rank = fields.IntField()
     count = fields.IntField()
+    rank_open_subtitles = fields.IntField()
+    count_open_subtitles = fields.IntField()
     language = fields.StringField()
 
     user_translations = fields.ListField()

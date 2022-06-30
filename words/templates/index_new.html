@@ -6,7 +6,7 @@
     <script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
     <script src="{% static '/js/jquery-3.6.0.min.js' %}"></script>
     {{ words|json_script:"words-data" }}
-        <!-- var words_to_show_dict = {{ words_to_show_dict | safe}} -->
+    {{ words_to_show_dict|json_script:"words_to_show_dict-data" }}
     </script>
     <script src="{% static 'js/words/index_new.js' %}"></script>
 </head>
@@ -110,40 +110,7 @@
         </form>
     </div>
 
-
-    <div id="articles-popup" class="popup" hidden>
-        <div class="blocker" onclick="hide_popups()"></div>
-        <div class="popup-content" id="article-popup">
-            See Articles
-            <form action="{% url 'list_articles' %}" id="ART_FORM" method="post">
-                {% csrf_token %}
-                <div>Selected words: </div>
-                <div id="words-selected-count">###</div>
-                <!-- <div id="words-selected-count" onclick="postit('{{csrf_token}}')">###</div> -->
-                <!-- <div id="words-selected-count" onclick="postit2('{{csrf_token}}')">###</div> -->
-                <div>
-                    <input type="checkbox" class="XXX" id="XXX" name="XXX1" value="XXXX">
-                    <label for="XXX1">Limit known words in range </label>
-                </div>
-                <div>
-                    <input type="checkbox" class="XXX" id="include-unrated" name="XXX2" value="XXXX">
-                    <label for="XXX2">Include unrated words </label>
-                </div>
-
-                <input type="number" id="articles-count" name="article_display_count" value=100>
-                <input type="date" id="start-date" name="start_date">
-                <input type="date" id="end-date" name="end_date">
-                <input type="hidden" id="practice_words" name="practice_words" value="">
-                <input type="hidden" id="known_words" name="known_words" value="">
-
-
-                <button class="button" id="SUB_ARTICLES">
-                    Articles
-                </button>
-
-            </form>
-        </div>
-    </div>
+    {% include 'articles_popup.html' %}.
 
     <div id="edit-popup" class="popup" hidden>
         <div class="blocker" onclick="hide_edit_popup()"></div>

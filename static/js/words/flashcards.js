@@ -49,7 +49,7 @@ $(document).ready(function () {
     $("#save_button_" + 3).css("background-color", "#bad3da");
 
     definition_url =
-      "https://en.wiktionary.org/wiki/" + word["word"] + "#Arabic";
+      "https://en.wiktionary.org/wiki/" + word["word"] + "#Hebrew";
     $("#definition-button").attr("href", definition_url);
   }
 
@@ -247,12 +247,13 @@ async function clicked_update(rating) {
     },
   });
 
-  $("#save_button_" + 0).css("background-color", "#bad3da");
-  $("#save_button_" + 1).css("background-color", "#bad3da");
-  $("#save_button_" + 2).css("background-color", "#bad3da");
-  $("#save_button_" + 3).css("background-color", "#bad3da");
+  $("#button-rating-" + 1).removeClass("rating-checked");
+  $("#button-rating-" + 2).removeClass("rating-checked");
+  $("#button-rating-" + 3).removeClass("rating-checked");
+  $("#button-rating-" + 4).removeClass("rating-checked");
+  $("#button-rating-" + 5).removeClass("rating-checked");
 
-  $("#save_button_" + rating).css("background-color", "red");
+  $("#button-rating-" + rating).addClass("rating-checked");
   await db.put("bllooop", { rating: rating, word: word.word });
 }
 

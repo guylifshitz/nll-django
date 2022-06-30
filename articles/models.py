@@ -1,5 +1,6 @@
 from mongoengine import Document, fields
 
+
 class Rss_feeds(Document):
     meta = {"strict": False}
 
@@ -19,4 +20,25 @@ class Rss_feeds(Document):
     title_parsed_POSTAG = fields.ListField()
     title_parsed_FEATS = fields.ListField()
     title_parsed_translation_override = fields.ListField()
+
+    summary = fields.StringField()
+
+
+class open_subtitles(Document):
+    meta = {"strict": False}
     
+    _id = fields.ObjectIdField()
+
+    source = fields.StringField()
+
+    language = fields.StringField()
+
+    hebrew = fields.StringField()
+    title_translation = fields.StringField()
+    title_parsed_clean = fields.ListField()
+    title_parsed_lemma = fields.ListField()
+    title_parsed_segmented = fields.ListField()
+    title_parsed_prefixes = fields.ListField()
+    title_parsed_POSTAG = fields.ListField()
+    title_parsed_FEATS = fields.ListField()
+    title_parsed_translation_override = fields.ListField()

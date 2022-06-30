@@ -1,7 +1,7 @@
 async function clicked_rb(element) {
-  const db = await idb.openDB("testDB", 1, {
+  const db = await idb.openDB("news-lang-learn", 1, {
     upgrade(db) {
-      const store = db.createObjectStore("bllooop", {
+      const store = db.createObjectStore("lemmas", {
         keyPath: "word",
       });
     },
@@ -10,23 +10,23 @@ async function clicked_rb(element) {
   var word = element.getAttribute("word");
   console.log(word);
   if (element.className == "super-sad") {
-    await db.put("bllooop", { rating: 0, word: word });
+    await db.put("lemmas", { rating: 0, word: word });
   }
   if (element.className == "sad") {
-    await db.put("bllooop", { rating: 1, word: word });
+    await db.put("lemmas", { rating: 1, word: word });
   }
   if (element.className == "neutral") {
-    await db.put("bllooop", { rating: 2, word: word });
+    await db.put("lemmas", { rating: 2, word: word });
   }
   if (element.className == "super-happy") {
-    await db.put("bllooop", { rating: 3, word: word });
+    await db.put("lemmas", { rating: 3, word: word });
   }
 }
 
 async function clicked_update(element) {
-  const db = await idb.openDB("testDB", 1, {
+  const db = await idb.openDB("news-lang-learn", 1, {
     upgrade(db) {
-      const store = db.createObjectStore("bllooop", {
+      const store = db.createObjectStore("lemmas", {
         keyPath: "word",
       });
     },
@@ -34,7 +34,7 @@ async function clicked_update(element) {
 
   words.forEach(async (word) => {
     console.log(" a");
-    res = await db.get("bllooop", word["word"]);
+    res = await db.get("lemmas", word["word"]);
     if (res) {
       console.log(word);
       console.log(res);
@@ -56,9 +56,9 @@ async function clicked_update(element) {
 }
 
 async function export_words_to_csv() {
-  const db = await idb.openDB("testDB", 1, {
+  const db = await idb.openDB("news-lang-learn", 1, {
     upgrade(db) {
-      const store = db.createObjectStore("bllooop", {
+      const store = db.createObjectStore("lemmas", {
         keyPath: "word",
       });
     },
@@ -68,7 +68,7 @@ async function export_words_to_csv() {
 
   // words.forEach(async (word) => {
   for (const word of words) {
-    res = await db.get("bllooop", word["word"]);
+    res = await db.get("lemmas", word["word"]);
     if (res) {
       rating_text = "";
       if (res["rating"] == 0) {

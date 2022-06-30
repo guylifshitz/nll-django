@@ -1,3 +1,15 @@
+async function get_db() {
+  const db = await idb.openDB("news-lang-learn", 1, {
+    upgrade(db) {
+      const store = db.createObjectStore("lemmas", {
+        keyPath: "word",
+      });
+      store.createIndex("rating", "rating");
+    },
+  });
+  return db;
+}
+
 function position_tooltips() {
   var tooltips = $(".word_tooltip");
   $.each(tooltips, function (index, tooltip) {
@@ -68,7 +80,7 @@ $(document).ready(function () {
     var msg = new SpeechSynthesisUtterance();
     msg.text = bigstring;
     msg.lang = speech_voice;
-    msg.rate = 0.5;
+    msg.rate = 0.8;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(msg);
 
@@ -116,7 +128,7 @@ $(document).ready(function () {
 
   $(".word").click(function (event) {
     if (event.altKey) {
-      html_txt = $(event.target).attr("original_txt");
+      html_txt = $(event.target).attr("lemma");
       show_edit_popup(html_txt);
       // google_translate_word();
     } else if (event.shiftKey) {
@@ -147,14 +159,8 @@ function clicked_feed_name(element) {
 }
 
 async function clicked_update(rating) {
-  const db = await idb.openDB("testDB", 1, {
-    upgrade(db) {
-      const store = db.createObjectStore("bllooop", {
-        keyPath: "word",
-      });
-    },
-  });
-
+  const db = await get_db();
+  
   $("#rating_button_0").css("background-color", "#bad3da");
   $("#rating_button_1").css("background-color", "#bad3da");
   $("#rating_button_2").css("background-color", "#bad3da");
@@ -163,7 +169,7 @@ async function clicked_update(rating) {
   $("#rating_button_" + rating).css("background-color", "red");
 
   var word = $("#word_correction_word").text();
-  await db.put("bllooop", { rating: rating, word: word });
+  await db.put("lemmas", { rating: rating, word: word });
 }
 
 function show_edit_popup(word) {

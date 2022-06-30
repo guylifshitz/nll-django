@@ -1,4 +1,5 @@
 var words;
+var words_to_show_dict;
 
 async function get_db() {
   const db = await idb.openDB("news-lang-learn", 1, {
@@ -6,6 +7,7 @@ async function get_db() {
       const store = db.createObjectStore("lemmas", {
         keyPath: "word",
       });
+      store.createIndex("rating", "rating");
     },
   });
   return db;
@@ -145,7 +147,11 @@ function download(filename, text) {
 }
 
 $(document).ready(function () {
-  words = JSON.parse(document.getElementById('words-data').textContent);
+  words = JSON.parse(document.getElementById("words-data").textContent);
+  words_to_show_dict = JSON.parse(
+    document.getElementById("words_to_show_dict-data").textContent
+  );
+
   initialize_ratings();
   monitor_checkboxes();
 
@@ -169,18 +175,25 @@ async function submit_articles_form(form) {
   form.submit();
 }
 
-async function set_articles_submit_json(practice_words) {
+async function set_articles_submit_json() {
   const db = await get_db();
 
-  if (!practice_words) {
-    var practice_words = [];
+  const r = db.transaction("lemmas").store.index("rating");
+  var practice_words = [];
+  for (let rating = 1; rating <= 5; rating++) {
+    if ($("#select-practice-rating-" + rating).is(":checked")) {
+      practice_words.push.apply(practice_words, await r.getAllKeys(rating));
+    }
+  }
+
+  if ($("#select-practice-by-selected").is(":checked")) {
     $(".select-word-checkbox:checked").each(function () {
       practice_words.push($(this).val());
     });
   }
   practice_words = JSON.stringify(practice_words);
   $("#practice_words").attr("value", practice_words);
-
+  console.log(practice_words);
   var known_words2 = [];
   known_words2 = await db.getAllKeys("lemmas");
 
@@ -199,7 +212,6 @@ async function set_articles_submit_json(practice_words) {
 }
 
 function xxx(url, csrfToken) {
-  console.log("XXX");
   var parameters = {};
   parameters["csrfmiddlewaretoken"] = csrfToken;
 
@@ -358,6 +370,10 @@ function show_edit_popup(word) {
   $("#root").text(word.root);
   $("#translation").text(word.translation);
   $("#existing-translations").text(word.user_translations);
+
+  $("#new_translation").val("");
+  $("#new_root").val("");
+
   $("#edit-popup").show();
 
   var datalist = $("#existing_translations_list");
