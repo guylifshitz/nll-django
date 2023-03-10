@@ -106,8 +106,7 @@ def flashcards(request):
 
     return render(
         request,
-        "flashcards_new.html",
-        # "flashcards.html",
+        "flashcards.html",
         {
             "words": words_to_show,
             "words_to_show_dict": model_result_to_dict(words_to_show, "word"),
@@ -159,7 +158,7 @@ def index(request):
     }
     return render(
         request,
-        "index_new.html",
+        "index.html",
         {
             "words": words_to_show,
             "words_to_show_dict": model_result_to_dict(words_to_show, "word"),
