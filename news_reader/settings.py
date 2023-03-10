@@ -36,6 +36,7 @@ ALLOWED_HOSTS = [
     "news-lang-learn-staging.herokuapp.com",
     "news-lang-learn-prod.herokuapp.com",
     "192.168.0.17",
+    "guylifshitz.com"
 ]
 
 

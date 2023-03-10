@@ -1,67 +1,116 @@
 {% load static %}
 
-<link rel="stylesheet" href="{% static 'css/words/style.css' %}">
-<script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
-<script src="{% static '/js/jquery-3.6.0.min.js' %}"></script>
-<script src="{% static 'js/words/flashcards.js' %}"></script>
-<script>
-    var words = {{ words | safe }};
-    var speech_voice = "{{speech_voice}}";
-</script>
+<head>
+    <link rel="stylesheet" href="{% static 'css/words/flashcards.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
+    <script src="{% static '/js/jquery-3.6.0.min.js' %}"></script>
+    <script src="{% static 'js/words/flashcards.js' %}"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"> -->
 
-<div class="page">
-    <div class="flashcard">
-        <div class="flashcard-top-word" id="top-word">
+    <script>
+        const original_words = {{ words | safe }};
+        var speech_voice = "{{speech_voice}}";
+    </script>
+</head>
 
-        </div>
-        <div class="flashcard-bottom-word" id="bottom-word">
-
-        </div>
-        <div class="flashcard-bottom-word" id="bottom-word-holder">
-            ???
-        </div>
-        <div class="flashcard-buttons">
-            <div>
-                <div class="button flashcard-button" id="next-button">
-                    ^^^
-                </div>
+<body>
+    <div class="THING">
+        <div class="flashcard">
+            <div class="word" id="word-top">
+                TOP WORD
             </div>
-            <div>
-                <div hidden class="button back-button flashcard-button" id="back-button">
-                    <<< </div>
-
-                        <div class="button save-button flashcard-button" id="save-button">
-                            save
-                        </div>
-                        <a href="https://en.wiktionary.org/" style="text-decoration: none;" target="_blank"
-                            id="definition-button" class="flashcard-button ">
-                            <div class="button">def.
-                            </div>
-                        </a>
-                        <a id="examples-button" class="button" target="_blank" href="">ex.</a>
-                        <div id="save_button_3" class="button" onclick="clicked_update(3)">😀Know</div>
-                        <div id="save_button_2" class="button" onclick="clicked_update(2)">😐</div>
-                        <div id="save_button_1" class="button" onclick="clicked_update(1)">😔</div>
-                        <div id="save_button_0" class="button" onclick="clicked_update(0)">😵Dont know</div>
-                </div>
+            <div class="word word-medium " id="word-bottom">
+                BOTTOM WORD
+            </div>
+            <div class="word word-small " id="word-root">
+                R-O-O-T
             </div>
         </div>
 
-        <a target="_blank"
-            href="{% url 'words_index' %}?language={{url_parameters.language}}&lower_freq_cutoff={{url_parameters.lower_freq_cutoff}}&upper_freq_cutoff={{url_parameters.upper_freq_cutoff}}">LIST</a>
+        <div class="buttons">
+            <div class="button tall-button" id="button-previous" onclick="clicked_previous_word()">
+                <i class="fa fa-arrow-circle-left"></i>
+            </div>
+            <div class="button tall-button" id="button-next" onclick="clicked_next_word()">
+                <i class="fa fa-arrow-circle-right"></i>
+            </div>
+        </div>
+        <div class="buttons">
+
+            <div class="button" onclick="increase_word()">
+                <i class="fa fa-chevron-circle-up"></i>
+            </div>
+            <div class="button" onclick="decrease_word()">
+                <i class="fa fa-chevron-circle-down"></i>
+            </div>
+            <a id="open-dictionary" class="button" target="_blank" href="">
+                <i class="fa fa-wikipedia-w"></i>
+            </a>
+            <a id="open-examples" class="button" target="_blank" href="">
+                <i class="fa fa-tasks"></i>
+            </a>
+        </div>
+
+        <div class="buttons">
+            <div class="button" onclick="clicked_speak()">
+                <i class="fa fa-commenting"></i>
+            </div>
+            <div class="button button-checked" id="speak-toggle" onclick="toggle_checked(this)">
+                <i class="fa fa-volume-up"></i>
+            </div>
+            <div class="button" id="diacritic-toggle" onclick="toggle_diacritic(this)">
+                <i class="fa fa-stop-circle-o">_.</i>
+            </div>
+            <div class="button" id="swap-top-bottom" onclick="swap_top_bottom_words(this)">
+                <i class="fa fa-exchange"></i>
+            </div>
+            <div class="button" onclick="show_edit_popup()">
+                <i class="fa fa-pencil-square-o"></i>
+            </div>
+            <div class="button">
+                <i class="fa fa-keyboard-o"></i>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <div id="button-rating-1" class="button button-rating-1" onclick="clicked_update(1)">
+                1
+            </div>
+            <div id="button-rating-2" class="button  button-rating-2" onclick="clicked_update(2)">
+                2
+            </div>
+            <div id="button-rating-3" class="button  button-rating-3 " onclick="clicked_update(3)">
+                3
+            </div>
+            <div id="button-rating-4" class="button  button-rating-4" onclick="clicked_update(4)">
+                4
+            </div>
+            <div id="button-rating-5" class="button  button-rating-5" onclick="clicked_update(5)">
+                5
+            </div>
+        </div>
     </div>
 
-    <div class="flashcard-bottom-word" id="word-root"">
-        ROOT
+    <div id="edit-popup" class="popup" hidden>
+        <div class="blocker" onclick="hide_edit_popup()"></div>
+        <div class="popup-content">
+            <div id="popup-word">-----</div>
+
+            <div id="existing-roots">-----</div>
+            <div class="form-box">
+                <label for="new_root">new root:</label>
+                <input type="text" id="new_root" name="new_root">
+                <button id="word-root-submit" onclick="update_root()">Update Root</button>
+            </div>
+
+            <div id="existing-translations">-----</div>
+            <div class="form-box">
+                <label for="new_translation">new translation:</label>
+                <input type="text" id="new_translation" name="new_translation">
+                <button id="word-translation-submit" onclick="update_translation()">Update Translation</button>
+            </div>
+        </div>
     </div>
-    <div>
-        <label for=" new_root">new root:</label>
-        <input type="text" id="new_root" name="new_root"><br><br>
-        <button id="word-root-submit" onclick="update_root()">UPDTE ROOT</button>
-    </div>
-    <div>
-        <label for="set-words-count">set-words-count:</label>
-        <input type="text" id="set-words-count" name="set-words-count"><br><br>
-        <button id="set-words-count-submit" onclick="set_words_count()">CUT WORDS</button>
-    </div>
-</div>
+
+</body>

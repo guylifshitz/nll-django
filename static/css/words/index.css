@@ -1,75 +1,211 @@
-div {
-  font-size: 30px;
+.TODO {
+  background-color: red;
+}
+
+html {
+  font-size: 62.5%;
+  height: 100%;
+}
+
+body {
+  background-color: #E7E9EB;
+  height: 100%;
 }
 
 a {
   color: inherit;
+  text-decoration: inherit;
 }
+
 
 .page {
-  display: flex;
-  justify-content: center;
-  margin-top: 50px;
-}
-
-.wordslist-form {
-  width: 100px;
-  float: right;
-  position: fixed;
-  right: 200;
-  top: 30px;
+  margin: auto;
+  font-size: 2.5rem;
+  width: min(90%, 40em);
 }
 
 .card {
-  width: 50%;
-  height: fit-content;
-  background-color: #cfd8dc;
-  border-radius: 15px;
-  padding: 50px;
-  margin-top: 30px;
+  margin: auto;
+  background-color: white;
+  box-shadow: 0 0 2rem rgb(0, 0, 0, 0.9);
+  border-radius: 10px;
+  padding: 5rem;
+  margin-bottom: 5rem;
+  margin-top: 5rem;
 }
 
-.word_line {
+.word-line {
+  display: grid;
+  justify-content: space-between;
+  align-content: center;
+  align-items: center;
+  grid-template-columns: 5% 5% 20% 25% 20% 20% 5%;
+  margin-top: 0.3em;
+  margin-bottom: 0.3em;
+}
+
+.word-line-selected {
+  background-color: #ececec;
+}
+
+.line-seperator {
+  border-bottom: 1px solid #cecece;
+}
+
+.word-line-element {
+  text-align: center;
+}
+
+.rating-buttons {
+  display: flex;
+}
+
+.buttons {
+  display: flex;
+}
+
+.button {
+  box-shadow: 2px 2px 3px black;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   width: fit-content;
+  padding: 0.5rem;
+  border-radius: 5px;
+  background-color: rgb(220, 220, 220);
+  cursor: pointer;
 }
 
-.line_element {
-  font-size: 30px;
+.button:hover {
+  background-color: rgb(166, 166, 166);
+}
+
+.button-checked {
+  background-color: rgb(166, 166, 166);
+}
+
+.button-disabled {
+  background-color: rgb(95, 95, 95);
+}
+
+.button-rating-1 {
+  background-color: red;
+}
+
+.button-rating-2 {
+  background-color: orange;
+}
+
+.button-rating-3 {
+  background-color: yellow;
+}
+
+.button-rating-4 {
+  background-color: green;
+  color: white;
+}
+
+.button-rating-5 {
+  background-color: blue;
+  color: white;
+}
+
+.button-rating:not(.rating-checked) {
+  opacity: 0.1;
+}
+
+.rating-checked {
+  outline: rgb(34, 144, 20);
+  outline-style: solid;
+  outline-width: 0.2rem;
+}
+
+.select-word-checkbox {
+  height: 2.5em;
+  width: 2.5em;
+  background-color: #eee;
+}
+
+.select-deselet-checkbox {
+  height: 35px;
+  width: 35px;
+}
+
+/* On mouse-over, add a grey background color */
+.select-word-checkbox:hover {
+  background-color: #ccc;
+}
+
+/* When the checkbox is checked, add a blue background */
+.select-word-checkbox input:checked {
+  background-color: #2196F3;
+}
+
+
+.popup-content {
+  position: fixed;
+  top: 123px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  height: fit-content;
+  width: fit-content;
+  font-size: 3rem;
+  border-radius: 10px;
+  color: rgb(38, 38, 38);
+  text-align: center;
   padding: 20px;
 }
 
-input[class="super-happy"]:hover+svg,
-input[class="super-happy"]:checked+svg,
-input[class="super-happy"]:focus+svg {
-  fill: rgb(0, 109, 217);
+.blocker {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  content: ' ';
+  background: rgba(0, 0, 0, .5);
 }
 
-input[class="happy"]:hover+svg,
-input[class="happy"]:checked+svg,
-input[class="happy"]:focus+svg {
-  fill: rgb(0, 204, 79);
-}
-
-input[class="neutral"]:hover+svg,
-input[class="neutral"]:checked+svg,
-input[class="neutral"]:focus+svg {
-  fill: rgb(193, 184, 73);
-}
-
-input[class="sad"]:hover+svg,
-input[class="sad"]:checked+svg,
-input[class="sad"]:focus+svg {
-  fill: rgb(229, 132, 0);
-}
-
-input[class="super-sad"]:hover+svg,
-input[class="super-sad"]:checked+svg,
-input[class="super-sad"]:focus+svg {
-  fill: rgb(239, 42, 16);
-}
-
-
-input[type="radio"] {
+.context-menu {
   position: absolute;
-  opacity: 0;
+  top: 100px;
+  left: 100px;
+  background-color: red;
+}
+
+.show_context_menu {
+  cursor: pointer;
+}
+
+.context-menu {
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  min-width: 5em;
+}
+
+.context-menu-element {
+  background-color: #f1f1f1;
+  font-size: 2rem;
+  padding: 1rem;
+}
+
+.context-menu-element:hover {
+  background-color: #ddd
+}
+
+
+.existing-entries {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+.existing-entry {
+  background-color: rgb(170, 184, 244);
+  border-radius: 10px;
+  padding: 0.5rem;
 }
