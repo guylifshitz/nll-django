@@ -16,6 +16,7 @@ var largest_word_index = -1;
 var top_word;
 var bottom_word;
 var root;
+var flexions;
 var word_state = 2;
 
 function clicked_next_word() {
@@ -60,8 +61,24 @@ function set_word_top_bottom_root() {
     root = "---";
   }
 
+  flexions = pretty_flexions(current_word["flexions"]);
+
+  if (flexions === "") {
+    flexions = "-m-,-";
+  }
+
   $("#new_root").val("");
   $("#new_translation").val("");
+}
+function pretty_flexions(flexions) {
+  let arr = [];
+  for (var key in flexions) {
+    if (flexions.hasOwnProperty(key)) {
+      arr.push(key + "&nbsp;&nbsp;&nbsp;&nbsp;" + flexions[key] + "<br>  ");
+    }
+  }
+  arr = "<br>" + arr.join("   ");
+  return arr;
 }
 
 function refresh_ui(ui_to_show) {
@@ -75,6 +92,7 @@ function set_words_ui_one() {
   $("#word-top").text(top_word);
   $("#word-bottom").text("---");
   $("#word-root").text("---");
+  $("#word-flexions").text("---");
 
   fix_links();
 
@@ -91,6 +109,7 @@ function set_words_ui_two() {
   $("#word-top").text(top_word);
   $("#word-bottom").text(bottom_word);
   $("#word-root").text(root);
+  $("#word-flexions").html(flexions);
 }
 
 function get_next_word() {
@@ -239,6 +258,8 @@ $(document).ready(function () {
           clicked_previous_word();
         } else if (key == "8") {
           decrease_word();
+        } else if (key == "90" || key == "18") {
+          clicked_speak();
         } else if (key == "83" || key == "38") {
           increase_word();
         } else if (key == "49") {

@@ -21,13 +21,22 @@ async function initialize_ratings() {
     res = await db.get("lemmas", word["word"]);
     if (res) {
       rating = res.rating;
-      $(
-        "#button-rating-" + rating + "-" + word["word"].replace("'", "\\'")
-      ).addClass("rating-checked");
-      $("#select-word-" + word["word"].replace("'", "\\'")).attr(
-        "rating",
-        rating
+      console.log(
+        "#" +
+          $.escapeSelector(
+            "button-rating-" + rating + "-" + word["word"].replace("'", "\\'")
+          )
       );
+      $(
+        "#" +
+          $.escapeSelector(
+            "button-rating-" + rating + "-" + word["word"].replace("'", "\\'")
+          )
+      ).addClass("rating-checked");
+      $(
+        "#" +
+          $.escapeSelector("select-word-" + word["word"].replace("'", "\\'"))
+      ).attr("rating", rating);
       monitor_checkboxes_rating();
     }
   }
@@ -35,7 +44,9 @@ async function initialize_ratings() {
 
 function clear_ratings(word) {
   for (let rating = 1; rating <= 5; rating++) {
-    $("#button-rating-" + rating + "-" + word).removeClass("rating-checked");
+    $(
+      "#" + $.escapeSelector("button-rating-" + rating + "-" + word)
+    ).removeClass("rating-checked");
   }
 }
 
@@ -43,9 +54,11 @@ async function clicked_update(word, rating) {
   const db = await get_db();
 
   clear_ratings(word);
-  $("#button-rating-" + rating + "-" + word).addClass("rating-checked");
+  $("#" + $.escapeSelector("button-rating-" + rating + "-" + word)).addClass(
+    "rating-checked"
+  );
 
-  $("#select-word-" + word).attr("rating", rating);
+  $("#" + $.escapeSelector("select-word-" + word)).attr("rating", rating);
 
   monitor_checkboxes_rating();
   await db.put("lemmas", { word: word, rating: rating });
@@ -62,7 +75,7 @@ async function select_by_filter(filter_rating) {
     if (res) {
       word_rating = res.rating;
       if (filter_rating == word_rating) {
-        $("#select-word-" + word["word"])
+        $("#" + $.escapeSelector("select-word-" + word["word"]))
           .prop("checked", true)
           .change();
       }
@@ -81,7 +94,7 @@ async function select_unrated() {
       word_has_rating = true;
     }
     if (!word_has_rating) {
-      $("#select-word-" + word["word"])
+      $("#" + $.escapeSelector("select-word-" + word["word"]))
         .prop("checked", true)
         .change();
     }
@@ -101,7 +114,7 @@ async function deselect_by_filter(filter_rating) {
     if (res) {
       word_rating = res.rating;
       if (filter_rating == word_rating) {
-        $("#select-word-" + word["word"])
+        $("#" + $.escapeSelector("select-word-" + word["word"]))
           .prop("checked", false)
           .change();
       }
@@ -120,7 +133,7 @@ async function deselect_unrated() {
       word_has_rating = true;
     }
     if (!word_has_rating) {
-      $("#select-word-" + word["word"])
+      $("#" + $.escapeSelector("select-word-" + word["word"]))
         .prop("checked", false)
         .change();
     }

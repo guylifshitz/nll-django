@@ -101,10 +101,10 @@
                         {{word.word_diacritic}}
                     </div>
                     <div class="word-line-element">
-                        <div>{{word.translation}}</div>
+                        <div id="{{word.word}}-root">{{word.root}}</div>
                     </div>
                     <div class="word-line-element">
-                        <div id="{{word.word}}-root">{{word.root}}</div>
+                        <div>{{word.translation}}</div>
                     </div>
                     <div class="fa fa-ellipsis-h show_context_menu" onclick="show_context_menu(this)"
                         word="{{word.word}}" root="{{word.root}}" user_roots="{{word.user_roots}}"

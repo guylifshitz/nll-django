@@ -15,6 +15,22 @@ def model_result_to_dict(model_result, key="_id"):
     return out_dict
 
 
+def get_flexions(word):
+    flexions = word["flexion_counts"]
+    if not flexions:
+        flexions = {}
+
+    flexions_sum = sum(list(flexions.values()))
+    print(flexions_sum)
+    flexions = {k: v for k, v in sorted(flexions.items(), key=lambda item: item[1], reverse=True)}
+    flexions = {k: max(int(v / flexions_sum * 100), 1) for k, v in flexions.items()}
+    flexions = {k: flexions[k] for k in list(flexions)[:10]}
+
+    if not flexions:
+        flexions = ""
+    return flexions
+
+
 def get_root(word):
     root = word["root"]
 
@@ -49,6 +65,7 @@ def build_words_to_show(words, sort_source=None):
             "word_diacritic": word["word_diacritic"],
             "translation": get_translation(word),
             "root": get_root(word),
+            "flexions": get_flexions(word),
             "frequency": word["count"],
             "language": word["language"],
             "index": word["rank"],

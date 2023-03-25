@@ -9,6 +9,7 @@ class Words(Document):
     word_diacritic = fields.StringField()
     translation = fields.StringField()
     root = fields.StringField()
+    flexion_counts = fields.DictField()
     rank = fields.IntField()
     count = fields.IntField()
     rank_open_subtitles = fields.IntField()

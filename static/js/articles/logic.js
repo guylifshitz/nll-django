@@ -80,7 +80,7 @@ $(document).ready(function () {
     var msg = new SpeechSynthesisUtterance();
     msg.text = bigstring;
     msg.lang = speech_voice;
-    msg.rate = 0.8;
+    msg.rate = 0.7;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(msg);
 
@@ -103,7 +103,7 @@ $(document).ready(function () {
     var msg = new SpeechSynthesisUtterance();
     msg.text = text;
     msg.lang = speech_voice;
-    msg.rate = 0.8;
+    msg.rate = 0.5;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(msg);
   }
@@ -160,7 +160,7 @@ function clicked_feed_name(element) {
 
 async function clicked_update(rating) {
   const db = await get_db();
-  
+
   $("#rating_button_0").css("background-color", "#bad3da");
   $("#rating_button_1").css("background-color", "#bad3da");
   $("#rating_button_2").css("background-color", "#bad3da");

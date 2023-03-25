@@ -209,7 +209,7 @@ def index(request):
     if request.method == "POST":
         form = ArticlesFormFromPOST(request.POST)
 
-        language = request.POST.get("language", "arabic")
+        language = request.POST.get("language", "hebrew")
 
         practice_words = request.POST.get("practice_words")
         practice_words = json.loads(practice_words)
@@ -282,15 +282,15 @@ def index(request):
     print(start_date_cutoff)
     print(end_date_cutoff)
     test = Rss_feeds.objects.filter(
-            language=language,
-            published_datetime__gte=start_date_cutoff,
-            published_datetime__lte=end_date_cutoff,
-            title_translation__ne=None,
-            title_parsed_lemma={"$elemMatch": {"$in": query_words}},
-        ).limit(100)
+        language=language,
+        published_datetime__gte=start_date_cutoff,
+        published_datetime__lte=end_date_cutoff,
+        title_translation__ne=None,
+        title_parsed_lemma={"$elemMatch": {"$in": query_words}},
+    ).limit(100)
     print("test")
     print(test)
-    for t in test: 
+    for t in test:
         print(t["title_parsed_clean"])
     print("DONE test")
 
@@ -577,15 +577,6 @@ def is_article_about_sports(article):
     return link_contains_sport_word or feedname_contains_sport_word
 
 
-
-
-
-
-
-
-
-
-
 def indexOPENSUBS(request):
     if request.method == "POST":
         form = ArticlesFormFromPOST(request.POST)
@@ -666,7 +657,7 @@ def indexOPENSUBS(request):
         title_translation__ne=None,
         title_parsed_clean__ne=None,
         title_parsed_lemma={"$elemMatch": {"$in": query_words}},
-    # ).limit(1000)
+        # ).limit(1000)
     ).aggregate(
         [
             {"$match": {"language": "hebrew", "title_parsed_lemma": {"$type": "array"}}},
