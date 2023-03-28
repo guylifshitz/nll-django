@@ -36,7 +36,7 @@ ALLOWED_HOSTS = [
     "news-lang-learn-staging.herokuapp.com",
     "news-lang-learn-prod.herokuapp.com",
     "192.168.0.17",
-    "guylifshitz.com"
+    "guylifshitz.com",
 ]
 
 
@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "rest_framework"
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
