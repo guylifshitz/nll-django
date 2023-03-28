@@ -7,7 +7,6 @@
     <script src="{% static 'js/words/flashcards.js' %}"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"> -->
-
     <script>
         const original_words = {{ words | safe }};
         var speech_voice = "{{speech_voice}}";
@@ -49,6 +48,9 @@
             </div>
             <a id="open-dictionary" class="button" target="_blank" href="">
                 <i class="fa fa-wikipedia-w"></i>
+            </a>
+            <a id="open-pealim" class="button" target="_blank" href="">
+                <i class="">Pealim</i>
             </a>
             <a id="open-examples" class="button" target="_blank" href="">
                 <i class="fa fa-tasks"></i>

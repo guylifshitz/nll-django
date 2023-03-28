@@ -144,6 +144,10 @@ function fix_links() {
     "href",
     "https://en.wiktionary.org/wiki/" + current_word["word"]
   );
+  $("#open-pealim").attr(
+    "href",
+    "https://www.pealim.com/search/?q=" + current_word["word"]
+  );
   //TODO it would be nice if the articles config could take the word as a param, and know that that is the word we want to show
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
@@ -395,5 +399,16 @@ function removeWordFromWords(word) {
   });
   all_words = all_words.filter(function (value) {
     return value["word"] !== word;
+  });
+}
+
+function show_similar_roots() {
+  $.ajax({
+    type: "GET",
+    url: "http://localhost:8001/api/similar_roots/" + word + "/",
+    processData: false,
+    contentType: "application/json",
+  }).done(function (res) {
+    alert(JSON.stringify(res["similar_roots"], null, 2));
   });
 }
