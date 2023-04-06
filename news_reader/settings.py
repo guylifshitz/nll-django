@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 import os
-import mongoengine
 import django_heroku
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -90,18 +89,35 @@ WSGI_APPLICATION = "news_reader.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-# Using mongoengine since it supports arrays and dicts in mongoDB
-mongoengine.connect(host=os.environ.get("NEWSPAPER_LEARNER_MONGO_URI"))
-# mongoengine.connect(host="mongodb://localhost:27017/newspaper-language-learner")
-
-
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.sqlite3',
 #         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+# mongodb://:@guylifshitz.com:27017/newspaper-language-learner
 
+DATABASES = {
+    "default": {
+        "ENGINE": "djongo",
+        "NAME": "newspaper-language-learner",
+        "ENFORCE_SCHEMA": False,
+        "CLIENT": {
+            "host": "guylifshitz.com",
+            "port": 27017,
+            "username": "django",
+            "password": "PASSWORD",
+            "authSource": "newspaper-language-learner",
+            "authMechanism": "SCRAM-SHA-1",
+            # "host": "localhost",
+            # "port": 27017,
+            # "username": "guy",
+            # "password": "password",
+            # "authSource": "newspaper-language-learner",
+            # "authMechanism": "SCRAM-SHA-1",
+        },
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

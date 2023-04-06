@@ -16,7 +16,7 @@ def model_result_to_dict(model_result, key="_id"):
 
 
 def get_flexions(word):
-    flexions = word["flexion_counts"]
+    flexions = word.flexion_counts
     if not flexions:
         flexions = {}
 
@@ -32,12 +32,12 @@ def get_flexions(word):
 
 
 def get_root(word):
-    root = word["root"]
+    root = word.root
 
     if not root:
-        if word["user_roots"]:
+        if word.user_roots:
             hyphens = ["־", "–", "-"]
-            root = word["user_roots"][-1]
+            root = word.user_roots[-1]
             root = root.replace(" ", "")
             for h in hyphens:
                 root = root.replace(h, " - ")
@@ -48,9 +48,9 @@ def get_root(word):
 
 
 def get_translation(word):
-    translation = word["translation"]
-    if word["user_translations"]:
-        translation = word["user_translations"][-1]
+    translation = word.translation
+    if word.user_translations:
+        translation = word.user_translations[-1]
     if not translation:
         translation = ""
 
@@ -61,23 +61,23 @@ def build_words_to_show(words, sort_source=None):
     words_to_show = []
     for idx, word in enumerate(words):
         word_to_show = {
-            "word": word["_id"],
-            "word_diacritic": word["word_diacritic"],
+            "word": word._id,
+            "word_diacritic": word.word_diacritic,
             "translation": get_translation(word),
             "root": get_root(word),
             "flexions": get_flexions(word),
-            "frequency": word["count"],
-            "language": word["language"],
-            "index": word["rank"],
-            "user_translations": word["user_translations"],
-            "user_roots": word["user_roots"],
+            "frequency": word.count,
+            "language": word.language,
+            "index": word.rank,
+            "user_translations": word.user_translations or [],
+            "user_roots": word.user_roots or [],
         }
 
         if sort_source == "open_subtitles":
-            word_to_show["index"] = (word["rank_open_subtitles"],)
-            word_to_show["frequency"] = word["count_open_subtitles"]
+            word_to_show["index"] = word.rank_open_subtitles
+            word_to_show["frequency"] = word.count_open_subtitles
 
-        if not word["word_diacritic"]:
+        if not word.word_diacritic:
             word_to_show["word_diacritic"] = word_to_show["word"]
         words_to_show.append(word_to_show)
     return words_to_show
@@ -111,7 +111,7 @@ def flashcards(request):
             if key.startswith("select-word-"):
                 words_to_show.append(value)
 
-        words = Words.objects.filter(language=language, _id={"$in": words_to_show})
+        words = Words.objects.filter(language=language, _id__in=words_to_show)
         words_to_show = build_words_to_show(words)
         url_parameters = {
             "lower_freq_cutoff": 0,

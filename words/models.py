@@ -1,30 +1,39 @@
-from django.db import models
-from mongoengine import Document, fields
+# from mongoengine import Document, models
+from djongo import models
 
 
-class Words(Document):
-    meta = {"strict": False}
+class Words(models.Model):
+    objects = models.DjongoManager()
 
-    _id = fields.StringField()
-    word_diacritic = fields.StringField()
-    translation = fields.StringField()
-    root = fields.StringField()
-    flexion_counts = fields.DictField()
-    rank = fields.IntField()
-    count = fields.IntField()
-    rank_open_subtitles = fields.IntField()
-    count_open_subtitles = fields.IntField()
-    language = fields.StringField()
+    class Meta:
+        db_table = "words"
 
-    user_translations = fields.ListField()
-    user_roots = fields.ListField()
+    _id = models.CharField(max_length=100)
+    word_diacritic = models.CharField(max_length=100)
+    translation = models.CharField(max_length=300)
+    root = models.CharField(max_length=100)
+    flexion_counts = models.JSONField(null=True, blank=True, default=[])
+    rank = models.IntegerField()
+    count = models.IntegerField()
+    rank_open_subtitles = models.IntegerField()
+    count_open_subtitles = models.IntegerField()
+    language = models.CharField(max_length=100)
+
+    user_translations = models.JSONField(null=True, blank=True, default=[])
+    user_roots = models.JSONField(null=True, blank=True, default=[])
 
 
-class Flexions(Document):
-    _id = fields.StringField()
-    translation_google = fields.StringField()
-    translation_azure = fields.StringField()
-    count = fields.IntField()
-    # lemma = fields.StringField()
-    # user_suggested_translations = fields.ListField()
-    language = fields.StringField()
+class Flexions(models.Model):
+    objects = models.DjongoManager()
+
+    class Meta:
+        db_table = "flexions"
+
+    _id = models.CharField(max_length=100)
+    text = models.CharField(max_length=100)
+    translation_google = models.CharField(max_length=300)
+    translation_azure = models.CharField(max_length=300)
+    count = models.IntegerField()
+    # lemma = models.CharField(max_length=1000)
+    # user_suggested_translations = models.ArrayField()
+    language = models.CharField(max_length=100)

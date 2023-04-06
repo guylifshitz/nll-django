@@ -1,10 +1,10 @@
 from django.urls import path, include
 from words.models import Words
-from rest_framework_mongoengine import serializers, viewsets, routers
+from rest_framework import serializers, viewsets, routers
 import rest_framework
 
 
-class WordsSerializer(serializers.DocumentSerializer):
+class WordsSerializer(serializers.ModelSerializer):
     new_user_root = rest_framework.serializers.CharField(
         max_length=300, allow_blank=True, write_only=True
     )
@@ -32,17 +32,18 @@ class WordsSerializer(serializers.DocumentSerializer):
     def update(self, instance, validated_data):
         new_user_root = validated_data.get("new_user_root", None)
         if new_user_root:
+            if not instance.user_roots:
+                instance.user_roots = []
             instance.user_roots.append(new_user_root)
 
         new_user_translation = validated_data.get("new_user_translation", None)
         if new_user_translation:
             instance.user_translations.append(new_user_translation)
-
         instance.save()
         return instance
 
 
-class WordsSerializer2(serializers.DocumentSerializer):
+class WordsSerializer2(serializers.ModelSerializer):
     root = rest_framework.serializers.CharField(max_length=300, allow_blank=True, read_only=True)
     similar_roots = rest_framework.serializers.CharField(
         max_length=300, allow_blank=True, read_only=True
@@ -93,28 +94,28 @@ class WordsSerializer2(serializers.DocumentSerializer):
     def find_similar_roots(self, instance):
         from fuzzywuzzy import fuzz
 
-        root = instance["root"]
+        root = instance.root
 
         if not root:
             return []
 
         comparable_root = self.comparable_root_maker(root)
 
-        top_words = Words.objects.filter(language="hebrew").order_by("rank").all().limit(500)
+        top_words = Words.objects.filter(language="hebrew").order_by("rank").all()[0:500]
         similar_roots = []
         for top_word in top_words:
-            print(top_word["_id"], top_word["root"])
-            if not top_word["root"]:
+            print(top_word._id, top_word.root)
+            if not top_word.root:
                 continue
-            comparable_root_2 = self.comparable_root_maker(top_word["root"])
+            comparable_root_2 = self.comparable_root_maker(top_word.root)
             similar_score = fuzz.ratio(comparable_root, comparable_root_2)
             if similar_score >= 50:
                 similar_roots.append(
                     {
-                        "_id": top_word["_id"],
-                        "root": top_word["root"],
+                        "_id": top_word._id,
+                        "root": top_word.root,
                         "comparable_root": comparable_root_2,
-                        "translation": top_word["translation"],
+                        "translation": top_word.translation,
                         "similar_score": similar_score,
                     }
                 )
@@ -127,14 +128,14 @@ class WordsSerializer2(serializers.DocumentSerializer):
 
 class WordsViewSet(viewsets.ModelViewSet):
     lookup_field = "_id"
-    queryset = Words.objects.filter(language="hebrew").order_by("rank").all().limit(100)
+    queryset = Words.objects.filter(language="hebrew").order_by("rank").all()
     serializer_class = WordsSerializer
 
 
 class WordDetail(viewsets.ReadOnlyModelViewSet):
     lookup_field = "_id"
     permission_classes = ()
-    queryset = Words.objects.filter(language="hebrew").order_by("rank").all().limit(100)
+    queryset = Words.objects.filter(language="hebrew").order_by("rank").all()
     serializer_class = WordsSerializer2
 
 

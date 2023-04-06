@@ -1,44 +1,47 @@
-from mongoengine import Document, fields
+from djongo import models
 
 
-class Rss_feeds(Document):
+class Rss_feeds(models.Model):
+    class Meta:
+        db_table = "rss_feeds"
+
+    source = models.CharField(max_length=100)
+    feed_name = models.JSONField()
+
+    language = models.CharField(max_length=100)
+    published_datetime = models.DateField()
+    link = models.CharField(max_length=100)
+
+    title = models.CharField(max_length=100)
+    title_translation = models.CharField(max_length=100)
+    title_parsed_clean = models.JSONField()
+    title_parsed_lemma = models.JSONField()
+    title_parsed_segmented = models.JSONField()
+    title_parsed_prefixes = models.JSONField()
+    title_parsed_POSTAG = models.JSONField()
+    title_parsed_FEATS = models.JSONField()
+    title_parsed_translation_override = models.JSONField()
+
+    summary = models.CharField(max_length=100)
+
+    objects = models.DjongoManager()
+
+
+class open_subtitles(models.Model):
     meta = {"strict": False}
 
-    source = fields.StringField()
-    feed_name = fields.ListField()
+    _id = models.CharField(max_length=100)
 
-    language = fields.StringField()
-    published_datetime = fields.DateField()
-    link = fields.StringField()
+    source = models.CharField(max_length=100)
 
-    title = fields.StringField()
-    title_translation = fields.StringField()
-    title_parsed_clean = fields.ListField()
-    title_parsed_lemma = fields.ListField()
-    title_parsed_segmented = fields.ListField()
-    title_parsed_prefixes = fields.ListField()
-    title_parsed_POSTAG = fields.ListField()
-    title_parsed_FEATS = fields.ListField()
-    title_parsed_translation_override = fields.ListField()
+    language = models.CharField(max_length=100)
 
-    summary = fields.StringField()
-
-
-class open_subtitles(Document):
-    meta = {"strict": False}
-    
-    _id = fields.ObjectIdField()
-
-    source = fields.StringField()
-
-    language = fields.StringField()
-
-    hebrew = fields.StringField()
-    title_translation = fields.StringField()
-    title_parsed_clean = fields.ListField()
-    title_parsed_lemma = fields.ListField()
-    title_parsed_segmented = fields.ListField()
-    title_parsed_prefixes = fields.ListField()
-    title_parsed_POSTAG = fields.ListField()
-    title_parsed_FEATS = fields.ListField()
-    title_parsed_translation_override = fields.ListField()
+    hebrew = models.CharField(max_length=100)
+    title_translation = models.CharField(max_length=100)
+    title_parsed_clean = models.JSONField()
+    title_parsed_lemma = models.JSONField()
+    title_parsed_segmented = models.JSONField()
+    title_parsed_prefixes = models.JSONField()
+    title_parsed_POSTAG = models.JSONField()
+    title_parsed_FEATS = models.JSONField()
+    title_parsed_translation_override = models.JSONField()

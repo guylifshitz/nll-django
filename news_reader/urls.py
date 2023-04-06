@@ -23,4 +23,5 @@ urlpatterns = [
     path("articles/", include("articles.urls")),
     path("words/", include("words.urls")),
     path("", words.views.index, name="homepage"),
+    path("accounts/", include("django.contrib.auth.urls")),
 ]
