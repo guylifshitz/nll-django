@@ -159,7 +159,7 @@ function clicked_feed_name(element) {
 }
 
 async function clicked_update(rating) {
-  const db = await get_db();
+  // const db = await get_db();
 
   $("#rating_button_0").css("background-color", "#bad3da");
   $("#rating_button_1").css("background-color", "#bad3da");
@@ -169,7 +169,30 @@ async function clicked_update(rating) {
   $("#rating_button_" + rating).css("background-color", "red");
 
   var word = $("#word_correction_word").text();
-  await db.put("lemmas", { rating: rating, word: word });
+  // await db.put("lemmas", { rating: rating, word: word });
+  update_rating(word, rating + 1);
+}
+
+function update_rating(word, rating) {
+  data = {
+    word_text: word,
+    rating: rating,
+  };
+  $.ajax({
+    type: "POST",
+    url: "http://localhost:8001/api/rating/",
+    data: JSON.stringify(data),
+    processData: false,
+    contentType: "application/json",
+    headers: {
+      Authorization: "Token " + user_auth_token,
+    },
+  })
+    .done(function () {
+      //# TODO move the update gui here
+    })
+    .fail(function () {})
+    .always(function () {});
 }
 
 function show_edit_popup(word) {

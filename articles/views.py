@@ -548,6 +548,7 @@ def index(request):
             "form": form,
             "url_parameters": url_parameters,
             "article_sources": dict(article_sources),
+            "user_auth_token": request.auth_token,
         },
     )
 

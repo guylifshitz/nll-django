@@ -7,6 +7,8 @@
     <script src="{% static '/js/jquery-3.6.0.min.js' %}"></script>
     {{ words|json_script:"words-data" }}
     {{ words_to_show_dict|json_script:"words_to_show_dict-data" }}
+    <script>
+        var user_auth_token = "{{ user_auth_token }}";
     </script>
     <script src="{% static 'js/words/index.js' %}"></script>
 </head>

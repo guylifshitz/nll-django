@@ -1,7 +1,7 @@
 from numpy import sort, source
 from .forms import WordsForm
 from django.shortcuts import render
-from words.models import Words
+from words.models import Words, WordRatings
 from django.conf import settings
 
 
@@ -60,6 +60,11 @@ def get_translation(word):
 def build_words_to_show(words, sort_source=None):
     words_to_show = []
     for idx, word in enumerate(words):
+        try:
+            rating = word.wordratings_set.last().rating
+        except:
+            rating = None
+
         word_to_show = {
             "word": word._id,
             "word_diacritic": word.word_diacritic,
@@ -69,6 +74,7 @@ def build_words_to_show(words, sort_source=None):
             "frequency": word.count,
             "language": word.language,
             "index": word.rank,
+            "rating": rating,
             "user_translations": word.user_translations or [],
             "user_roots": word.user_roots or [],
         }
@@ -129,6 +135,7 @@ def flashcards(request):
             "words_to_show_dict": model_result_to_dict(words_to_show, "word"),
             "speech_voice": speech_voice,
             "url_parameters": url_parameters,
+            "user_auth_token": request.user.auth_token
         },
     )
 
@@ -181,5 +188,6 @@ def index(request):
             "words_to_show_dict": model_result_to_dict(words_to_show, "word"),
             "url_parameters": url_parameters,
             "form": form,
+            "user_auth_token": request.user.auth_token
         },
     )

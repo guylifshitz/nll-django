@@ -1,7 +1,10 @@
 from django.urls import path, include
-from words.models import Words
+from words.models import Words, WordRatings
 from rest_framework import serializers, viewsets, routers
 import rest_framework
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
 
 
 class WordsSerializer(serializers.ModelSerializer):
@@ -139,9 +142,43 @@ class WordDetail(viewsets.ReadOnlyModelViewSet):
     serializer_class = WordsSerializer2
 
 
+class WordRatingsSerializer(serializers.ModelSerializer):
+    word_text = rest_framework.serializers.CharField(
+        max_length=300, allow_blank=True, write_only=True
+    )
+
+    class Meta:
+        model = WordRatings
+        fields = ["_id", "word_text", "rating"]
+        extra_kwargs = {
+            "word_text": {"read_only": True},
+        }
+
+    def create(self, validated_data):
+        user =  self.context["request"].user
+        word = Words.objects.get(_id=validated_data["word_text"])
+        validated_data = {
+            "user": user,
+            "word": word, 
+            "rating": validated_data["rating"],
+        }
+        obj, was_created = WordRatings.objects.update_or_create(user=user, word=word, defaults=validated_data)
+
+        return obj
+
+
+class WordRatingsViewSet(viewsets.ModelViewSet):
+    queryset = WordRatings.objects.filter().order_by("rating").all()
+    serializer_class = WordRatingsSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+
 router = routers.DefaultRouter()
 router.register(r"words", WordsViewSet, "words")
 router.register(r"similar_roots", WordDetail, "words2")
+router.register(r"rating", WordRatingsViewSet, "rating")
 
 urlpatterns = [
     path("", include(router.urls)),

@@ -12,6 +12,7 @@ var XXXX_words;
 var current_word;
 var current_word_index = -1;
 var largest_word_index = -1;
+var original_words;
 
 var top_word;
 var bottom_word;
@@ -246,6 +247,9 @@ function getRandomInt(min, max) {
 }
 
 $(document).ready(function () {
+  original_words = JSON.parse(
+    document.getElementById("original_words-data").textContent
+  );
   all_words = Array.from(original_words);
   XXXX_words = Array.from(original_words);
   shuffleArray(XXXX_words);
@@ -292,36 +296,71 @@ $(document).ready(function () {
   });
 });
 
-async function clicked_update(rating) {
-  const db = await idb.openDB("news-lang-learn", 1, {
-    upgrade(db) {
-      const store = db.createObjectStore("lemmas", {
-        keyPath: "word",
-      });
-    },
-  });
+// async function clicked_update(rating) {
+//   const db = await idb.openDB("news-lang-learn", 1, {
+//     upgrade(db) {
+//       const store = db.createObjectStore("lemmas", {
+//         keyPath: "word",
+//       });
+//     },
+//   });
 
+//   clear_ratings();
+//   $("#button-rating-" + rating).addClass("rating-checked");
+
+//   await db.put("lemmas", { word: current_word["word"], rating: rating });
+// }
+
+async function clicked_update(rating) {
   clear_ratings();
   $("#button-rating-" + rating).addClass("rating-checked");
-
-  await db.put("lemmas", { word: current_word["word"], rating: rating });
+  update_rating(current_word["word"], rating);
+  current_word.rating = rating;
 }
 
-async function get_rating() {
-  const db = await idb.openDB("news-lang-learn", 1, {
-    upgrade(db) {
-      const store = db.createObjectStore("lemmas", {
-        keyPath: "word",
-      });
+function update_rating(word, rating) {
+  data = {
+    word_text: word,
+    rating: rating,
+    token: user_auth_token,
+  };
+  $.ajax({
+    type: "POST",
+    url: "http://localhost:8001/api/rating/",
+    data: JSON.stringify(data),
+    processData: false,
+    contentType: "application/json",
+    headers: {
+      Authorization: "Token " + user_auth_token,
     },
-  });
+  })
+    .done(function () {
+      //# TODO move the update gui here
+    })
+    .fail(function () {})
+    .always(function () {});
+}
 
-  var res = await db.get("lemmas", current_word["word"]);
-  if (res) {
-    clear_ratings();
-    rating = res.rating;
-    $("#button-rating-" + rating).addClass("rating-checked");
-  }
+// async function get_rating() {
+// const db = await idb.openDB("news-lang-learn", 1, {
+//   upgrade(db) {
+//     const store = db.createObjectStore("lemmas", {
+//       keyPath: "word",
+//     });
+//   },
+// });
+
+// var res = await db.get("lemmas", current_word["word"]);
+// if (res) {
+// clear_ratings();
+// rating = res.rating;
+// $("#button-rating-" + rating).addClass("rating-checked");
+// }
+// }
+async function get_rating() {
+  clear_ratings();
+  rating = current_word.rating;
+  $("#button-rating-" + rating).addClass("rating-checked");
 }
 
 function clear_ratings() {

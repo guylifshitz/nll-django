@@ -14,32 +14,34 @@ async function get_db() {
 }
 
 async function initialize_ratings() {
-  const db = await get_db();
+  // const db = await get_db();
 
   for (const word of words) {
     // TODO handle better the escpaing of '
-    res = await db.get("lemmas", word["word"]);
-    if (res) {
-      rating = res.rating;
-      console.log(
-        "#" +
-          $.escapeSelector(
-            "button-rating-" + rating + "-" + word["word"].replace("'", "\\'")
-          )
-      );
-      $(
-        "#" +
-          $.escapeSelector(
-            "button-rating-" + rating + "-" + word["word"].replace("'", "\\'")
-          )
-      ).addClass("rating-checked");
-      $(
-        "#" +
-          $.escapeSelector("select-word-" + word["word"].replace("'", "\\'"))
-      ).attr("rating", rating);
-      monitor_checkboxes_rating();
-    }
+    // res = await db.get("lemmas", word["word"]);
+    // if (res) {
+    // rating = res.rating;
+    rating = word.rating;
+    console.log(word);
+    console.log(word.rating);
+    console.log(
+      "#" +
+        $.escapeSelector(
+          "button-rating-" + rating + "-" + word["word"].replace("'", "\\'")
+        )
+    );
+    $(
+      "#" +
+        $.escapeSelector(
+          "button-rating-" + rating + "-" + word["word"].replace("'", "\\'")
+        )
+    ).addClass("rating-checked");
+    $(
+      "#" + $.escapeSelector("select-word-" + word["word"].replace("'", "\\'"))
+    ).attr("rating", rating);
+    monitor_checkboxes_rating();
   }
+  // }
 }
 
 function clear_ratings(word) {
@@ -51,7 +53,7 @@ function clear_ratings(word) {
 }
 
 async function clicked_update(word, rating) {
-  const db = await get_db();
+  // const db = await get_db();
 
   clear_ratings(word);
   $("#" + $.escapeSelector("button-rating-" + rating + "-" + word)).addClass(
@@ -61,7 +63,8 @@ async function clicked_update(word, rating) {
   $("#" + $.escapeSelector("select-word-" + word)).attr("rating", rating);
 
   monitor_checkboxes_rating();
-  await db.put("lemmas", { word: word, rating: rating });
+  // await db.put("lemmas", { word: word, rating: rating });
+  update_rating(word, rating);
 }
 
 async function select_by_filter(filter_rating) {
@@ -597,4 +600,31 @@ function update_root() {
     .always(function () {
       // alert("complete");
     });
+}
+
+// function that gets the logged in user's token in django
+// function get_token() {
+
+// }
+
+function update_rating(word, rating) {
+  data = {
+    word_text: word,
+    rating: rating,
+  };
+  $.ajax({
+    type: "POST",
+    url: "http://localhost:8001/api/rating/",
+    data: JSON.stringify(data),
+    processData: false,
+    contentType: "application/json",
+    headers: {
+      Authorization: "Token " + user_auth_token,
+    },
+  })
+    .done(function () {
+      //# TODO move the update gui here
+    })
+    .fail(function () {})
+    .always(function () {});
 }
