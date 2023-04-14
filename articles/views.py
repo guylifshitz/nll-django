@@ -204,6 +204,9 @@ def get_root(word):
 
 
 def index(request):
+    if not request.user.is_authenticated:
+        return redirect(f"{settings.LOGIN_URL}?next={request.path}")
+
     if request.method == "POST":
         form = ArticlesFormFromPOST(request.POST)
 
@@ -548,7 +551,7 @@ def index(request):
             "form": form,
             "url_parameters": url_parameters,
             "article_sources": dict(article_sources),
-            "user_auth_token": request.auth_token,
+            "user_auth_token": request.user.auth_token,
         },
     )
 

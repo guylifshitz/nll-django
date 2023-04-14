@@ -53,7 +53,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework.authtoken",
-    "corsheaders"
 ]
 
 REST_FRAMEWORK = {
@@ -72,30 +71,14 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
-CORS_ALLOW_ALL_ORIGINS = True
-
-CORS_ALLOW_HEADERS = [
-'accept',
-'accept-encoding',
-'authorization',
-'content-type',
-'dnt',
-'origin',
-'user-agent',
-'x-csrftoken',
-'x-requested-with',
-]
-
 
 ROOT_URLCONF = "news_reader.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -131,7 +114,7 @@ DATABASES = {
             "host": "guylifshitz.com",
             "port": 27017,
             "username": "django",
-            "password": "0Cu54FhnH7SzPyc6Nam",
+            "password": "PASSWORD",
             "authSource": "newspaper-language-learner",
             "authMechanism": "SCRAM-SHA-1",
             # "host": "localhost",
@@ -197,3 +180,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # django_heroku.settings(locals())
 
 DATE_INPUT_FORMATS = ["%d-%m-%Y"]
+
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/accounts/login"

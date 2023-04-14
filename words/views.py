@@ -1,6 +1,6 @@
 from numpy import sort, source
 from .forms import WordsForm
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from words.models import Words, WordRatings
 from django.conf import settings
 
@@ -90,6 +90,9 @@ def build_words_to_show(words, sort_source=None):
 
 
 def flashcards(request):
+    if not request.user.is_authenticated:
+        return redirect(f"{settings.LOGIN_URL}?next={request.path}")
+    
     if request.method == "GET":
         language = request.GET.get("language", "hebrew")
         lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
@@ -141,6 +144,8 @@ def flashcards(request):
 
 
 def index(request):
+    if not request.user.is_authenticated:
+        return redirect(f"{settings.LOGIN_URL}?next={request.path}")
 
     sort_source = ""
 
@@ -191,3 +196,4 @@ def index(request):
             "user_auth_token": request.user.auth_token
         },
     )
+

@@ -1,0 +1,41 @@
+{% load static %}
+
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html>
+
+<!-- add a nav bar with website title, and a login/logout -->
+
+
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}NewsLanguageLearner - BETA{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/global.css' %}">
+    {% block header %}
+    {% endblock %}
+
+</head>
+
+<body>
+    <div class="navbar">
+        <div class="navbar-left">
+            <a class="navbar-element" href="/">words</a>
+        </div>
+        <div class="navbar-center">
+            <div class="navbar-element">NLL</div>
+        </div>
+        <div class="navbar-right">
+            {% if user.is_authenticated %}
+            <a href="{% url 'logout' %}" class="navbar-element">logout {{user.username}}</a>
+            {% else %}
+            <a href="{% url 'login' %}" class="navbar-element">login</a>
+            {% endif %}
+        </div>
+    </div>
+    <main class="main-content">
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+
+</html>
