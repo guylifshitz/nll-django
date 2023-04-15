@@ -209,3 +209,42 @@ a {
   border-radius: 10px;
   padding: 0.5rem;
 }
+
+
+.xxxx {
+  width: 200px;
+  padding: 1.0rem;
+  margin: 1.5rem;
+}
+
+.number-input {
+  width: 8rem;
+  padding: 1.0rem;
+}
+
+.section-first {
+  display: grid;
+  justify-content: space-between;
+  align-content: center;
+  align-items: center;
+  grid-template-columns: 50% 50%;
+  margin-top: 0.3em;
+  margin-bottom: 3rem;
+}
+
+.section-second {
+  margin-top: 5rem;
+}
+
+.first-word-line {
+  margin-bottom: 1rem;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.eyeer {
+  padding: 3rem;
+  align-items: center;
+}

@@ -191,9 +191,15 @@ def index(request):
         {
             "words": words_to_show,
             "words_to_show_dict": model_result_to_dict(words_to_show, "word"),
+            "user_word_ratings": build_user_word_ratings(request.user),
             "url_parameters": url_parameters,
             "form": form,
             "user_auth_token": request.user.auth_token
         },
     )
 
+def build_user_word_ratings(user):
+    words= []
+    for w in WordRatings.objects.filter(user=user):
+        words.append({"word": w.word._id, "rating": w.rating})
+    return words

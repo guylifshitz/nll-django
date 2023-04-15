@@ -1,19 +1,41 @@
+.card {
+  margin: auto;
+  background-color: white;
+  box-shadow: 0 0 0.5rem rgb(0, 0, 0, 0.9);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  margin-top: 2rem;
+}
+
+
+
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
 .page {
   display: flex;
   justify-content: center;
   font-family: sans-serif;
+  font-size: 18px;
   /* font-family: "Droid Arabic Kufi", serif; */
 }
 
+
+
 .articles_right_panel {
-  width: 100px;
+  width: 180px;
   float: right;
   position: fixed;
-  right: 200;
+  padding: 0.5rem;
+  left: 50;
   top: 30px;
 }
 
 .right_panel_section {
+  padding: 1rem;
   margin-top: 15px;
   margin-bottom: 15px;
   background-color: #d3d3d3;
@@ -21,7 +43,7 @@
 }
 
 .articles {
-  width: 50%;
+  width: 70%;
   align-self: center;
 }
 
@@ -32,6 +54,7 @@
 }
 
 .title {
+  font-size: 1.5rem;
   background-color: #cfd8dc;
   border-radius: 5px;
   margin: 0 auto;
@@ -40,15 +63,17 @@
 }
 
 .title_translation {
+  font-size: 1.5rem;
   border-radius: 5px;
   background-color: #bad3da;
   padding: 10px;
 }
 
 .title_mix {
+  font-size: 1.5rem;
   direction: rtl;
   border-radius: 5px;
-  background-color: #e5ffe5;
+  /* background-color: hsl(120, 100%, 95%); */
   padding: 10px;
 }
 
@@ -58,10 +83,23 @@
 
 .article_metadata {
   direction: ltr;
+  font-size: 1rem;
+  margin-top: 1rem;
+  padding-left: 2rem;
+  font-weight: bold;
+
+}
+
+
+.article_debug {
+  direction: ltr;
   font-size: 10px;
+  margin-top: 1rem;
+  justify-content: right;
 }
 
 .word_tooltip {
+  font-size: 1rem;
   display: none;
 }
 
@@ -115,24 +153,16 @@
 
 .button {
   cursor: pointer;
-  margin: 5px;
-  padding: 5px;
-  border-radius: 20px;
-  outline: 1px black ridge;
+  margin: 1rem;
+  padding: 0.7rem;
+  /* border-radius: 20px; */
+  /* outline: 1px black ridge; */
   text-align: center;
+  margin-top: 1.2rem;
 }
 
 .button:hover {
-  background-color: #8c8c8c;
   outline: 2px black ridge;
-}
-
-.button_partial_translation {
-  background-color: e5ffe5;
-}
-
-.button_full_translation {
-  background-color: bad3da;
 }
 
 .section_flexion {
@@ -148,7 +178,7 @@
 }
 
 .section_pos {
-  background-color: #d8f6b2;
+  background-color: #fbf999;
   border-radius: 5px;
   outline: 1px black ridge;
 }
@@ -160,7 +190,7 @@
 }
 
 .is_proper_noun {
-  background-color: #d8f6b2;
+  background-color: #fbf999;
 }
 
 .word_correction {
@@ -201,3 +231,6 @@
   background: rgba(0, 0, 0, .5);
 }
 
+.article_summary {
+  padding: 2rem;
+}

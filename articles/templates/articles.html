@@ -1,15 +1,20 @@
+{% extends 'base.html' %}
 {% load static %}
 
+{% block header %}
 <link rel="stylesheet" href="{% static 'css/articles/style.css' %}">
 <script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <script src="http://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <script src="{% static '/js/jquery-3.6.0.min.js' %}"></script>
 <script src="{% static '/js/articles/logic.js' %}"></script>
 <script>
     var speech_voice = "{{speech_voice}}";
 </script>
+{% endblock %}
 
 
+{% block content %}
 <div class="page">
     <div class="word_correction_popup" id="word_correction_popup" hidden>
         <div class="blocker" onclick="hide_edit_popup()"></div>
@@ -38,7 +43,7 @@
 
     <div class="articles">
         {% for article in articles %}
-        <div class="article" style="width: 100%; display: table;" feed_source="{{article.feed_source}}"
+        <div class="card" style="width: 100%; display: table;" feed_source="{{article.feed_source}}"
             feed_name="{% for feed_name in article.feed_names %}{{feed_name}} {%endfor %}">
             <div style="width: 90%; display: table-cell;">
                 <div class="title" text="{{article.title}}">
@@ -47,21 +52,6 @@
                         original_txt="{{word.word_foreign}}">{{word.word_foreign}}</span>
                     <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">{{word.word_translation}}</div>
                     {%endfor %}
-                    <div class="article_metadata">
-                        {{article.feed_source}}
-                        --
-                        {% for feed_name in article.feed_names %}{{feed_name}} {%endfor %}
-                        ---
-                        {{article.published_datetime}}
-                        ---
-                        known: {{article.known_words_count}}
-                        practice: {{article.practice_words_count}}
-                        ratio1: {{article.practice_words_ratio}}
-                        ratio2: {{article.known_practice_seen_words_ratio}}
-                        is_about_sports: {{article.is_about_sports}}
-                        ---
-                        <a target="_blank" href={{article.link}}> LINK </a>
-                    </div>
                 </div>
 
                 <div class="title_mix">
@@ -69,7 +59,8 @@
                     {% if word.lemma_known or word.lemma_practice or word.lemma_seen or word.is_proper_noun %}
                     <div dir="rtl"
                         class="word word_mix word_foreign word_foreign_{{word.lemma_known_status}} {% if word.is_proper_noun %}is_proper_noun{% endif %}"
-                        id="word_{{forloop.counter}}" original_txt="{{word.word_foreign}}" lemma="{{word.lemma_foreign}}">{{word.word_foreign}}</div>
+                        id="word_{{forloop.counter}}" original_txt="{{word.word_foreign}}"
+                        lemma="{{word.lemma_foreign}}">{{word.word_foreign}}</div>
                     {% else %}
                     <div class="word word_mix word_native" id="word_{{forloop.counter}}"
                         original_txt="{{word.word_foreign}}" lemma="{{word.lemma_foreign}}">
@@ -83,7 +74,9 @@
                                 <div>{{word.token_segmented}}</div>
                                 <div>[{{word.lemma_foreign_diacritic}}] </div>
                                 <div>(#{{word.lemma_foreign_index}})</div>
-                                <div class="mix_tooltip_2" hidden>{{word.token_prefixes}}{{word.word_translation}}<div>{{word.lemma_root}}</div></div>
+                                <div class="mix_tooltip_2" hidden>{{word.token_prefixes}}{{word.word_translation}}<div>
+                                        {{word.lemma_root}}</div>
+                                </div>
                             </div>
                             <div class="section_POS">
                                 {% if word.verb_tense %}<div>verb: {{word.verb_tense}}</div>{% endif %}
@@ -99,16 +92,39 @@
                 <div class="title_translation" hidden>
                     {{article.title_translation}}
                 </div>
-                <div class="title_translation">
+                <div class="article_metadata">
+                    {{article.published_datetime}}
+                    //
+                    {{article.feed_source}}
+                    :
+                    {% for feed_name in article.feed_names %}{{feed_name}} {%endfor %}
+                </div>
+                <div class="article_summary">
                     {% autoescape off %}
-                    SUMMARY<div>{{article.summary}}</div>
+                    Summary:<div>{{article.summary}}</div>
                     {% endautoescape %}
                 </div>
+                <div class="article_debug">
+                    {{article.feed_source}}
+                    --
+                    {% for feed_name in article.feed_names %}{{feed_name}} {%endfor %}
+                    ---
+                    {{article.published_datetime}}
+                    ---
+                    known: {{article.known_words_count}}
+                    practice: {{article.practice_words_count}}
+                    ratio1: {{article.practice_words_ratio}}
+                    ratio2: {{article.known_practice_seen_words_ratio}}
+                    is_about_sports: {{article.is_about_sports}}
+                    ---
+                </div>
+
             </div>
             <div style="width: 10%; display: table-cell;">
-                <div class="button_partial_translation button">mix</div>
-                <div class="button_full_translation button">full</div>
-                <div class="button_speak button">speak</div>
+                <div class="button_speak button"> <i class="fa fa-volume-up"></i></div>
+                <div class="button_partial_translation button"><i class="fa fa-tasks"></i></div>
+                <div class="button_full_translation button"><i class="fa fa-globe"></i></div>
+                <div class="button" onclick="window.open('{{article.link}}');"><i class="fa fa-external-link"></i></div>
             </div>
 
         </div>
@@ -116,28 +132,17 @@
         No articles to render.
         {% endfor %}
     </div>
-    <div class="articles_right_panel">
-        <div class="article_source_checkboxes right_panel_section">
-            <b>Sources:</b><br>
-            {% for source, source_feeds in article_sources.items %}
-            <input type="checkbox" id="source_{{source}}" name="source_{{source}}" source="{{source}}" checked
-                onclick="clicked_source(this)">
-            <label for=" source_{{source}}">{{source}}</label>
-            <br>
-
-            {% endfor %}
-        </div>
-
-
-        <div class="articles-form right_panel_section">
-            <b>Form:</b>
-            <form action="" method="get">
-                <!-- {% csrf_token %} -->
-                {{ form }}
-                <input type="submit" value="Submit">
-            </form>
-            <a target="_blank"
-                href="{% url 'words_index' %}?language={{url_parameters.language}}&lower_freq_cutoff={{url_parameters.known_cutoff}}&upper_freq_cutoff={{url_parameters.practice_cutoff}}">LIST</a>
-        </div>
+</div>
+<div class="articles_right_panel">
+    <div class="article_source_checkboxes right_panel_section">
+        <b>Sources:</b><br>
+        {% for source, source_feeds in article_sources.items %}
+        <input type="checkbox" id="source_{{source}}" name="source_{{source}}" source="{{source}}" checked
+            onclick="clicked_source(this)">
+        <label for="source_{{source}}">{{source}}</label>
+        <br>
+        {% endfor %}
     </div>
 </div>
+
+{% endblock content %}

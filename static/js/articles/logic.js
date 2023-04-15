@@ -90,7 +90,7 @@ $(document).ready(function () {
 
       word_idx = getWordIndexAtCharIndex(bigstring, event.charIndex);
       idOfChild = "word_" + word_idx;
-      speakElement.find("#" + idOfChild).css("color", "white");
+      speakElement.find("#" + idOfChild).css("color", "blue");
     };
 
     msg.onend = function (event) {
@@ -143,7 +143,7 @@ $(document).ready(function () {
 });
 
 function clicked_source(element) {
-  $(".article")
+  $(".card")
     .filter('[feed_source="' + element.getAttribute("source") + '"]')
     .toggle(element.checked);
 

@@ -27,45 +27,59 @@
                         name="select-practice-by-selected" value="XXXX">
                     <label for="select-practice-by-selected">Practice words by selection</label>
                 </div>
-                
+
                 <div class="rating-buttons">
                     <input type="checkbox" class="select-deselet-checkbox" id="select-practice-rating-1" rating=""
                         name="select-practice-rating-1" value="{{word.word}}">
-                    <label for="select-practice-rating-1"><div id="select-practice-rating-1-{{word.word}}" class="button button-rating button-rating-1 rating-checked">
-                        1
-                    </div></label>
+                    <label for="select-practice-rating-1">
+                        <div id="select-practice-rating-1-{{word.word}}"
+                            class="button button-rating button-rating-1 rating-checked">
+                            1
+                        </div>
+                    </label>
 
                     <input type="checkbox" class="select-deselet-checkbox" id="select-practice-rating-2" rating=""
                         name="select-practice-rating-2" value="{{word.word}}">
-                    <label for="select-practice-rating-2"><div id="select-practice-rating-2-{{word.word}}" class="button button-rating button-rating-2 rating-checked">
-                        2
-                    </div></label>
+                    <label for="select-practice-rating-2">
+                        <div id="select-practice-rating-2-{{word.word}}"
+                            class="button button-rating button-rating-2 rating-checked">
+                            2
+                        </div>
+                    </label>
 
                     <input type="checkbox" class="select-deselet-checkbox" id="select-practice-rating-3" rating=""
                         name="select-practice-rating-3" value="{{word.word}}">
-                    <label for="select-practice-rating-3"><div id="select-practice-rating-3-{{word.word}}" class="button button-rating button-rating-3 rating-checked">
-                        3
-                    </div></label>
+                    <label for="select-practice-rating-3">
+                        <div id="select-practice-rating-3-{{word.word}}"
+                            class="button button-rating button-rating-3 rating-checked">
+                            3
+                        </div>
+                    </label>
 
                     <input type="checkbox" class="select-deselet-checkbox" id="select-practice-rating-4" rating=""
                         name="select-practice-rating-4" value="{{word.word}}">
-                    <label for="select-practice-rating-4"><div id="select-practice-rating-4-{{word.word}}" class="button button-rating button-rating-4 rating-checked">
-                        4
-                    </div></label>
+                    <label for="select-practice-rating-4">
+                        <div id="select-practice-rating-4-{{word.word}}"
+                            class="button button-rating button-rating-4 rating-checked">
+                            4
+                        </div>
+                    </label>
 
                     <input type="checkbox" class="select-deselet-checkbox" id="select-practice-rating-5" rating=""
                         name="select-practice-rating-5" value="{{word.word}}">
-                    <label for="select-practice-rating-5"><div id="select-practice-rating-5-{{word.word}}" class="button button-rating button-rating-5 rating-checked">
-                        5
-                    </div></label>
+                    <label for="select-practice-rating-5">
+                        <div id="select-practice-rating-5-{{word.word}}"
+                            class="button button-rating button-rating-5 rating-checked">
+                            5
+                        </div>
+                    </label>
 
                 </div>
             </div>
 
-
-            <button class="button" id="SUB_ARTICLES">
+            <div class="button" id="SUB_ARTICLES" onclick="submit_form('ART_FORM')">
                 Articles
-            </button>
+            </div>
 
         </form>
     </div>

@@ -1,35 +1,11 @@
 var words;
 var words_to_show_dict;
-
-async function get_db() {
-  const db = await idb.openDB("news-lang-learn", 1, {
-    upgrade(db) {
-      const store = db.createObjectStore("lemmas", {
-        keyPath: "word",
-      });
-      store.createIndex("rating", "rating");
-    },
-  });
-  return db;
-}
+var user_word_ratings;
 
 async function initialize_ratings() {
-  // const db = await get_db();
-
   for (const word of words) {
     // TODO handle better the escpaing of '
-    // res = await db.get("lemmas", word["word"]);
-    // if (res) {
-    // rating = res.rating;
     rating = word.rating;
-    console.log(word);
-    console.log(word.rating);
-    console.log(
-      "#" +
-        $.escapeSelector(
-          "button-rating-" + rating + "-" + word["word"].replace("'", "\\'")
-        )
-    );
     $(
       "#" +
         $.escapeSelector(
@@ -53,8 +29,6 @@ function clear_ratings(word) {
 }
 
 async function clicked_update(word, rating) {
-  // const db = await get_db();
-
   clear_ratings(word);
   $("#" + $.escapeSelector("button-rating-" + rating + "-" + word)).addClass(
     "rating-checked"
@@ -63,39 +37,34 @@ async function clicked_update(word, rating) {
   $("#" + $.escapeSelector("select-word-" + word)).attr("rating", rating);
 
   monitor_checkboxes_rating();
-  // await db.put("lemmas", { word: word, rating: rating });
   update_rating(word, rating);
+
+  for (const w of words) {
+    word_text = w.word;
+    if (word_text === word) {
+      w.rating = rating;
+    }
+  }
 }
 
 async function select_by_filter(filter_rating) {
-  const db = await get_db();
-
   if (filter_rating === 0) {
     select_unrated();
   }
   for (const word of words) {
-    res = await db.get("lemmas", word["word"]);
-    if (res) {
-      word_rating = res.rating;
-      if (filter_rating == word_rating) {
-        $("#" + $.escapeSelector("select-word-" + word["word"]))
-          .prop("checked", true)
-          .change();
-      }
+    word_rating = word.rating;
+    if (filter_rating == word_rating) {
+      $("#" + $.escapeSelector("select-word-" + word["word"]))
+        .prop("checked", true)
+        .change();
     }
   }
   hide_unselected();
 }
 
 async function select_unrated() {
-  const db = await get_db();
-
   for (const word of words) {
-    res = await db.get("lemmas", word["word"]);
-    word_has_rating = false;
-    if (res) {
-      word_has_rating = true;
-    }
+    word_has_rating = word.rating !== null;
     if (!word_has_rating) {
       $("#" + $.escapeSelector("select-word-" + word["word"]))
         .prop("checked", true)
@@ -106,35 +75,25 @@ async function select_unrated() {
 }
 
 async function deselect_by_filter(filter_rating) {
-  const db = await get_db();
-
   if (filter_rating === 0) {
     deselect_unrated();
   }
 
   for (const word of words) {
-    res = await db.get("lemmas", word["word"]);
-    if (res) {
-      word_rating = res.rating;
-      if (filter_rating == word_rating) {
-        $("#" + $.escapeSelector("select-word-" + word["word"]))
-          .prop("checked", false)
-          .change();
-      }
+    word_rating = word.rating;
+    if (filter_rating == word_rating) {
+      $("#" + $.escapeSelector("select-word-" + word["word"]))
+        .prop("checked", false)
+        .change();
     }
   }
   hide_unselected();
 }
 
 async function deselect_unrated() {
-  const db = await get_db();
-
   for (const word of words) {
-    res = await db.get("lemmas", word["word"]);
     word_has_rating = false;
-    if (res) {
-      word_has_rating = true;
-    }
+    word_has_rating = word.rating !== null;
     if (!word_has_rating) {
       $("#" + $.escapeSelector("select-word-" + word["word"]))
         .prop("checked", false)
@@ -152,40 +111,6 @@ function clear_selection() {
 function select_all() {
   $(".select-word-checkbox").prop("checked", true).change();
   hide_unselected();
-}
-
-async function import_word_ratings() {
-  let input = document.createElement("input");
-  input.type = "file";
-  input.onchange = onChange;
-  input.click();
-
-  function onChange(event) {
-    var reader = new FileReader();
-    reader.onload = onReaderLoad;
-    reader.readAsText(event.target.files[0]);
-  }
-
-  function onReaderLoad(event) {
-    console.log(event.target.result);
-    var obj = JSON.parse(event.target.result);
-    add_ratings(obj);
-  }
-
-  async function add_ratings(ratings) {
-    const db = await idb.openDB("news-lang-learn", 1);
-    console.log(ratings);
-    for (var i = 0; i < ratings.length; i++) {
-      rating = ratings[i];
-      db.put("lemmas", { word: rating["word"], rating: rating["rating"] });
-    }
-  }
-}
-
-async function export_word_ratings() {
-  const db = await idb.openDB("news-lang-learn", 1);
-  var ratings = await db.getAll("lemmas");
-  download("word-ratings.json", JSON.stringify(ratings));
 }
 
 function download(filename, text) {
@@ -210,6 +135,9 @@ $(document).ready(function () {
   words_to_show_dict = JSON.parse(
     document.getElementById("words_to_show_dict-data").textContent
   );
+  user_word_ratings = JSON.parse(
+    document.getElementById("user_word_ratings-data").textContent
+  );
 
   initialize_ratings();
   monitor_checkboxes();
@@ -223,7 +151,6 @@ $(document).ready(function () {
   $("#end-date").val(today);
 
   $("#ART_FORM").submit(function (e) {
-    console.log("SUBmIt");
     submit_articles_form(this);
     return false;
   });
@@ -235,16 +162,17 @@ async function submit_articles_form(form) {
 }
 
 async function set_articles_submit_json() {
-  const db = await get_db();
-
-  const r = db.transaction("lemmas").store.index("rating");
   var practice_words = [];
   for (let rating = 1; rating <= 5; rating++) {
     if ($("#select-practice-rating-" + rating).is(":checked")) {
-      practice_words.push.apply(practice_words, await r.getAllKeys(rating));
+      practice_words.push.apply(
+        practice_words,
+        user_word_ratings
+          .filter((wordrating) => wordrating["rating"] === rating)
+          .map((item) => item["word"])
+      );
     }
   }
-
   if ($("#select-practice-by-selected").is(":checked")) {
     $(".select-word-checkbox:checked").each(function () {
       practice_words.push($(this).val());
@@ -252,9 +180,8 @@ async function set_articles_submit_json() {
   }
   practice_words = JSON.stringify(practice_words);
   $("#practice_words").attr("value", practice_words);
-  console.log(practice_words);
-  var known_words2 = [];
-  known_words2 = await db.getAllKeys("lemmas");
+
+  var known_words2 = user_word_ratings.map((item) => item["word"]);
 
   if ($("#include-unrated").is(":checked")) {
     $(".select-word-checkbox").each(function () {
@@ -275,8 +202,6 @@ function xxx(url, csrfToken) {
   parameters["csrfmiddlewaretoken"] = csrfToken;
 
   parameters["test-1"] = get_known_words();
-  // parameters["word"] = { adas: 122 };
-  console.log(parameters);
   sendData(url, parameters);
 }
 
@@ -286,14 +211,11 @@ async function get_known_words() {
     practice_words.push(this.value);
   });
 
-  const db = await get_db();
-
   for (const word of words) {
-    res = await db.get("lemmas", word["word"]);
-    if (res) {
-      if (practice_words.includes(res[word["word"]])) {
+    if (word["word"] in user_word_ratings) {
+      if (practice_words.includes(word["word"])) {
         rating_text = "PRACTICE";
-      } else if (res["rating"] == 5) {
+      } else if (word_user_ratings[word["word"]] === 5) {
         rating_text = "KNOWN";
       } else {
         rating_text = "SEEN";
@@ -322,6 +244,8 @@ function sendData(url, parameters) {
 
 function monitor_checkboxes() {
   $(".select-word-checkbox").change(function () {
+    update_words_selected_counter();
+    hide_unselected();
     if ($(this).is(":checked")) {
       $(this).parent().parent().addClass("word-line-selected");
     } else {
@@ -414,11 +338,12 @@ function show_articles_popup() {
   $("#words-selected-count").text(words_selected_count);
 }
 
-function hide_unselected() {
-  // TODO move this somewhere else
-  let words_selected_count = $(".select-word-checkbox:checked").length;
-  $("#selcted_count").text(words_selected_count);
+function submit_form(form_id) {
+  $("#" + form_id).submit();
+}
 
+function hide_unselected() {
+  update_words_selected_counter();
   if ($("#filter-unselected").prop("checked")) {
     $(".select-word-checkbox:not(checked)").parent().parent().parent().hide();
     $(".select-word-checkbox:checked").parent().parent().parent().show();
@@ -427,6 +352,11 @@ function hide_unselected() {
     $(".select-word-checkbox").parent().parent().parent().show();
     $("#filter-unselected").attr("onclick", "hide_unselected()");
   }
+}
+
+function update_words_selected_counter() {
+  let words_selected_count = $(".select-word-checkbox:checked").length;
+  $("#selcted_count").text(words_selected_count);
 }
 
 function show_edit_popup(word) {
@@ -464,11 +394,8 @@ function hide_edit_popup() {
 }
 
 async function examples_word(practice_word, token) {
-  const db = await get_db();
-
   var practice_words = [practice_word];
-  var known_words2 = [];
-  known_words2 = await db.getAllKeys("lemmas");
+  var known_words2 = user_word_ratings.map((item) => item["word"]);
   known_words2 = known_words2.filter(function (value, index, arr) {
     return !practice_words.includes(value);
   });
@@ -515,7 +442,6 @@ async function examples_word(practice_word, token) {
 
 function show_context_menu(element) {
   var rect = element.getBoundingClientRect();
-  console.log(rect);
   $("#context-menu").show();
   $("#context-menu").css("left", element.offsetLeft + 15);
   $("#context-menu").css("top", element.offsetTop + 5);
@@ -529,7 +455,7 @@ window.onclick = function (event) {
       event.target.matches(".show_context_menu")
     )
   ) {
-    console.log("hide ");
+    console.log("hide");
     $("#context-menu").hide();
   }
 };
@@ -627,4 +553,34 @@ function update_rating(word, rating) {
     })
     .fail(function () {})
     .always(function () {});
+}
+
+function submit_filter_form() {
+  let form_data = new FormData(document.querySelector("#filter-form"));
+  let form_str = new URLSearchParams(form_data).toString();
+
+  var getUrl = window.location;
+  window.location.href =
+    getUrl.protocol +
+    "//" +
+    getUrl.host +
+    "/" +
+    getUrl.pathname.split("/")[1] +
+    "?" +
+    form_str;
+}
+
+function toggle_visible_words() {
+  var is_checked = $("#filter-unselected").prop("checked");
+
+  if (is_checked) {
+    $("#filter-unselected-icon").removeClass("fa-eye-slash");
+    $("#filter-unselected-icon").addClass("fa-eye");
+  } else {
+    $("#filter-unselected-icon").removeClass("fa-eye");
+    $("#filter-unselected-icon").addClass("fa-eye-slash");
+  }
+
+  $("#filter-unselected").prop("checked", !is_checked);
+  hide_unselected();
 }
