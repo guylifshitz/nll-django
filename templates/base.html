@@ -25,6 +25,8 @@
             <div class="navbar-element">NLL v0.1</div>
         </div>
         <div class="navbar-right">
+            <a href="https://docs.google.com/document/d/1Hd-NtJjcCdVpQAGFwkuvgdQv8G7kNRpoZL01ogyteuk/edit?usp=sharing"
+                class="navbar-element">help</a>
             {% if user.is_authenticated %}
             <a href="{% url 'logout' %}" class="navbar-element">logout {{user.username}}</a>
             {% else %}
