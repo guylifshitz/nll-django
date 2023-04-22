@@ -1,15 +1,3 @@
-async function get_db() {
-  const db = await idb.openDB("news-lang-learn", 1, {
-    upgrade(db) {
-      const store = db.createObjectStore("lemmas", {
-        keyPath: "word",
-      });
-      store.createIndex("rating", "rating");
-    },
-  });
-  return db;
-}
-
 function position_tooltips() {
   var tooltips = $(".word_tooltip");
   $.each(tooltips, function (index, tooltip) {
@@ -129,7 +117,8 @@ $(document).ready(function () {
   $(".word").click(function (event) {
     if (event.altKey) {
       html_txt = $(event.target).attr("lemma");
-      show_edit_popup(html_txt);
+      window.open("/words/word?word=" + html_txt);
+
       // google_translate_word();
     } else if (event.shiftKey) {
       html_txt = $(event.target).attr("original_txt");

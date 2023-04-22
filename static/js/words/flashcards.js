@@ -155,18 +155,6 @@ function fix_links() {
   const language = urlParams.get("language");
   var base_url = window.location.origin + "/articles/config";
   var seen_cutoff = Math.max(current_word["index"] + 1, 500);
-  $("#open-examples").attr(
-    "href",
-    base_url +
-      "?language=" +
-      language +
-      "&known_cutoff=" +
-      (current_word["index"] - 1) +
-      "&practice_cutoff=" +
-      current_word["index"] +
-      "&seen_cutoff=" +
-      seen_cutoff
-  );
 }
 
 function swap_top_bottom_words(element) {
@@ -252,6 +240,9 @@ $(document).ready(function () {
   );
   all_words = Array.from(original_words);
   XXXX_words = Array.from(original_words);
+  user_word_ratings = JSON.parse(
+    document.getElementById("user_word_ratings-data").textContent
+  );
   shuffleArray(XXXX_words);
   clicked_next_word();
 
@@ -397,6 +388,8 @@ function update_root() {
   })
     .done(function () {
       // TODO update the root in the flashcards.
+      current_word["root"] = new_root;
+      $("#word-root").text(new_root);
       alert("success");
     })
     .fail(function () {
@@ -422,6 +415,14 @@ function update_translation() {
     contentType: "application/json",
   })
     .done(function () {
+      current_word["translation"] = new_translation;
+
+      if ($("#swap-top-bottom").hasClass("button-checked")) {
+        $("#word-top").text(current_word["translation"]);
+      } else {
+        $("#word-bottom").text(current_word["translation"]);
+      }
+
       alert("success");
     })
     .fail(function () {
@@ -450,4 +451,55 @@ function show_similar_roots() {
   }).done(function (res) {
     alert(JSON.stringify(res["similar_roots"], null, 2));
   });
+}
+
+function context_menu_examples_word(element, token) {
+  examples_word(current_word["word"], token);
+}
+
+async function examples_word(practice_word, token) {
+  var practice_words = [practice_word];
+  var known_words2 = user_word_ratings.map((item) => item["word"]);
+  known_words2 = known_words2.filter(function (value, index, arr) {
+    return !practice_words.includes(value);
+  });
+
+  var form = document.createElement("form");
+
+  form.setAttribute("method", "post");
+  form.setAttribute("target", "_blank");
+  form.setAttribute("action", "../../articles/index");
+
+  var token_input = document.createElement("input");
+  token_input.setAttribute("type", "hidden");
+  token_input.setAttribute("name", "csrfmiddlewaretoken");
+  token_input.setAttribute("value", token);
+  form.appendChild(token_input);
+
+  var practice_words_input = document.createElement("input");
+  practice_words_input.setAttribute("type", "hidden");
+  practice_words_input.setAttribute("name", "practice_words");
+  practice_words_input.setAttribute("value", JSON.stringify(practice_words));
+  form.appendChild(practice_words_input);
+
+  var known_words_input = document.createElement("input");
+  known_words_input.setAttribute("type", "hidden");
+  known_words_input.setAttribute("name", "known_words");
+  known_words_input.setAttribute("value", JSON.stringify(known_words2));
+  form.appendChild(known_words_input);
+
+  var start_date_input = document.createElement("input");
+  start_date_input.setAttribute("type", "hidden");
+  start_date_input.setAttribute("name", "start_date");
+  start_date_input.setAttribute("value", "2020-01-01");
+  form.appendChild(start_date_input);
+
+  var sort_by_practice_input = document.createElement("input");
+  sort_by_practice_input.setAttribute("type", "hidden");
+  sort_by_practice_input.setAttribute("name", "sort_by_practice_only");
+  sort_by_practice_input.setAttribute("value", "NOTESET");
+  form.appendChild(sort_by_practice_input);
+
+  document.body.appendChild(form);
+  form.submit();
 }

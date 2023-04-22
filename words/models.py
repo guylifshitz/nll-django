@@ -1,6 +1,9 @@
 from djongo import models
 from django.contrib.auth.models import User
 
+# import djongo.models.indexes
+
+
 class Words(models.Model):
     objects = models.DjongoManager()
 
@@ -20,6 +23,7 @@ class Words(models.Model):
 
     user_translations = models.JSONField(null=True, blank=True, default=[])
     user_roots = models.JSONField(null=True, blank=True, default=[])
+
 
 class Flexions(models.Model):
     objects = models.DjongoManager()
@@ -43,11 +47,15 @@ class WordRatings(models.Model):
 
     class Meta:
         db_table = "word_ratings"
-        unique_together = ('word', 'user',)
+        unique_together = (
+            "word",
+            "user",
+        )
 
         constraints = [
             models.UniqueConstraint(fields=["word", "user"], name="unique_word_user_combination")
         ]
+        # indexes = [TextIndex(fields=["word", "user"])]
 
     _id = models.ObjectIdField(primary_key=True, null=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -57,4 +65,3 @@ class WordRatings(models.Model):
     def __str__(self):
         return f"{self.rating}"
         # return f"{self.user.username} - {self.word._id} - {self.rating}"
-    

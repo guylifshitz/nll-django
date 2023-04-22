@@ -14,6 +14,7 @@
     var user_auth_token = "{{ user_auth_token }}";
 </script>
 {{ words|json_script:"original_words-data" }};
+{{ user_word_ratings|json_script:"user_word_ratings-data" }}
 {% endblock %}
 
 {% block content %}
@@ -55,7 +56,9 @@
         <a id="open-pealim" class="button" target="_blank" href="">
             <i class="">Pealim</i>
         </a>
-        <a id="open-examples" class="button" target="_blank" href="">
+
+        {% csrf_token %}
+        <a id="open-examples" class="button" onclick="context_menu_examples_word(this, '{{csrf_token}}')">
             <i class="fa fa-tasks"></i>
         </a>
         <div class="button" onclick="show_similar_roots()">

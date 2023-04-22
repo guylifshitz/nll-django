@@ -477,6 +477,11 @@ function context_menu_edit_word() {
   show_edit_popup(words_to_show_dict[$("#context-menu").attr("word")]);
 }
 
+function context_menu_show_word() {
+  html_txt = $("#context-menu").attr("word");
+  window.open("/words/word?word=" + html_txt);
+}
+
 function update_translation() {
   let new_translation = document.getElementById("new_translation").value;
   word = $("#popup-word").text();
@@ -492,6 +497,7 @@ function update_translation() {
     contentType: "application/json",
   })
     .done(function () {
+      $("#" + word + "-translation").text(new_translation);
       alert("success");
     })
     .fail(function () {
@@ -517,8 +523,8 @@ function update_root() {
     contentType: "application/json",
   })
     .done(function () {
-      alert("success");
       $("#" + word + "-root").text(new_root);
+      alert("success");
     })
     .fail(function () {
       alert("error");

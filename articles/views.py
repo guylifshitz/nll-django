@@ -597,16 +597,7 @@ def configure(request):
             "sort_by_word": sort_by_word,
         }
     )
-    form_from_file = ArticlesFormFromFile(
-        initial={
-            "start_date": start_date_cutoff,
-            "end_date": end_date_cutoff,
-            "language": language,
-            "article_display_count": article_display_count,
-            "sort_by_word": sort_by_word,
-        }
-    )
-    return render(request, "configure.html", {"form": form, "form2": form_from_file})
+    return render(request, "configure.html", {"form": form})
 
 
 def is_article_about_sports(article):

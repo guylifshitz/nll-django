@@ -34,14 +34,17 @@ class WordsSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         new_user_root = validated_data.get("new_user_root", None)
+        if not instance.user_roots:
+            instance.user_roots = []
         if new_user_root:
-            if not instance.user_roots:
-                instance.user_roots = []
             instance.user_roots.append(new_user_root)
 
         new_user_translation = validated_data.get("new_user_translation", None)
+        if not instance.user_translations:
+            instance.user_translations = []
         if new_user_translation:
             instance.user_translations.append(new_user_translation)
+
         instance.save()
         return instance
 

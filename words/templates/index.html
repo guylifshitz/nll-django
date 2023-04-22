@@ -44,13 +44,12 @@
             </div>
 
             <div>
-                <div class="button xxxx" onclick="show_articles_popup()">
-                    Articles
-                </div>
                 <div class="button xxxx" onclick="submit_form('main_form')">
-                    Flashcards
+                    Build Flashcards
                 </div>
-
+                <div class="button xxxx" onclick="show_articles_popup()">
+                    Build Articles
+                </div>
             </div>
 
         </div>
@@ -132,7 +131,7 @@
                         <div id="{{word.word}}-root">{{word.root}}</div>
                     </div>
                     <div class="word-line-element">
-                        <div>{{word.translation}}</div>
+                        <div id="{{word.word}}-translation">{{word.translation}}</div>
                     </div>
                     <div class="fa fa-ellipsis-h show_context_menu" onclick="show_context_menu(this)"
                         word="{{word.word}}" root="{{word.root}}" user_roots="{{word.user_roots}}"
@@ -193,6 +192,10 @@
         <div class="context-menu-element" onclick="context_menu_examples_word(this, '{{csrf_token}}')">
             see examples
         </div>
+        <div class="context-menu-element" onclick="context_menu_show_word()">
+            word details
+        </div>
+
     </div>
 
 

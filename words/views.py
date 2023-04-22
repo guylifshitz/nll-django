@@ -21,7 +21,6 @@ def get_flexions(word):
         flexions = {}
 
     flexions_sum = sum(list(flexions.values()))
-    print(flexions_sum)
     flexions = {k: v for k, v in sorted(flexions.items(), key=lambda item: item[1], reverse=True)}
     flexions = {k: max(int(v / flexions_sum * 100), 1) for k, v in flexions.items()}
     flexions = {k: flexions[k] for k in list(flexions)[:10]}
@@ -64,7 +63,7 @@ def build_words_to_show(words, sort_source=None):
             rating = word.wordratings_set.last().rating
         except:
             rating = None
-
+        print(word._id)
         word_to_show = {
             "word": word._id,
             "word_diacritic": word.word_diacritic,
@@ -89,10 +88,39 @@ def build_words_to_show(words, sort_source=None):
     return words_to_show
 
 
+def word(request):
+    if not request.user.is_authenticated:
+        return redirect(f"{settings.LOGIN_URL}?next={request.path}")
+
+    if request.method == "GET":
+        language = request.GET.get("language", "hebrew")
+        word_text = request.GET.get("word", 0)
+
+        word = Words.objects.get(_id=word_text)
+        word_to_show = build_words_to_show([word])[0]
+
+    elif request.method == "POST":
+        raise notImplementedError
+
+    speech_voice = language_speech_mapping.get(language, "en")
+
+    return render(
+        request,
+        "flashcards.html",
+        {
+            "words": [word_to_show],
+            "words_to_show_dict": model_result_to_dict([word_to_show], "word"),
+            "speech_voice": speech_voice,
+            "url_parameters": {},
+            "user_auth_token": request.user.auth_token,
+        },
+    )
+
+
 def flashcards(request):
     if not request.user.is_authenticated:
         return redirect(f"{settings.LOGIN_URL}?next={request.path}")
-    
+
     if request.method == "GET":
         language = request.GET.get("language", "hebrew")
         lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
@@ -137,8 +165,9 @@ def flashcards(request):
             "words": words_to_show,
             "words_to_show_dict": model_result_to_dict(words_to_show, "word"),
             "speech_voice": speech_voice,
+            "user_word_ratings": build_user_word_ratings(request.user),
             "url_parameters": url_parameters,
-            "user_auth_token": request.user.auth_token
+            "user_auth_token": request.user.auth_token,
         },
     )
 
@@ -194,12 +223,13 @@ def index(request):
             "user_word_ratings": build_user_word_ratings(request.user),
             "url_parameters": url_parameters,
             "form": form,
-            "user_auth_token": request.user.auth_token
+            "user_auth_token": request.user.auth_token,
         },
     )
 
+
 def build_user_word_ratings(user):
-    words= []
+    words = []
     for w in WordRatings.objects.filter(user=user):
         words.append({"word": w.word._id, "rating": w.rating})
     return words
