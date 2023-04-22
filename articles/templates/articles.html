@@ -16,30 +16,6 @@
 
 {% block content %}
 <div class="page">
-    <div class="word_correction_popup" id="word_correction_popup" hidden>
-        <div class="blocker" onclick="hide_edit_popup()"></div>
-        <div class="word_correction">
-            <div id="word_correction_word" class="word_correction_word" word="של">
-                של
-            </div>
-            <div id="rating_button_0" class="word_correction_rating" onclick="clicked_update(0)">
-                😵Dont know
-            </div>
-            <div id="rating_button_1" class="word_correction_rating" onclick="clicked_update(1)">
-                😔
-            </div>
-            <div id="rating_button_2" class="word_correction_rating" onclick="clicked_update(2)">
-                😐
-            </div>
-            <div id="rating_button_3" class="word_correction_rating" onclick="clicked_update(3)">
-                😀Know
-            </div>
-            <div class="word_correction_rating" onclick="hide_edit_popup()">
-                close
-            </div>
-        </div>
-    </div>
-
 
     <div class="articles">
         {% for article in articles %}
@@ -121,9 +97,12 @@
 
             </div>
             <div style="width: 10%; display: table-cell;">
-                <div class="button_speak button"> <i class="fa fa-volume-up"></i></div>
-                <div class="button_partial_translation button"><i class="fa fa-tasks"></i></div>
-                <div class="button_full_translation button"><i class="fa fa-globe"></i></div>
+                <div class="button_speak button" onclick="speak_title_helper(this)"> <i class="fa fa-volume-up"></i>
+                </div>
+                <div class="button_partial_translation button" onclick="show_partial_translation(this)"><i
+                        class="fa fa-tasks"></i></div>
+                <div class="button_full_translation button" onclick="show_full_translation(this)"><i
+                        class="fa fa-globe"></i></div>
                 <div class="button" onclick="window.open('{{article.link}}');"><i class="fa fa-external-link"></i></div>
             </div>
 
