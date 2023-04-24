@@ -51,20 +51,24 @@ class WordsSerializer(serializers.ModelSerializer):
 
 class WordsSerializer2(serializers.ModelSerializer):
     root = rest_framework.serializers.CharField(max_length=300, allow_blank=True, read_only=True)
+    similar_words = rest_framework.serializers.CharField(
+        max_length=300, allow_blank=True, read_only=True
+    )
     similar_roots = rest_framework.serializers.CharField(
         max_length=300, allow_blank=True, read_only=True
     )
 
     class Meta:
         model = Words
-        fields = ["_id", "root", "similar_roots"]
+        fields = ["_id", "root", "similar_roots", "similar_words"]
 
         extra_kwargs = {
             "root": {"read_only": True},
             "similar_roots": {"read_only": True},
+            "similar_words": {"read_only": True},
         }
 
-    def comparable_root_maker(self, word):
+    def comparable_word_maker(self, word):
         similar_look_matchings = [
             ["ח", "ה", "ת"],
             ["ו", "ז", "ן"],
@@ -97,30 +101,29 @@ class WordsSerializer2(serializers.ModelSerializer):
                 word = word.replace(letter, str(idx))
         return word
 
-    def find_similar_roots(self, instance):
+    def find_similar_words(self, instance, field):
         from fuzzywuzzy import fuzz
 
-        root = instance.root
+        root = instance.serializable_value(field)
 
         if not root:
             return []
 
-        comparable_root = self.comparable_root_maker(root)
+        comparable_word = self.comparable_word_maker(root)
 
-        top_words = Words.objects.filter(language="hebrew").order_by("rank").all()[0:500]
+        top_words = Words.objects.filter(language="hebrew").order_by("rank").all()[0:1000]
         similar_roots = []
         for top_word in top_words:
-            print(top_word._id, top_word.root)
-            if not top_word.root:
+            if not top_word.serializable_value(field):
                 continue
-            comparable_root_2 = self.comparable_root_maker(top_word.root)
-            similar_score = fuzz.ratio(comparable_root, comparable_root_2)
+            comparable_word_2 = self.comparable_word_maker(top_word.serializable_value(field))
+            similar_score = fuzz.ratio(comparable_word, comparable_word_2)
             if similar_score >= 50:
                 similar_roots.append(
                     {
                         "_id": top_word._id,
                         "root": top_word.root,
-                        "comparable_root": comparable_root_2,
+                        "comparable_word": comparable_word_2,
                         "translation": top_word.translation,
                         "similar_score": similar_score,
                     }
@@ -129,7 +132,11 @@ class WordsSerializer2(serializers.ModelSerializer):
         return similar_roots
 
     def to_representation(self, instance):
-        return {"root": instance.root, "similar_roots": self.find_similar_roots(instance)}
+        return {
+            "root": instance.root,
+            "similar_roots": self.find_similar_words(instance, "root"),
+            "similar_words": self.find_similar_words(instance, "_id"),
+        }
 
 
 class WordsViewSet(viewsets.ModelViewSet):
@@ -158,14 +165,16 @@ class WordRatingsSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        user =  self.context["request"].user
+        user = self.context["request"].user
         word = Words.objects.get(_id=validated_data["word_text"])
         validated_data = {
             "user": user,
-            "word": word, 
+            "word": word,
             "rating": validated_data["rating"],
         }
-        obj, was_created = WordRatings.objects.update_or_create(user=user, word=word, defaults=validated_data)
+        obj, was_created = WordRatings.objects.update_or_create(
+            user=user, word=word, defaults=validated_data
+        )
 
         return obj
 
@@ -177,10 +186,9 @@ class WordRatingsViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
-
 router = routers.DefaultRouter()
 router.register(r"words", WordsViewSet, "words")
-router.register(r"similar_roots", WordDetail, "words2")
+router.register(r"similar_words", WordDetail, "words2")
 router.register(r"rating", WordRatingsViewSet, "rating")
 
 urlpatterns = [

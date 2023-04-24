@@ -445,11 +445,22 @@ function removeWordFromWords(word) {
 function show_similar_roots() {
   $.ajax({
     type: "GET",
-    url: "http://localhost:8001/api/similar_roots/" + word + "/",
+    url: "http://localhost:8001/api/similar_words/" + word + "/",
     processData: false,
     contentType: "application/json",
   }).done(function (res) {
     alert(JSON.stringify(res["similar_roots"], null, 2));
+  });
+}
+
+function show_similar_words() {
+  $.ajax({
+    type: "GET",
+    url: "http://localhost:8001/api/similar_words/" + word + "/",
+    processData: false,
+    contentType: "application/json",
+  }).done(function (res) {
+    alert(JSON.stringify(res["similar_words"], null, 2));
   });
 }
 
