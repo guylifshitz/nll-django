@@ -1,47 +1,46 @@
-from djongo import models
+from django.db import models
+from django.contrib.postgres.fields import ArrayField
 
 
-class Rss_feeds(models.Model):
-    class Meta:
-        db_table = "rss_feeds"
-
-    source = models.CharField(max_length=100)
+class Rss_feed(models.Model):
+    id = models.CharField(max_length=1000, primary_key=True)
+    source = models.CharField(max_length=300)
     feed_name = models.JSONField()
+    feed_name = ArrayField(models.TextField())
 
     language = models.CharField(max_length=100)
     published_datetime = models.DateField()
-    link = models.CharField(max_length=100)
+    link = models.CharField(max_length=1000)
 
-    title = models.CharField(max_length=100)
-    title_translation = models.CharField(max_length=100)
-    title_parsed_clean = models.JSONField()
-    title_parsed_lemma = models.JSONField()
-    title_parsed_segmented = models.JSONField()
-    title_parsed_prefixes = models.JSONField()
-    title_parsed_POSTAG = models.JSONField()
-    title_parsed_FEATS = models.JSONField()
-    title_parsed_translation_override = models.JSONField()
+    title = models.TextField()
+    title_translation = models.TextField(null=True)
+    title_parsed_clean = ArrayField(models.TextField(), null=True)
+    title_parsed_lemma = ArrayField(models.TextField(), null=True)
+    title_parsed_segmented = ArrayField(models.TextField(), null=True)
+    # title_parsed_prefixes = ArrayField(ArrayField(models.TextField()), null=True)
+    title_parsed_prefixes = models.JSONField(null=True)
+    title_parsed_postag = ArrayField(models.TextField(), null=True)
+    title_parsed_feats = ArrayField(models.TextField(), null=True)
+    title_parsed_translation_override = ArrayField(models.TextField(), null=True)
 
-    summary = models.CharField(max_length=100)
+    other_fields = models.JSONField(null=True)
 
-    objects = models.DjongoManager()
+    summary = models.TextField(null=True)
 
 
-class open_subtitles(models.Model):
-    meta = {"strict": False}
+# class open_subtitle(models.Model):
+#     # _id = models.CharField(max_length=100)
 
-    _id = models.CharField(max_length=100)
+#     source = models.CharField(max_length=100)
 
-    source = models.CharField(max_length=100)
+#     language = models.CharField(max_length=100)
 
-    language = models.CharField(max_length=100)
-
-    hebrew = models.CharField(max_length=100)
-    title_translation = models.CharField(max_length=100)
-    title_parsed_clean = models.JSONField()
-    title_parsed_lemma = models.JSONField()
-    title_parsed_segmented = models.JSONField()
-    title_parsed_prefixes = models.JSONField()
-    title_parsed_POSTAG = models.JSONField()
-    title_parsed_FEATS = models.JSONField()
-    title_parsed_translation_override = models.JSONField()
+#     hebrew = models.CharField(max_length=100)
+#     title_translation = models.CharField(max_length=100)
+#     title_parsed_clean = ArrayField(models.TextField())
+#     title_parsed_lemma = models.JSONField()
+#     title_parsed_segmented = models.JSONField()
+#     title_parsed_prefixes = models.JSONField()
+#     title_parsed_postag = models.JSONField()
+#     title_parsed_feats = models.JSONField()
+#     title_parsed_translation_override = models.JSONField()

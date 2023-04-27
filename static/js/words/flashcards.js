@@ -311,9 +311,8 @@ async function clicked_update(rating) {
 
 function update_rating(word, rating) {
   data = {
-    word_text: word,
-    rating: rating,
-    token: user_auth_token,
+    find_text: word,
+    new_rating: rating,
   };
   $.ajax({
     type: "POST",

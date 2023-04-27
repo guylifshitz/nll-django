@@ -6,6 +6,14 @@ async function initialize_ratings() {
   for (const word of words) {
     // TODO handle better the escpaing of '
     rating = word.rating;
+    console.log(word);
+    console.log(word.rating);
+    console.log(
+      "#" +
+        $.escapeSelector(
+          "button-rating-" + rating + "-" + word["word"].replace("'", "\\'")
+        )
+    );
     $(
       "#" +
         $.escapeSelector(
@@ -17,7 +25,6 @@ async function initialize_ratings() {
     ).attr("rating", rating);
     monitor_checkboxes_rating();
   }
-  // }
 }
 
 function clear_ratings(word) {
@@ -332,6 +339,7 @@ function update_select_all_rating_checkbox(rating, num_words_with_rating) {
 function hide_popups() {
   $(".popup").hide();
 }
+
 function show_articles_popup() {
   $("#articles-popup").show();
   let words_selected_count = $(".select-word-checkbox:checked").length;
@@ -534,15 +542,10 @@ function update_root() {
     });
 }
 
-// function that gets the logged in user's token in django
-// function get_token() {
-
-// }
-
 function update_rating(word, rating) {
   data = {
-    word_text: word,
-    rating: rating,
+    find_text: word,
+    new_rating: rating,
   };
   $.ajax({
     type: "POST",

@@ -1,14 +1,14 @@
 from numpy import sort, source
 from .forms import WordsForm
 from django.shortcuts import redirect, render
-from words.models import Words, WordRatings
+from words.models import Word, WordRating
 from django.conf import settings
 
 
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
 
 
-def model_result_to_dict(model_result, key="_id"):
+def model_result_to_dict(model_result, key="text"):
     out_dict = {}
     for res in model_result:
         out_dict[res[key]] = res
@@ -59,13 +59,16 @@ def get_translation(word):
 def build_words_to_show(words, sort_source=None):
     words_to_show = []
     for idx, word in enumerate(words):
+        print(word)
+        # import ipdb
+
+        # ipdb.set_trace()
         try:
-            rating = word.wordratings_set.last().rating
+            rating = word.wordrating_set.last().rating
         except:
             rating = None
-        print(word._id)
         word_to_show = {
-            "word": word._id,
+            "word": word.text,
             "word_diacritic": word.word_diacritic,
             "translation": get_translation(word),
             "root": get_root(word),
@@ -96,7 +99,7 @@ def word(request):
         language = request.GET.get("language", "hebrew")
         word_text = request.GET.get("word", 0)
 
-        word = Words.objects.get(_id=word_text)
+        word = Word.objects.get(text=word_text)
         word_to_show = build_words_to_show([word])[0]
 
     elif request.method == "POST":
@@ -126,7 +129,7 @@ def flashcards(request):
         lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
         upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
-        words = Words.objects.filter(
+        words = Word.objects.filter(
             language=language,
             rank__gt=lower_freq_cutoff,
             rank__lte=upper_freq_cutoff,
@@ -148,7 +151,7 @@ def flashcards(request):
             if key.startswith("select-word-"):
                 words_to_show.append(value)
 
-        words = Words.objects.filter(language=language, _id__in=words_to_show)
+        words = Word.objects.filter(language=language, text__in=words_to_show)
         words_to_show = build_words_to_show(words)
         url_parameters = {
             "lower_freq_cutoff": 0,
@@ -184,13 +187,13 @@ def index(request):
 
     words = None
     if sort_source == "open_subtitles":
-        words = Words.objects.filter(
+        words = Word.objects.filter(
             language=language,
             rank_open_subtitles__gt=lower_freq_cutoff,
             rank_open_subtitles__lte=upper_freq_cutoff,
         ).order_by("rank_open_subtitles")
     else:
-        words = Words.objects.filter(
+        words = Word.objects.filter(
             language=language,
             rank__gt=lower_freq_cutoff,
             rank__lte=upper_freq_cutoff,
@@ -230,6 +233,6 @@ def index(request):
 
 def build_user_word_ratings(user):
     words = []
-    for w in WordRatings.objects.filter(user=user):
-        words.append({"word": w.word._id, "rating": w.rating})
+    for w in WordRating.objects.filter(user=user):
+        words.append({"word": w.word.text, "rating": w.rating})
     return words

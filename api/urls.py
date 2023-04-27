@@ -1,8 +1,7 @@
 from django.urls import path, include
-from words.models import Words, WordRatings
+from words.models import Word, WordRating
 from rest_framework import serializers, viewsets, routers
 import rest_framework
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 
@@ -16,9 +15,9 @@ class WordsSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = Words
-        fields = ["_id", "new_user_root", "new_user_translation"]
-        # fields = ["_id", "new_user_translation"]
+        model = Word
+        fields = ["text", "new_user_root", "new_user_translation"]
+        # fields = ["text", "new_user_translation"]
         extra_kwargs = {
             "new_user_root": {"read_only": True},
             "new_user_translation": {"read_only": True},
@@ -59,8 +58,8 @@ class WordsSerializer2(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = Words
-        fields = ["_id", "root", "similar_roots", "similar_words"]
+        model = Word
+        fields = ["text", "root", "similar_roots", "similar_words"]
 
         extra_kwargs = {
             "root": {"read_only": True},
@@ -111,7 +110,7 @@ class WordsSerializer2(serializers.ModelSerializer):
 
         comparable_word = self.comparable_word_maker(root)
 
-        top_words = Words.objects.filter(language="hebrew").order_by("rank").all()[0:1000]
+        top_words = Word.objects.filter(language="hebrew").order_by("rank").all()[0:1000]
         similar_roots = []
         for top_word in top_words:
             if not top_word.serializable_value(field):
@@ -121,7 +120,7 @@ class WordsSerializer2(serializers.ModelSerializer):
             if similar_score >= 50:
                 similar_roots.append(
                     {
-                        "_id": top_word._id,
+                        "text": top_word.text,
                         "root": top_word.root,
                         "comparable_word": comparable_word_2,
                         "translation": top_word.translation,
@@ -135,44 +134,47 @@ class WordsSerializer2(serializers.ModelSerializer):
         return {
             "root": instance.root,
             "similar_roots": self.find_similar_words(instance, "root"),
-            "similar_words": self.find_similar_words(instance, "_id"),
+            "similar_words": self.find_similar_words(instance, "text"),
         }
 
 
 class WordsViewSet(viewsets.ModelViewSet):
-    lookup_field = "_id"
-    queryset = Words.objects.filter(language="hebrew").order_by("rank").all()
+    lookup_field = "text"
+    queryset = Word.objects.filter(language="hebrew").order_by("rank").all()
     serializer_class = WordsSerializer
 
 
 class WordDetail(viewsets.ReadOnlyModelViewSet):
-    lookup_field = "_id"
+    lookup_field = "text"
     permission_classes = ()
-    queryset = Words.objects.filter(language="hebrew").order_by("rank").all()
+    queryset = Word.objects.filter(language="hebrew").order_by("rank").all()
     serializer_class = WordsSerializer2
 
 
 class WordRatingsSerializer(serializers.ModelSerializer):
-    word_text = rest_framework.serializers.CharField(
-        max_length=300, allow_blank=True, write_only=True
+    find_text = rest_framework.serializers.CharField(
+        max_length=300, allow_blank=False, write_only=True
     )
+    new_rating = rest_framework.serializers.IntegerField(write_only=True, min_value=1, max_value=5)
 
     class Meta:
-        model = WordRatings
-        fields = ["_id", "word_text", "rating"]
+        model = WordRating
+        fields = ["find_text", "new_rating"]
         extra_kwargs = {
-            "word_text": {"read_only": True},
+            "find_text": {"read_only": True},
+            "new_rating": {"read_only": True},
         }
 
     def create(self, validated_data):
         user = self.context["request"].user
-        word = Words.objects.get(_id=validated_data["word_text"])
+        word = Word.objects.get(text=validated_data["find_text"])
         validated_data = {
             "user": user,
             "word": word,
-            "rating": validated_data["rating"],
+            "rating": validated_data["new_rating"],
         }
-        obj, was_created = WordRatings.objects.update_or_create(
+        print(word)
+        obj, was_created = WordRating.objects.update_or_create(
             user=user, word=word, defaults=validated_data
         )
 
@@ -180,7 +182,7 @@ class WordRatingsSerializer(serializers.ModelSerializer):
 
 
 class WordRatingsViewSet(viewsets.ModelViewSet):
-    queryset = WordRatings.objects.filter().order_by("rating").all()
+    queryset = WordRating.objects.filter().order_by("rating").all()
     serializer_class = WordRatingsSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]

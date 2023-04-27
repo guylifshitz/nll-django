@@ -1,13 +1,12 @@
 from .forms import ArticlesForm, ArticlesFormFromPOST
 from django.shortcuts import render
-from articles.models import Rss_feeds, open_subtitles
-from words.models import Words, Flexions
+from articles.models import Rss_feed
+from words.models import Word, Flexion
 import datetime
 import traceback
-import pandas as pd
-from io import BytesIO
 from collections import defaultdict
 import json
+from django.db import connection
 
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
 
@@ -20,7 +19,7 @@ default_start_date = default_start_date.strftime("%Y-%m-%d")
 def model_result_to_dict(model_result):
     out_dict = {}
     for res in model_result:
-        out_dict[res._id] = res
+        out_dict[res.text] = res
     return out_dict
 
 
@@ -130,11 +129,12 @@ def build_article_words(article, words, word_known_categories, flexions):
         #########
         # ARTICLE STUFF
         word_foreign_flexion = article.title_parsed_clean[article_lemma_index]
-        flexion_translation = flexions.get(word_foreign_flexion).translation_google.lower()
+        flexion_translation = ""
+        # flexions.get(word_foreign_flexion).translation_google.lower()
 
         token_segmented = article.title_parsed_segmented[article_lemma_index]
 
-        token_POS = article.title_parsed_POSTAG[article_lemma_index]
+        token_POS = article.title_parsed_postag[article_lemma_index]
 
         # NNP = proper noun
         is_proper_noun = False
@@ -152,7 +152,7 @@ def build_article_words(article, words, word_known_categories, flexions):
         if token_POS == "CD":
             word_translation = word_foreign_flexion
 
-        features = article.title_parsed_FEATS[article_lemma_index]
+        features = article.title_parsed_feats[article_lemma_index]
         features = format_features(token_POS, features)
 
         token_prefixes = article.title_parsed_prefixes[article_lemma_index]
@@ -336,54 +336,28 @@ def index(request):
     #         # title_translation__ne=None,
     #         title_parsed_lemma={"$elemMatch": {"$in": query_words}},
     #     # )
-    cursor = Rss_feeds.objects.mongo_aggregate(
-        [
-            {
-                "$match": {
-                    "language": language,
-                    "title_parsed_lemma": {"$elemMatch": {"$in": query_words}},
-                    "published_datetime": {"$gt": start_date_cutoff, "$lt": end_date_cutoff},
-                }
-            },
-            {
-                "$project": {
-                    "title_parsed_lemma": "$title_parsed_lemma",
-                    "title": "$title_parsed_lemma",
-                    "found_lemmas": {
-                        "$filter": {
-                            "input": "$title_parsed_lemma",
-                            "as": "thing",
-                            "cond": {"$in": ["$$thing", query_sort_words]},
-                        }
-                    },
-                }
-            },
-            {
-                "$project": {
-                    "title_parsed_lemma": {"$size": "$title_parsed_lemma"},
-                    "found_lemmas": {"$size": "$found_lemmas"},
-                    "delta": {
-                        "$divide": [
-                            {"$size": "$title_parsed_lemma"},
-                            {"$size": "$found_lemmas"},
-                        ]
-                    },
-                }
-            },
-            {"$match": {"found_lemmas": {"$gt": 0}}},
-            {"$sort": {"delta": 1, "found_lemmas": -1}},
-            {"$limit": article_display_count},
-        ]
-    )
 
     article_ids = []
-    for r in cursor:
-        article_ids.append(r["_id"])
-    print("article_ids", article_ids)
+    with connection.cursor() as cursor:
+        query = """SELECT id, ratio FROM 
+        (SELECT id, lemma_found_count::decimal / title_parsed_lemma_length::decimal AS ratio FROM
+        (SELECT id, array_length("title_parsed_lemma", 1) AS title_parsed_lemma_length, 
+        array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS lemma_found_count
+        FROM articles_rss_feed WHERE published_datetime >= %s AND published_datetime <= %s) t1 ) t2 WHERE ratio NOTNULL ORDER BY ratio desc limit %s;"""
+        cursor.execute(
+            query, [query_words, start_date_cutoff, end_date_cutoff, article_display_count]
+        )
+        rows = cursor.fetchall()
 
-    article_ids = article_ids[0:article_display_count]
+        article_ids = []
+        for r in rows:
+            print(r[0])
+            article_ids.append(r[0])
+        print("article_ids", article_ids)
 
-    articles = Rss_feeds.objects.filter(link__in=article_ids)
+        article_ids = article_ids[0:article_display_count]
+
+    articles = Rss_feed.objects.filter(link__in=article_ids)
 
     print(f"Got {len(articles)} articles")
 
@@ -393,7 +367,7 @@ def index(request):
         lemmas = lemmas | set(article.title_parsed_lemma)
         flexions = flexions | set(article.title_parsed_clean)
 
-    lemmas = Words.objects.filter(language=language, _id__in=list(lemmas))
+    lemmas = Word.objects.filter(language=language, text__in=list(lemmas))
 
     if request.method == "POST":
         # word_known_categories = get_word_known_categories_from_df(lemmas, known_words_df)
@@ -409,7 +383,7 @@ def index(request):
     print(f"Got {len(lemmas)} lemmas")
     print(f"Got {len(flexions)} flexions")
 
-    flexions = Flexions.objects.filter(language=language, _id__in=list(flexions))
+    flexions = Flexion.objects.filter(language=language, text__in=list(flexions))
     flexions = model_result_to_dict(flexions)
     print(f"Got {len(flexions)} flexions")
 
