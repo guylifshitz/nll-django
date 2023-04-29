@@ -57,9 +57,12 @@
                                 <div class="mix_tooltip_2" hidden>{{word.flexion_translation}}</div>
                                 <div class="mix_tooltip_2">---</div>
                             </div>
-                            <div class="section_trans">
+                            <div class="section_trans" onclick="open_word_details_page(this)"
+                                lemma="{{word.lemma_foreign}}">
                                 <div>{{word.lemma_foreign_diacritic}}</div>
-                                <div>(#{{word.lemma_foreign_index}})</div>
+                                <div><i class="fa fa-sort" aria-hidden="true"></i>
+                                    {{word.lemma_foreign_index}} &nbsp; <i class="fa fa-star-o"
+                                        aria-hidden="true"></i>{{word.lemma_rating}}</div>
                                 <div>{{word.lemma_root}}</div>
                                 <div class="mix_tooltip_2" hidden>{{word.token_prefixes}}{{word.word_translation}}</div>
                                 <div class="mix_tooltip_2">---</div>

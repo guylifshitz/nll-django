@@ -7,6 +7,7 @@ import traceback
 from collections import defaultdict
 import json
 from django.db import connection
+from django.db.models import Prefetch
 
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
 
@@ -117,9 +118,14 @@ def build_article_words(article, words, word_known_categories, flexions):
             word_translation = word_translation.lower()
             lemma_root = get_root(lemma_obj)
         except Exception:
-            word_rank = "[[error]]"
+            word_rank = "-"
             word_translation = "[[error]]"
             lemma_root = "[[error]]"
+
+        try:
+            lemma_rating = lemma_obj.word_ratings_list[-1].rating
+        except:
+            lemma_rating = "-"
 
         lemma_known_status = word_known_categories.get(lemma_text, "unknown")
 
@@ -178,6 +184,7 @@ def build_article_words(article, words, word_known_categories, flexions):
             "lemma_practice": lemma_known_status == "practice",
             "lemma_seen": lemma_known_status == "seen",
             "lemma_known_status": lemma_known_status,
+            "lemma_rating": lemma_rating,
             "word_translation": word_translation,
             "token_segmented": token_segmented,
             # "verb_tense": verb_tense,
@@ -371,7 +378,9 @@ def index(request):
         lemmas = lemmas | set(article.title_parsed_lemma)
         flexions = flexions | set(article.title_parsed_clean)
 
-    lemmas = Word.objects.filter(language=language, text__in=list(lemmas))
+    lemmas = Word.objects.prefetch_related(
+        Prefetch("word_ratings", to_attr="word_ratings_list")
+    ).filter(language=language, text__in=list(lemmas))
 
     if request.method == "POST":
         # word_known_categories = get_word_known_categories_from_df(lemmas, known_words_df)

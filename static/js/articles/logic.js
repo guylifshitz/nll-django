@@ -125,6 +125,11 @@ $(document).ready(function () {
   });
 });
 
+function open_word_details_page(element) {
+  html_txt = $(element).attr("lemma");
+  window.open("/words/word?word=" + html_txt);
+}
+
 function clicked_source(element) {
   $(".card")
     .filter('[feed_source="' + element.getAttribute("source") + '"]')
