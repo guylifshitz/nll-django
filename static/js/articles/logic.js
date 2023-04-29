@@ -168,7 +168,7 @@ function update_rating(word, rating) {
   };
   $.ajax({
     type: "POST",
-    url: "http://localhost:8001/api/rating/",
+    url: "/api/rating/",
     data: JSON.stringify(data),
     processData: false,
     contentType: "application/json",

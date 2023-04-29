@@ -323,7 +323,7 @@ function update_rating(word, rating) {
   };
   $.ajax({
     type: "POST",
-    url: "http://localhost:8001/api/rating/",
+    url: "/api/rating/",
     data: JSON.stringify(data),
     processData: false,
     contentType: "application/json",
@@ -388,7 +388,7 @@ function update_root() {
   };
   $.ajax({
     type: "PATCH",
-    url: "http://localhost:8001/api/words/" + word + "/",
+    url: "/api/words/" + word + "/",
     data: JSON.stringify(data),
     processData: false,
     contentType: "application/json",
@@ -417,7 +417,7 @@ function update_translation() {
   };
   $.ajax({
     type: "PATCH",
-    url: "http://localhost:8001/api/words/" + word + "/",
+    url: "/api/words/" + word + "/",
     data: JSON.stringify(data),
     processData: false,
     contentType: "application/json",
@@ -453,7 +453,7 @@ function removeWordFromWords(word) {
 function show_similar_roots() {
   $.ajax({
     type: "GET",
-    url: "http://localhost:8001/api/similar_words/" + word + "/",
+    url: "/api/similar_words/" + word + "/",
     processData: false,
     contentType: "application/json",
   }).done(function (res) {
@@ -464,7 +464,7 @@ function show_similar_roots() {
 function show_similar_words() {
   $.ajax({
     type: "GET",
-    url: "http://localhost:8001/api/similar_words/" + word + "/",
+    url: "/api/similar_words/" + word + "/",
     processData: false,
     contentType: "application/json",
   }).done(function (res) {
