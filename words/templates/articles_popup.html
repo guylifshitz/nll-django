@@ -1,34 +1,30 @@
 <div id="articles-popup" class="popup" hidden>
     <div class="blocker" onclick="hide_popups()"></div>
     <div class="popup-content" id="article-popup">
-        See Articles
+        <h3> Build Articles </h3>
         <form action="{% url 'list_articles' %}" id="ART_FORM" method="post">
             {% csrf_token %}
-            <div>Selected words: </div>
-            <div id="words-selected-count">###</div>
             <div>
-                <input type="checkbox" class="XXX" id="XXX1" name="XXX1" value="XXXX">
-                <label for="XXX1">Limit known words in range </label>
+                <label for="articles-count">Number of articles:</label>
+                <input type="number" id="articles-count" name="article_display_count" value=100>
             </div>
             <div>
-                <input type="checkbox" class="XXX" id="include-unrated" name="XXX2" value="XXXX">
-                <label for="include-unrated">Include unrated words </label>
+                <label for="start-date">From</label>
+                <input type="date" id="start-date" name="start_date">
+                <label for="end-date">to</label>
+                <input type="date" id="end-date" name="end_date">
             </div>
 
-            <input type="number" id="articles-count" name="article_display_count" value=100>
-            <input type="date" id="start-date" name="start_date">
-            <input type="date" id="end-date" name="end_date">
-            <input type="hidden" id="practice_words" name="practice_words" value="">
-            <input type="hidden" id="known_words" name="known_words" value="">
-            <input type="hidden" id="language" name="language" value="{{url_parameters.language}}">
             <div>
+                <H4>Practice Words</H4>
                 <div>
-                    <input type="checkbox" class="XXX" id="select-practice-by-selected"
-                        name="select-practice-by-selected" value="XXXX">
-                    <label for="select-practice-by-selected">Practice words by selection</label>
+                    <label for="select-practice-by-selected">Selection (<span
+                            id="words-selected-count">###</span>)</label>
+                    <input type="checkbox" class="select-deselet-checkbox" id="select-practice-by-selected"
+                        name="select-practice-by-selected" value="XXXX" checked>
                 </div>
-
                 <div class="rating-buttons">
+                    <div>Rated</div>
                     <input type="checkbox" class="select-deselet-checkbox" id="select-practice-rating-1" rating=""
                         name="select-practice-rating-1" value="{{word.word}}">
                     <label for="select-practice-rating-1">
@@ -77,8 +73,27 @@
                 </div>
             </div>
 
-            <div class="button" id="SUB_ARTICLES" onclick="submit_form('ART_FORM')">
-                Articles
+            <div>
+                <H4>Known Words</H4>
+                <div>
+                    <input type="checkbox" class="select-deselet-checkbox" id="XXX1" name="XXX1" value="XXXX">
+                    <label for="XXX1">Limit to words in filter range</label>
+                </div>
+                <div>
+                    <input type="checkbox" class="select-deselet-checkbox" id="include-unrated" name="XXX2"
+                        value="XXXX">
+                    <label for="include-unrated">Include unrated words in filter range </label>
+                </div>
+            </div>
+
+            <input type="hidden" id="practice_words" name="practice_words" value="">
+            <input type="hidden" id="known_words" name="known_words" value="">
+            <input type="hidden" id="language" name="language" value="{{url_parameters.language}}">
+
+            <div class="build_articles_submit_button_section">
+                <div class="button build_articles_submit_button" id="SUB_ARTICLES" onclick="submit_form('ART_FORM')">
+                    Build
+                </div>
             </div>
 
         </form>

@@ -26,7 +26,9 @@
         </div>
         <div class="navbar-right">
             <a href="https://docs.google.com/document/d/1Hd-NtJjcCdVpQAGFwkuvgdQv8G7kNRpoZL01ogyteuk/edit?usp=sharing"
-                class="navbar-element">help</a>
+                target="_blank" class=" navbar-element">help</a>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfQ8lg-qKs1DlBiRjk8Z4txv0S4TM_P9vNeaql-8u_sKiiL4A/viewform?usp=sf_link"
+                target="_blank" class="navbar-element">feedback</a>
             {% if user.is_authenticated %}
             <a href="{% url 'logout' %}" class="navbar-element">logout {{user.username}}</a>
             {% else %}

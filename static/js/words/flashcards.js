@@ -168,10 +168,17 @@ function toggle_diacritic(element) {
   set_word_top_bottom_root();
   refresh_ui(word_state);
 }
+
 function speak_word() {
   if ($("#speak-toggle").hasClass("button-checked")) {
     speak(current_word["word_diacritic"]);
   }
+}
+
+function toggle_flexions(element) {
+  toggle_checked(element);
+  $("#word-flexions").toggle();
+  refresh_ui(word_state);
 }
 
 function speak(text) {
@@ -469,7 +476,10 @@ function context_menu_examples_word(element, token) {
 
 async function examples_word(practice_word, token) {
   var practice_words = [practice_word];
-  var known_words2 = user_word_ratings.map((item) => item["word"]);
+  var known_words2 = [];
+  if (user_word_ratings !== "") {
+    var known_words2 = user_word_ratings.map((item) => item["word"]);
+  }
   known_words2 = known_words2.filter(function (value, index, arr) {
     return !practice_words.includes(value);
   });

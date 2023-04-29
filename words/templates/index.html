@@ -149,14 +149,12 @@
     <div id="edit-popup" class="popup" hidden>
         <div class="blocker" onclick="hide_edit_popup()"></div>
         <div class="popup-content">
-            <div id="popup-word">-----</div>
+            <h2 id="popup-word">-----</h2>
 
             <div>
-                <div>translation:</div>
-                <div id="translation">-----</div>
+                <div>translation: <span id="translation">-----</span></div>
             </div>
             <div id="existing-translations" class="existing-entries">-----</div>
-
             <div class="form-box">
                 <label for="new_translation">new translation:</label>
                 <input type="text" id="new_translation" name="new_translation" list="existing_translations_list"
@@ -165,10 +163,9 @@
                 </datalist>
                 <button id="word-translation-submit" onclick="update_translation()">Update Translation</button>
             </div>
-
+            &nbsp;
             <div>
-                <div>root:</div>
-                <div id="root">-----</div>
+                <div>root: <span id="root">-----</span></div>
             </div>
             <div id="existing-roots" class="existing-entries">-----</div>
             <div class="form-box">

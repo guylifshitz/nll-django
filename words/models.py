@@ -75,7 +75,7 @@ class WordRating(models.Model):
 
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    word = models.ForeignKey(Word, on_delete=models.CASCADE)
+    word = models.ForeignKey(Word, on_delete=models.CASCADE, related_name="word_ratings")
     rating = models.IntegerField(default=0)
 
     def __str__(self):

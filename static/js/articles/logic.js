@@ -3,8 +3,8 @@ function position_tooltips() {
   $.each(tooltips, function (index, tooltip) {
     var box = tooltip.previousElementSibling.getBoundingClientRect();
     tooltip.style.position = "absolute";
-    tooltip.style.top = box.top + 20 + window.scrollY + "px";
-    tooltip.style.left = box.left + (box.right - box.left) / 2 - 50 + "px";
+    tooltip.style.top = box.top + 60 + window.scrollY + "px";
+    tooltip.style.left = box.left + (box.right - box.left) / 2 - 60 + "px";
   });
 }
 

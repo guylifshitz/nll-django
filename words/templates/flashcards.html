@@ -59,13 +59,13 @@
 
         {% csrf_token %}
         <a id="open-examples" class="button" onclick="context_menu_examples_word(this, '{{csrf_token}}')">
-            <i class="fa fa-tasks"></i>
+            <i class="fa fa-newspaper-o"></i>
         </a>
         <div class="button" onclick="show_similar_roots()">
-            <i class="">Similar (roots)</i>
+            <i class="fa fa-search-plus"> root</i>
         </div>
         <div class="button" onclick="show_similar_words()">
-            <i class="">Similar (full)</i>
+            <i class="fa fa-search-plus"> full</i>
         </div>
     </div>
 
@@ -77,16 +77,16 @@
             <i class="fa fa-volume-up"></i>
         </div>
         <div class="button" id="diacritic-toggle" onclick="toggle_diacritic(this)">
-            <i class="fa fa-stop-circle-o">_.</i>
+            <i class="fa fa-dot-circle-o"></i>
         </div>
         <div class="button" id="swap-top-bottom" onclick="swap_top_bottom_words(this)">
-            <i class="fa fa-exchange"></i>
+            <i class="fa fa-language"></i>
+        </div>
+        <div class="button" onclick="toggle_flexions(this)">
+            <i class="fa fa-list-ol "></i>
         </div>
         <div class="button" onclick="show_edit_popup()">
             <i class="fa fa-pencil-square-o"></i>
-        </div>
-        <div class="button">
-            <i class="fa fa-keyboard-o"></i>
         </div>
     </div>
 
@@ -112,7 +112,7 @@
 <div id="edit-popup" class="popup" hidden>
     <div class="blocker" onclick="hide_edit_popup()"></div>
     <div class="popup-content">
-        <div id="popup-word">-----</div>
+        <h2 id="popup-word">-----</h2>
 
         <div id="existing-roots">-----</div>
         <div class="form-box">

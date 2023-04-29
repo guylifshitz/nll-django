@@ -129,8 +129,12 @@ def build_article_words(article, words, word_known_categories, flexions):
         #########
         # ARTICLE STUFF
         word_foreign_flexion = article.title_parsed_clean[article_lemma_index]
-        flexion_translation = ""
-        # flexions.get(word_foreign_flexion).translation_google.lower()
+        flexion_translation = flexions.get(word_foreign_flexion).translation_google
+        if not flexion_translation:
+            flexion_translation = flexions.get(word_foreign_flexion).translation_azure
+        if not flexion_translation:
+            flexion_translation = ""
+        flexion_translation = flexion_translation.lower()
 
         token_segmented = article.title_parsed_segmented[article_lemma_index]
 
@@ -381,7 +385,6 @@ def index(request):
 
     lemmas = model_result_to_dict(lemmas)
     print(f"Got {len(lemmas)} lemmas")
-    print(f"Got {len(flexions)} flexions")
 
     flexions = Flexion.objects.filter(language=language, text__in=list(flexions))
     flexions = model_result_to_dict(flexions)
@@ -396,8 +399,8 @@ def index(request):
             article_to_render["title"] = article.title
             article_to_render["title_parsed_clean"] = article.title_parsed_clean
             article_to_render["feed_source"] = article.source
-            article_to_render["feed_names"] = article.feed_name
-            for feed_name in article.feed_name:
+            article_to_render["feed_names"] = article.feed_names
+            for feed_name in article.feed_names:
                 article_sources[article.source][feed_name] = 1
 
             article_to_render["published_datetime"] = article.published_datetime
@@ -579,7 +582,7 @@ def is_article_about_sports(article):
     link_contains_sport_word = any(word in article.link.lower() for word in sports_words)
 
     feedname_contains_sport_word = False
-    for feed_name in article.feed_name:
+    for feed_name in article.feed_names:
         feedname_contains_sport_word = feedname_contains_sport_word or any(
             word in feed_name.lower() for word in sports_words
         )

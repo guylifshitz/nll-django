@@ -31,8 +31,11 @@
     <input type="submit" value="login">
     <input type="hidden" name="next" value="{{ next }}">
 </form>
-
-{# Assumes you set up the password_reset view in your URLconf #}
-<p><a href="{% url 'password_reset' %}">Lost password?</a></p>
-
+&nbsp;
+<div>
+    <button type="submit"><a
+            href="https://docs.google.com/forms/d/e/1FAIpQLSemVn6WLg0Eu-bmDNUdR6Yhl7xJ9fa8Gc6qPRafADqG4Pnb3A/viewform?usp=sf_link">
+            Create account</a>
+    </button>
+</div>
 {% endblock %}

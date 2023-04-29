@@ -5,8 +5,8 @@ from django.contrib.postgres.fields import ArrayField
 class Rss_feed(models.Model):
     id = models.CharField(max_length=1000, primary_key=True)
     source = models.CharField(max_length=300)
-    feed_name = models.JSONField()
-    feed_name = ArrayField(models.TextField())
+    feed_names = ArrayField(models.TextField())
+    rss_files = ArrayField(models.TextField())
 
     language = models.CharField(max_length=100)
     published_datetime = models.DateField()
