@@ -496,6 +496,7 @@ function update_translation() {
 
   data = {
     new_user_translation: new_translation,
+    user_id: user_id,
   };
   $.ajax({
     type: "PATCH",

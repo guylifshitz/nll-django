@@ -113,6 +113,7 @@ def word(request):
             "speech_voice": speech_voice,
             "url_parameters": {},
             "user_auth_token": request.user.auth_token,
+            "user_username": request.user.username,
         },
     )
 

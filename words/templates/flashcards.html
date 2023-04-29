@@ -12,6 +12,7 @@
 <script>
     var speech_voice = "{{speech_voice}}";
     var user_auth_token = "{{ user_auth_token }}";
+    var user_username = "{{ user_username }}";
 </script>
 {{ words|json_script:"original_words-data" }};
 {{ user_word_ratings|json_script:"user_word_ratings-data" }}

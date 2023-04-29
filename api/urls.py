@@ -13,14 +13,17 @@ class WordsSerializer(serializers.ModelSerializer):
     new_user_translation = rest_framework.serializers.CharField(
         max_length=300, allow_blank=True, write_only=True
     )
+    username = rest_framework.serializers.CharField(
+        max_length=100, allow_blank=True, write_only=True
+    )
 
     class Meta:
         model = Word
-        fields = ["text", "new_user_root", "new_user_translation"]
-        # fields = ["text", "new_user_translation"]
+        fields = ["text", "new_user_root", "new_user_translation", "username"]
         extra_kwargs = {
             "new_user_root": {"read_only": True},
             "new_user_translation": {"read_only": True},
+            "username": {"read_only": True},
         }
 
     # def validate(self, attrs):
@@ -32,17 +35,25 @@ class WordsSerializer(serializers.ModelSerializer):
         raise NotImplemented
 
     def update(self, instance, validated_data):
+        username = validated_data.get("username", None)
+
         new_user_root = validated_data.get("new_user_root", None)
         if not instance.user_roots:
             instance.user_roots = []
+            instance.user_roots_with_user = []
         if new_user_root:
             instance.user_roots.append(new_user_root)
+            instance.user_roots_with_user.append({"root": new_user_root, "username": username})
 
         new_user_translation = validated_data.get("new_user_translation", None)
         if not instance.user_translations:
             instance.user_translations = []
+            instance.user_translations_with_user = []
         if new_user_translation:
             instance.user_translations.append(new_user_translation)
+            instance.user_translations_with_user.append(
+                {"translation": new_user_translation, "username": username}
+            )
 
         instance.save()
         return instance

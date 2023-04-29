@@ -384,6 +384,7 @@ function update_root() {
 
   data = {
     new_user_root: new_root,
+    username: user_username,
   };
   $.ajax({
     type: "PATCH",
@@ -412,6 +413,7 @@ function update_translation() {
 
   data = {
     new_user_translation: new_translation,
+    username: user_username,
   };
   $.ajax({
     type: "PATCH",

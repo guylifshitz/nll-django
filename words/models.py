@@ -35,6 +35,11 @@ class Word(models.Model):
     user_translations = models.JSONField(null=True, blank=True, default=default_json_values)
     user_roots = models.JSONField(null=True, blank=True, default=default_json_values)
 
+    user_translations_with_user = models.JSONField(
+        null=True, blank=True, default=default_json_values
+    )
+    user_roots_with_user = models.JSONField(null=True, blank=True, default=default_json_values)
+
 
 class Flexion(models.Model):
     # objects = models.DjongoManager()
