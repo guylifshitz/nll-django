@@ -20,6 +20,14 @@
 
 {% block content %}
 <div class="THING">
+    <div class="buttons">
+        <div class="button tall-button" id="button-previous" onclick="clicked_previous_word()">
+            <i class="fa fa-arrow-circle-left"></i>
+        </div>
+        <div class="button tall-button" id="button-next" onclick="clicked_next_word()">
+            <i class="fa fa-arrow-circle-right"></i>
+        </div>
+    </div>
     <div class="flashcard">
         <div class="word" id="word-top">
             TOP WORD
@@ -30,68 +38,10 @@
         <div class="word word-small " id="word-root">
             R-O-O-T
         </div>
-        <div class="word word-small " id="word-flexions">
-            fl,ex,ion,s
-        </div>
     </div>
 
     <div class="buttons">
-        <div class="button tall-button" id="button-previous" onclick="clicked_previous_word()">
-            <i class="fa fa-arrow-circle-left"></i>
-        </div>
-        <div class="button tall-button" id="button-next" onclick="clicked_next_word()">
-            <i class="fa fa-arrow-circle-right"></i>
-        </div>
-    </div>
-    <div class="buttons">
-
-        <!-- <div class="button" onclick="increase_word()">
-            <i class="fa fa-chevron-circle-up"></i>
-        </div>
-        <div class="button" onclick="decrease_word()">
-            <i class="fa fa-chevron-circle-down"></i>
-        </div> -->
-        <a id="open-dictionary" class="button" target="_blank" href="">
-            <i class="fa fa-wikipedia-w"></i>
-        </a>
-        <a id="open-pealim" class="button" target="_blank" href="">
-            <i class="">Pealim</i>
-        </a>
-
-        {% csrf_token %}
-        <a id="open-examples" class="button" onclick="context_menu_examples_word(this, '{{csrf_token}}')">
-            <i class="fa fa-newspaper-o"></i>
-        </a>
-        <div class="button" onclick="show_similar_roots()">
-            <i class="fa fa-search-plus"> root</i>
-        </div>
-        <div class="button" onclick="show_similar_words()">
-            <i class="fa fa-search-plus"> full</i>
-        </div>
-    </div>
-
-    <div class="buttons">
-        <div class="button" onclick="clicked_speak()">
-            <i class="fa fa-commenting"></i>
-        </div>
-        <div class="button button-checked" id="speak-toggle" onclick="toggle_checked(this)">
-            <i class="fa fa-volume-up"></i>
-        </div>
-        <div class="button" id="diacritic-toggle" onclick="toggle_diacritic(this)">
-            <i class="fa fa-dot-circle-o"></i>
-        </div>
-        <div class="button" id="swap-top-bottom" onclick="swap_top_bottom_words(this)">
-            <i class="fa fa-language"></i>
-        </div>
-        <div class="button" onclick="toggle_flexions(this)">
-            <i class="fa fa-list-ol "></i>
-        </div>
-        <div class="button" onclick="show_edit_popup()">
-            <i class="fa fa-pencil-square-o"></i>
-        </div>
-    </div>
-
-    <div class="buttons">
+        <div id="button-rating-0" class="button button-rating-0">unrated</div>
         <div id="button-rating-1" class="button button-rating-1" onclick="clicked_update(1)">
             1
         </div>
@@ -108,27 +58,111 @@
             5
         </div>
     </div>
+
+    <div class="buttons">
+
+        <!-- <div class="button" onclick="increase_word()">
+            <i class="fa fa-chevron-circle-up"></i>
+        </div>
+        <div class="button" onclick="decrease_word()">
+            <i class="fa fa-chevron-circle-down"></i>
+        </div> -->
+        <a id="open-dictionary" class="button" target="_blank" href="" title="Open in Wiktionary (external link)">
+            <i class="fa fa-wikipedia-w"></i>
+        </a>
+        <a id="open-pealim" class="button" target="_blank" href="" title="Open in Pealim.com (external link)">
+            <i class="">Pealim</i>
+        </a>
+
+        {% csrf_token %}
+        <a id="open-examples" class="button" onclick="context_menu_examples_word(this, '{{csrf_token}}')"
+            title="See examples">
+            <i class="fa fa-newspaper-o"></i>
+        </a>
+        <div class="button" onclick="show_similar_roots()" title="Find similar words by comparing roots">
+            <i class="fa fa-search-plus"> root</i>
+        </div>
+        <div class="button" onclick="show_similar_words()" title="Find similar words by comparing the full word">
+            <i class="fa fa-search-plus"> full</i>
+        </div>
+    </div>
+
+    <div class="buttons">
+        <div class="button" onclick="clicked_speak()" title="Speak word">
+            <i class="fa fa-commenting"></i>
+        </div>
+        <div class="button button-checked" id="speak-toggle" onclick="toggle_checked(this)"
+            title="Toggle automatic speaking">
+            <i class="fa fa-volume-up"></i>
+        </div>
+        <div class="button" id="diacritic-toggle" onclick="toggle_diacritic(this)"
+            title="Show diacritics (when available)">
+            <i class="fa fa-dot-circle-o"></i>
+        </div>
+        <div class="button" id="swap-top-bottom" onclick="swap_top_bottom_words(this)" title="Swap languages">
+            <i class="fa fa-language"></i>
+        </div>
+        <div class="button button-checked" onclick="toggle_flexions(this)" title="Toggle flexions">
+            <i class="fa fa-list-ol "></i>
+        </div>
+        <div class="button" onclick="show_edit_popup()" title="Suggest edits">
+            <i class="fa fa-pencil-square-o"></i>
+        </div>
+    </div>
+
+    <div class="flashcard word word-small " id="word-flexions">
+        fl,ex,ion,s
+    </div>
+
 </div>
 
 <div id="edit-popup" class="popup" hidden>
     <div class="blocker" onclick="hide_edit_popup()"></div>
     <div class="popup-content">
-        <h2 id="popup-word">-----</h2>
+        <h2>Edit: <span id="popup-word">-----</span></h2>
+        <div> ⚠️ Warning: this will impact all users ⚠️ </div>
+        <div> (the last user-submitted values will be displayed)</div>
 
-        <div id="existing-roots">-----</div>
-        <div class="form-box">
-            <label for="new_root">new root:</label>
-            <input type="text" id="new_root" name="new_root">
-            <button id="word-root-submit" onclick="update_root()">Update Root</button>
+        {% if user.username == "test" %}
+        &nbsp;
+        <div> Unable to edit if you are logged in as "test". Please log in as a different user.</div>
+        {% endif %}
+
+        &nbsp;
+
+        <div>
+            Suggested translations: <div id="existing-translations" class="existing-entries">-----</div>
         </div>
-
-        <div id="existing-translations">-----</div>
         <div class="form-box">
             <label for="new_translation">new translation:</label>
-            <input type="text" id="new_translation" name="new_translation">
+            <input type="text" id="new_translation" name="new_translation" list="existing_translations_list"
+                autocomplete="off">
+            <datalist id="existing_translations_list">
+            </datalist>
+            {% if user.username == "test" %}
+            <button id="word-translation-submit">(DISABLED) Update Translation</button>
+            {% else %}
             <button id="word-translation-submit" onclick="update_translation()">Update Translation</button>
+            {% endif %}
+        </div>
+        &nbsp;
+        <div>
+        </div>
+        Suggested roots: <div id="existing-roots" class="existing-entries">-----</div>
+        <div class="form-box">
+            <label for="new_root">new root:</label>
+            <input type="text" id="new_root" name="new_root" list="existing_roots_list" autocomplete="off">
+            <datalist id="existing_roots_list">
+            </datalist>
+            {% if user.username == "test" %}
+            <button id="word-root-submit">(DISABLED) Update Root</button>
+            {% else %}
+            <button id="word-root-submit" onclick="update_root()">Update Root</button>
+            {% endif %}
         </div>
     </div>
 </div>
+
+
 
 {% endblock content %}

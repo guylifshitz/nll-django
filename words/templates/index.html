@@ -21,28 +21,26 @@
 <div class="page">
     <div class="card">
         <div class="section-first">
-
             <div class="wordslist-form">
-
-
-
                 <form id="filter-form" method="get">
-                    <i class="pointer fa fa-filter" aria-hidden="true" onclick="submit_filter_form()"></i> &nbsp;
                     <input name="lower_freq_cutoff" class="number-input" type="number"
                         value="{{url_parameters.lower_freq_cutoff}}" /> -
                     <input name="upper_freq_cutoff" class="number-input" type="number"
                         value="{{url_parameters.upper_freq_cutoff}}" />
+                    <i class="button pointer fa fa-filter" aria-hidden="true" onclick="submit_filter_form()"
+                        title="Filter selection"></i> &nbsp;
                     <input type="submit" hidden value="filter">
                 </form>
                 <div>
                     <!-- TODO toggle this and add a helper text -->
                     <input type="checkbox" id="filter-unselected" hidden>
-                    <div class="pointer eyeer" id="filter-unselected-toggle" onclick="toggle_visible_words()"> <i
-                            id="filter-unselected-icon" class="fa fa-eye-slash" aria-hidden="true"></i> </div>
+                    <div>
+                        <div class="pointer eyeer" id="filter-unselected-toggle" onclick="toggle_visible_words()"
+                            title="Show selected only"> <i id="filter-unselected-icon" class="fa fa-eye-slash"
+                                aria-hidden="true"></i> </div>
+                    </div>
                 </div>
-
             </div>
-
             <div>
                 <div class="button xxxx" onclick="submit_form('main_form')">
                     Build Flashcards
@@ -51,11 +49,8 @@
                     Build Articles
                 </div>
             </div>
-
         </div>
-
         <hr>
-
         <div>
             <span id="selcted_count">0</span>
             <!-- selected words -->
@@ -146,53 +141,20 @@
 
     {% include 'articles_popup.html' %}.
 
-    <div id="edit-popup" class="popup" hidden>
-        <div class="blocker" onclick="hide_edit_popup()"></div>
-        <div class="popup-content">
-            <h2 id="popup-word">-----</h2>
-
-            <div>
-                <div>translation: <span id="translation">-----</span></div>
-            </div>
-            <div id="existing-translations" class="existing-entries">-----</div>
-            <div class="form-box">
-                <label for="new_translation">new translation:</label>
-                <input type="text" id="new_translation" name="new_translation" list="existing_translations_list"
-                    autocomplete="off">
-                <datalist id="existing_translations_list">
-                </datalist>
-                <button id="word-translation-submit" onclick="update_translation()">Update Translation</button>
-            </div>
-            &nbsp;
-            <div>
-                <div>root: <span id="root">-----</span></div>
-            </div>
-            <div id="existing-roots" class="existing-entries">-----</div>
-            <div class="form-box">
-                <label for="new_root">new root:</label>
-                <input type="text" id="new_root" name="new_root" list="existing_roots_list" autocomplete="off">
-                <datalist id="existing_roots_list">
-                </datalist>
-                <button id="word-root-submit" onclick="update_root()">Update Root</button>
-            </div>
-        </div>
-    </div>
-
     <div class="context-menu" id="context-menu" hidden>
-        <div class="context-menu-element" onclick="context_menu_edit_word()">
-            edit word
+        <div class="context-menu-element" onclick="context_menu_show_word()">
+            Word details
+        </div>
+        <div class="context-menu-element" onclick="context_menu_examples_word(this, '{{csrf_token}}')">
+            See examples
         </div>
         <div class="context-menu-element" target="_blank"
             onclick="context_menu_open_definition(this, '{{url_parameters.language|title}}')">
-            Definition
+            Wiktionary <i class="fa fa-external-link"></i>
         </div>
-        <div class="context-menu-element" onclick="context_menu_examples_word(this, '{{csrf_token}}')">
-            see examples
+        <div class="context-menu-element" target="_blank" onclick="context_menu_open_pealim(this)">
+            Pealim <i class="fa fa-external-link"></i>
         </div>
-        <div class="context-menu-element" onclick="context_menu_show_word()">
-            word details
-        </div>
-
     </div>
 
 

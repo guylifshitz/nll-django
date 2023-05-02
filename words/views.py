@@ -127,8 +127,9 @@ def flashcards(request):
         lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
         upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
+        queryset = WordRating.objects.filter(user=request.user)
         words = Word.objects.prefetch_related(
-            Prefetch("word_ratings", to_attr="word_ratings_list")
+            Prefetch("word_ratings", to_attr="word_ratings_list", queryset=queryset)
         ).filter(
             language=language,
             rank__gt=lower_freq_cutoff,
@@ -152,8 +153,9 @@ def flashcards(request):
             if key.startswith("select-word-"):
                 words_to_show.append(value)
 
+        queryset = WordRating.objects.filter(user=request.user)
         words = Word.objects.prefetch_related(
-            Prefetch("word_ratings", to_attr="word_ratings_list")
+            Prefetch("word_ratings", to_attr="word_ratings_list", queryset=queryset)
         ).filter(language=language, text__in=words_to_show)
         words_to_show = build_words_to_show(words)
         url_parameters = {
@@ -188,8 +190,9 @@ def index(request):
     lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
     upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
+    queryset = WordRating.objects.filter(user=request.user)
     words = Word.objects.prefetch_related(
-        Prefetch("word_ratings", to_attr="word_ratings_list")
+        Prefetch("word_ratings", to_attr="word_ratings_list", queryset=queryset)
     ).filter(
         language=language,
         rank__gt=lower_freq_cutoff,

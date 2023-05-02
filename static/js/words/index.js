@@ -6,14 +6,9 @@ async function initialize_ratings() {
   for (const word of words) {
     // TODO handle better the escpaing of '
     rating = word.rating;
-    console.log(word);
-    console.log(word.rating);
-    console.log(
-      "#" +
-        $.escapeSelector(
-          "button-rating-" + rating + "-" + word["word"].replace("'", "\\'")
-        )
-    );
+    if (rating == null) {
+      rating = 0;
+    }
     $(
       "#" +
         $.escapeSelector(
@@ -367,36 +362,6 @@ function update_words_selected_counter() {
   $("#selcted_count").text(words_selected_count);
 }
 
-function show_edit_popup(word) {
-  $("#popup-word").text(word.word);
-  $("#root").text(word.root);
-  $("#translation").text(word.translation);
-  $("#existing-translations").text(word.user_translations);
-
-  $("#new_translation").val("");
-  $("#new_root").val("");
-
-  $("#edit-popup").show();
-
-  var datalist = $("#existing_translations_list");
-  datalist.empty();
-  $("#existing-translations").empty();
-  word.user_translations.forEach(function (t) {
-    $("#existing-translations").append(
-      "<div class='existing-entry'>" + t + "</div>"
-    );
-    datalist.append("<option value='" + t + "'>");
-  });
-
-  var datalist = $("#existing_roots_list");
-  datalist.empty();
-  $("#existing-roots").empty();
-  word.user_roots.forEach(function (r) {
-    $("#existing-roots").append("<div class='existing-entry'>" + r + "</div>");
-    datalist.append("<option value='" + r + "'>");
-  });
-}
-
 function hide_edit_popup() {
   $(".popup").hide();
 }
@@ -474,6 +439,12 @@ function context_menu_open_definition(element, language) {
       $("#context-menu").attr("word") +
       "#" +
       language
+  );
+}
+
+function context_menu_open_pealim(element) {
+  window.open(
+    "https://www.pealim.com/search/?q=" + $("#context-menu").attr("word")
   );
 }
 

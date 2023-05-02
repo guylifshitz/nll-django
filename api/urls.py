@@ -1,5 +1,6 @@
 from django.urls import path, include
 from words.models import Word, WordRating
+from words.permissions import IsNotTestUser
 from rest_framework import serializers, viewsets, routers
 import rest_framework
 from rest_framework.permissions import IsAuthenticated
@@ -128,13 +129,13 @@ class WordsSerializer2(serializers.ModelSerializer):
                 continue
             comparable_word_2 = self.comparable_word_maker(top_word.serializable_value(field))
             similar_score = fuzz.ratio(comparable_word, comparable_word_2)
-            if similar_score >= 50:
+            if similar_score >= 70:
                 similar_roots.append(
                     {
                         "text": top_word.text,
                         "root": top_word.root,
-                        "comparable_word": comparable_word_2,
                         "translation": top_word.translation,
+                        # "comparable_word": comparable_word_2,
                         "similar_score": similar_score,
                     }
                 )
@@ -152,6 +153,9 @@ class WordsSerializer2(serializers.ModelSerializer):
 class WordsViewSet(viewsets.ModelViewSet):
     lookup_field = "text"
     queryset = Word.objects.filter(language="hebrew").order_by("rank").all()
+
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsNotTestUser]
     serializer_class = WordsSerializer
 
 

@@ -24,10 +24,31 @@
             <div style="width: 90%; display: table-cell;">
                 <div class="title" text="{{article.title}}">
                     {% for word in article.words %}
-                    <span class="word" id="word_{{forloop.counter}}"
-                        original_txt="{{word.word_foreign}}">{{word.word_foreign}}</span>
-                    <div class="word_tooltip">
-                        <div class="section_lemma" id="word_tooltip_{{forloop.counter}}">{{word.word_translation}}
+                    <span class="word" id="word_{{forloop.counter}}" original_txt="{{word.word_foreign}}"
+                        lemma="{{word.lemma_foreign}}">{{word.word_foreign}}</span>
+
+                    <div class="word_tooltip" id="word_tooltip_{{forloop.counter}}">
+                        <div class="mix_tooltip_1">
+                            <div class="section_flexion">{{word.word_foreign}}</div>
+                            <div class="section_lemma">
+                                <div>{{word.token_segmented}}</div>
+                                {% if word.verb_tense %}<div>(verb: {{word.verb_tense}})</div>{% endif %}
+                                {% if word.is_proper_noun %}<div>(name)</div>{% endif %}
+                                {% if word.is_prep_pronoun %}<div>({{word.token_segmented}})</div>{% endif %}
+                                ({{word.features}})
+                                <div class="mix_tooltip_2" hidden>{{word.flexion_translation}}</div>
+                                <div class="mix_tooltip_2">---</div>
+                            </div>
+                            <div class="section_trans" onclick="open_word_details_page(this)"
+                                lemma="{{word.lemma_foreign}}">
+                                <div>{{word.lemma_foreign_diacritic}}</div>
+                                <div><i class="fa fa-sort" aria-hidden="true"></i>
+                                    {{word.lemma_foreign_index}} &nbsp; <i class="fa fa-star-o"
+                                        aria-hidden="true"></i>{{word.lemma_rating}}</div>
+                                <div>{{word.lemma_root}}</div>
+                                <div class="mix_tooltip_2" hidden>{{word.token_prefixes}}{{word.word_translation}}</div>
+                                <div class="mix_tooltip_2">---</div>
+                            </div>
                         </div>
                     </div>
                     {%endfor %}

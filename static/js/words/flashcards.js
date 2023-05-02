@@ -73,12 +73,19 @@ function set_word_top_bottom_root() {
 }
 function pretty_flexions(flexions) {
   let arr = [];
-  for (var key in flexions) {
-    if (flexions.hasOwnProperty(key)) {
-      arr.push(key + "&nbsp;&nbsp;&nbsp;&nbsp;" + flexions[key] + "<br>  ");
+
+  if (flexions) {
+    arr.push("%" + "&nbsp;&nbsp;&nbsp;&nbsp;flexion<br>  ");
+    for (var key in flexions) {
+      if (flexions.hasOwnProperty(key)) {
+        arr.push(key + "&nbsp;&nbsp;&nbsp;&nbsp;" + flexions[key] + "<br>  ");
+      }
     }
+    arr = "<br>" + arr.join("   ");
+  } else {
+    arr = "---";
   }
-  arr = "<br>" + arr.join("   ");
+
   return arr;
 }
 
@@ -251,7 +258,12 @@ $(document).ready(function () {
     document.getElementById("user_word_ratings-data").textContent
   );
   shuffleArray(XXXX_words);
+
   clicked_next_word();
+  // hack to show the word immediately when only one word (show word details). In future we should have a dedicated route for this.
+  if (all_words.length === 1) {
+    clicked_next_word();
+  }
 
   $(function () {
     $(window).keydown(function (e) {
@@ -357,10 +369,14 @@ function update_rating(word, rating) {
 async function get_rating() {
   clear_ratings();
   rating = current_word.rating;
+  if (rating == null) {
+    rating = 0;
+  }
   $("#button-rating-" + rating).addClass("rating-checked");
 }
 
 function clear_ratings() {
+  $("#button-rating-" + 0).removeClass("rating-checked");
   $("#button-rating-" + 1).removeClass("rating-checked");
   $("#button-rating-" + 2).removeClass("rating-checked");
   $("#button-rating-" + 3).removeClass("rating-checked");
@@ -369,11 +385,36 @@ function clear_ratings() {
 }
 
 function show_edit_popup() {
-  $("#popup-word").text(current_word["word"]);
-  $("#existing-roots").text(current_word["user_roots"]);
-  $("#existing-translations").text(current_word["user_translations"]);
-  $(".popup").show();
+  let word = current_word;
+
+  $("#popup-word").text(word.word);
+  let translations = [word.translation].concat(word.user_translations);
+  let roots = [word.root].concat(word.user_roots);
+
+  $("#new_translation").val("");
+  $("#new_root").val("");
+
+  $("#edit-popup").show();
+
+  var datalist = $("#existing_translations_list");
+  datalist.empty();
+  $("#existing-translations").empty();
+  translations.forEach(function (t) {
+    $("#existing-translations").append(
+      "<div class='existing-entry'>" + t + "</div>"
+    );
+    datalist.append("<option value='" + t + "'>");
+  });
+
+  var datalist = $("#existing_roots_list");
+  datalist.empty();
+  $("#existing-roots").empty();
+  roots.forEach(function (r) {
+    $("#existing-roots").append("<div class='existing-entry'>" + r + "</div>");
+    datalist.append("<option value='" + r + "'>");
+  });
 }
+
 function hide_edit_popup() {
   $(".popup").hide();
 }
@@ -392,6 +433,9 @@ function update_root() {
     data: JSON.stringify(data),
     processData: false,
     contentType: "application/json",
+    headers: {
+      Authorization: "Token " + user_auth_token,
+    },
   })
     .done(function () {
       // TODO update the root in the flashcards.
@@ -421,6 +465,9 @@ function update_translation() {
     data: JSON.stringify(data),
     processData: false,
     contentType: "application/json",
+    headers: {
+      Authorization: "Token " + user_auth_token,
+    },
   })
     .done(function () {
       current_word["translation"] = new_translation;

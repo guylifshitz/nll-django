@@ -197,21 +197,6 @@ a {
   background-color: #ddd
 }
 
-
-.existing-entries {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  align-items: center;
-}
-
-.existing-entry {
-  background-color: rgb(170, 184, 244);
-  border-radius: 10px;
-  padding: 0.5rem;
-}
-
-
 .xxxx {
   width: 200px;
   padding: 1.0rem;
@@ -246,7 +231,8 @@ a {
 }
 
 .eyeer {
-  padding: 3rem;
+  margin: 3rem;
+  width: fit-content;
   align-items: center;
 }
 

@@ -1,7 +1,7 @@
 from .forms import ArticlesForm, ArticlesFormFromPOST
 from django.shortcuts import render
 from articles.models import Rss_feed
-from words.models import Word, Flexion
+from words.models import Word, Flexion, WordRating
 import datetime
 import traceback
 from collections import defaultdict
@@ -378,8 +378,9 @@ def index(request):
         lemmas = lemmas | set(article.title_parsed_lemma)
         flexions = flexions | set(article.title_parsed_clean)
 
+    queryset = WordRating.objects.filter(user=request.user)
     lemmas = Word.objects.prefetch_related(
-        Prefetch("word_ratings", to_attr="word_ratings_list")
+        Prefetch("word_ratings", to_attr="word_ratings_list", queryset=queryset)
     ).filter(language=language, text__in=list(lemmas))
 
     if request.method == "POST":

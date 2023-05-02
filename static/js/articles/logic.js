@@ -1,3 +1,5 @@
+var speech_rate = 0.7;
+
 function position_tooltips() {
   var tooltips = $(".word_tooltip");
   $.each(tooltips, function (index, tooltip) {
@@ -30,7 +32,7 @@ function speak_title(speakElement) {
   var msg = new SpeechSynthesisUtterance();
   msg.text = bigstring;
   msg.lang = speech_voice;
-  msg.rate = 0.7;
+  msg.rate = speech_rate;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(msg);
 
@@ -53,7 +55,7 @@ function speak(text) {
   var msg = new SpeechSynthesisUtterance();
   msg.text = text;
   msg.lang = speech_voice;
-  msg.rate = 0.5;
+  msg.rate = speech_rate;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(msg);
 }
@@ -91,7 +93,23 @@ function show_partial_translation(element) {
   position_tooltips();
 }
 
+window.onload = position_tooltips;
+
 $(document).ready(function () {
+  $(function () {
+    $(window).keydown(function (e) {
+      var key = e.which;
+      if (key == 61) {
+        speech_rate += 0.1;
+        console.log("speech_rate: ", speech_rate.toFixed(1));
+      }
+      if (key == 173) {
+        speech_rate -= 0.1;
+        console.log("speech_rate: ", speech_rate.toFixed(1));
+      }
+    });
+  });
+
   function google_translate_word() {
     html_txt = $(event.target).attr("original_txt");
 
