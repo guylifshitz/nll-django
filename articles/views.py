@@ -214,6 +214,16 @@ def get_root(word):
     return root
 
 
+def cleanup_source_name(source_name):
+    source_name_mapping = {
+        "ynet-hebrew": "ynet",
+        "mako-hebrew": "mako",
+        "haaretz-hebrew": "haaretz",
+        "globes-hebrew": "globes",
+    }
+    return source_name_mapping[source_name]
+
+
 def index(request):
     if not request.user.is_authenticated:
         return redirect(f"{settings.LOGIN_URL}?next={request.path}")
@@ -408,10 +418,10 @@ def index(request):
             article_to_render = {}
             article_to_render["title"] = article.title
             article_to_render["title_parsed_clean"] = article.title_parsed_clean
-            article_to_render["feed_source"] = article.source
+            article_to_render["feed_source"] = cleanup_source_name(article.source)
             article_to_render["feed_names"] = article.feed_names
             for feed_name in article.feed_names:
-                article_sources[article.source][feed_name] = 1
+                article_sources[cleanup_source_name(article.source)][feed_name] = 1
 
             article_to_render["published_datetime"] = article.published_datetime
             article_to_render["title_translation"] = article.title_translation

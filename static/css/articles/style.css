@@ -24,13 +24,17 @@ a {
 }
 
 
+@media only screen and (max-width: 50rem) {
+  .articles_right_panel {
+    display: none;
+  }
+}
 
 .articles_right_panel {
-  width: 180px;
-  float: right;
+  width: 7rem;
   position: fixed;
   padding: 0.5rem;
-  left: 50;
+  right: 0px;
   top: 30px;
 }
 
