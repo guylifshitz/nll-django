@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 import os
-import django_heroku
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -53,6 +52,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework.authtoken",
+    "accounts"
 ]
 
 REST_FRAMEWORK = {
@@ -107,23 +107,12 @@ WSGI_APPLICATION = "news_reader.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "djongo",
-        "NAME": "newspaper-language-learner",
-        "ENFORCE_SCHEMA": False,
-        "CLIENT": {
-            "host": "guylifshitz.com",
-            "port": 27017,
-            "username": "django",
-            "password": "PASSWORD",
-            "authSource": "newspaper-language-learner",
-            "authMechanism": "SCRAM-SHA-1",
-            # "host": "localhost",
-            # "port": 27017,
-            # "username": "guy",
-            # "password": "password",
-            # "authSource": "newspaper-language-learner",
-            # "authMechanism": "SCRAM-SHA-1",
-        },
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'nll',
+        'USER': 'django',
+        'PASSWORD': 'PASSWORD',
+        'HOST': 'guylifshitz.com',
+        'PORT': '5432', 
     }
 }
 
@@ -176,8 +165,6 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# django_heroku.settings(locals())
 
 DATE_INPUT_FORMATS = ["%d-%m-%Y"]
 

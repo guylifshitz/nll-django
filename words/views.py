@@ -1,4 +1,3 @@
-from numpy import sort, source
 from .forms import WordsForm
 from django.shortcuts import redirect, render
 from words.models import Word, WordRating
@@ -197,7 +196,7 @@ def index(request):
         language=language,
         rank__gt=lower_freq_cutoff,
         rank__lte=upper_freq_cutoff,
-    )
+    ).order_by("rank")
 
     words_to_show = build_words_to_show(words, sort_source=sort_source)
 
