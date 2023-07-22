@@ -21,20 +21,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get(
-    "SECRET_KEY", "django-insecure-v(=oysl=hriom8gq$_^)&f-d$h-x_=#ube^^wp)5)g_$uaxrmv"
+    "SECRET_KEY", os.environ["NLL_DJANGO_SECRET_KEY"]"
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG") != "False"
+DEBUG = os.environ.get("NLL_DJANGO_DEBUG", "True") != "False"
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "local")
+ENVIRONMENT = os.environ.get("NLL_DJANGO_ENVIRONMENT", "local")
 
 ALLOWED_HOSTS = [
-    "localhost",
-    "news-lang-learn-staging.herokuapp.com",
-    "news-lang-learn-prod.herokuapp.com",
-    "192.168.0.17",
     "guylifshitz.com",
+    "langauge.guylifshitz.com",
 ]
 
 
@@ -110,9 +107,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'nll',
         'USER': 'django',
-        'PASSWORD': 'PASSWORD',
+        'PASSWORD': os.environ["NLL_DJANGO_DB_PASS"],
         'HOST': 'guylifshitz.com',
-        'PORT': '5432', 
+        'PORT': '5438', 
     }
 }
 
