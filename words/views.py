@@ -95,8 +95,15 @@ def word(request):
         language = request.GET.get("language", "hebrew")
         word_text = request.GET.get("word", 0)
 
-        word = Word.objects.get(text=word_text)
-        word_to_show = build_words_to_show([word])[0]
+        queryset = WordRating.objects.filter(user=request.user)
+
+        word = Word.objects.prefetch_related(
+            Prefetch("word_ratings", to_attr="word_ratings_list", queryset=queryset)
+        ).filter(
+            language=language,
+            text=word_text
+        )
+        word_to_show = build_words_to_show(word)[0]
 
     elif request.method == "POST":
         raise notImplementedError
