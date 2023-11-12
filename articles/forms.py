@@ -1,7 +1,7 @@
 from django import forms
 from django.conf import settings
 
-
+# TODO rename classes and remove old classes
 class ArticlesFormFromFile(forms.Form):
 
     languages = (("arabic", "Arabic"), ("hebrew", "Hebrew"))

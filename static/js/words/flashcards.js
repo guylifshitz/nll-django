@@ -73,12 +73,19 @@ function set_word_top_bottom_root() {
 }
 function pretty_flexions(flexions) {
   let arr = [];
-  for (var key in flexions) {
-    if (flexions.hasOwnProperty(key)) {
-      arr.push(key + "&nbsp;&nbsp;&nbsp;&nbsp;" + flexions[key] + "<br>  ");
+
+  if (flexions) {
+    arr.push("%" + "&nbsp;&nbsp;&nbsp;&nbsp;flexion<br>  ");
+    for (var key in flexions) {
+      if (flexions.hasOwnProperty(key)) {
+        arr.push(key + "&nbsp;&nbsp;&nbsp;&nbsp;" + flexions[key] + "<br>  ");
+      }
     }
+    arr = "<br>" + arr.join("   ");
+  } else {
+    arr = "---";
   }
-  arr = "<br>" + arr.join("   ");
+
   return arr;
 }
 
@@ -168,10 +175,17 @@ function toggle_diacritic(element) {
   set_word_top_bottom_root();
   refresh_ui(word_state);
 }
+
 function speak_word() {
   if ($("#speak-toggle").hasClass("button-checked")) {
     speak(current_word["word_diacritic"]);
   }
+}
+
+function toggle_flexions(element) {
+  toggle_checked(element);
+  $("#word-flexions").toggle();
+  refresh_ui(word_state);
 }
 
 function speak(text) {
@@ -244,7 +258,12 @@ $(document).ready(function () {
     document.getElementById("user_word_ratings-data").textContent
   );
   shuffleArray(XXXX_words);
+
   clicked_next_word();
+  // hack to show the word immediately when only one word (show word details). In future we should have a dedicated route for this.
+  if (all_words.length === 1) {
+    clicked_next_word();
+  }
 
   $(function () {
     $(window).keydown(function (e) {
@@ -311,13 +330,12 @@ async function clicked_update(rating) {
 
 function update_rating(word, rating) {
   data = {
-    word_text: word,
-    rating: rating,
-    token: user_auth_token,
+    find_text: word,
+    new_rating: rating,
   };
   $.ajax({
     type: "POST",
-    url: "http://localhost:8001/api/rating/",
+    url: "/api/rating/",
     data: JSON.stringify(data),
     processData: false,
     contentType: "application/json",
@@ -351,10 +369,14 @@ function update_rating(word, rating) {
 async function get_rating() {
   clear_ratings();
   rating = current_word.rating;
+  if (rating == null) {
+    rating = 0;
+  }
   $("#button-rating-" + rating).addClass("rating-checked");
 }
 
 function clear_ratings() {
+  $("#button-rating-" + 0).removeClass("rating-checked");
   $("#button-rating-" + 1).removeClass("rating-checked");
   $("#button-rating-" + 2).removeClass("rating-checked");
   $("#button-rating-" + 3).removeClass("rating-checked");
@@ -363,11 +385,36 @@ function clear_ratings() {
 }
 
 function show_edit_popup() {
-  $("#popup-word").text(current_word["word"]);
-  $("#existing-roots").text(current_word["user_roots"]);
-  $("#existing-translations").text(current_word["user_translations"]);
-  $(".popup").show();
+  let word = current_word;
+
+  $("#popup-word").text(word.word);
+  let translations = [word.translation].concat(word.user_translations);
+  let roots = [word.root].concat(word.user_roots);
+
+  $("#new_translation").val("");
+  $("#new_root").val("");
+
+  $("#edit-popup").show();
+
+  var datalist = $("#existing_translations_list");
+  datalist.empty();
+  $("#existing-translations").empty();
+  translations.forEach(function (t) {
+    $("#existing-translations").append(
+      "<div class='existing-entry'>" + t + "</div>"
+    );
+    datalist.append("<option value='" + t + "'>");
+  });
+
+  var datalist = $("#existing_roots_list");
+  datalist.empty();
+  $("#existing-roots").empty();
+  roots.forEach(function (r) {
+    $("#existing-roots").append("<div class='existing-entry'>" + r + "</div>");
+    datalist.append("<option value='" + r + "'>");
+  });
 }
+
 function hide_edit_popup() {
   $(".popup").hide();
 }
@@ -378,13 +425,17 @@ function update_root() {
 
   data = {
     new_user_root: new_root,
+    username: user_username,
   };
   $.ajax({
     type: "PATCH",
-    url: "http://localhost:8001/api/words/" + word + "/",
+    url: "/api/words/" + word + "/",
     data: JSON.stringify(data),
     processData: false,
     contentType: "application/json",
+    headers: {
+      Authorization: "Token " + user_auth_token,
+    },
   })
     .done(function () {
       // TODO update the root in the flashcards.
@@ -406,13 +457,17 @@ function update_translation() {
 
   data = {
     new_user_translation: new_translation,
+    username: user_username,
   };
   $.ajax({
     type: "PATCH",
-    url: "http://localhost:8001/api/words/" + word + "/",
+    url: "/api/words/" + word + "/",
     data: JSON.stringify(data),
     processData: false,
     contentType: "application/json",
+    headers: {
+      Authorization: "Token " + user_auth_token,
+    },
   })
     .done(function () {
       current_word["translation"] = new_translation;
@@ -445,7 +500,7 @@ function removeWordFromWords(word) {
 function show_similar_roots() {
   $.ajax({
     type: "GET",
-    url: "http://localhost:8001/api/similar_words/" + word + "/",
+    url: "/api/similar_words/" + word + "/",
     processData: false,
     contentType: "application/json",
   }).done(function (res) {
@@ -456,7 +511,7 @@ function show_similar_roots() {
 function show_similar_words() {
   $.ajax({
     type: "GET",
-    url: "http://localhost:8001/api/similar_words/" + word + "/",
+    url: "/api/similar_words/" + word + "/",
     processData: false,
     contentType: "application/json",
   }).done(function (res) {
@@ -470,7 +525,10 @@ function context_menu_examples_word(element, token) {
 
 async function examples_word(practice_word, token) {
   var practice_words = [practice_word];
-  var known_words2 = user_word_ratings.map((item) => item["word"]);
+  var known_words2 = [];
+  if (user_word_ratings !== "") {
+    var known_words2 = user_word_ratings.map((item) => item["word"]);
+  }
   known_words2 = known_words2.filter(function (value, index, arr) {
     return !practice_words.includes(value);
   });

@@ -6,6 +6,9 @@ async function initialize_ratings() {
   for (const word of words) {
     // TODO handle better the escpaing of '
     rating = word.rating;
+    if (rating == null) {
+      rating = 0;
+    }
     $(
       "#" +
         $.escapeSelector(
@@ -17,7 +20,6 @@ async function initialize_ratings() {
     ).attr("rating", rating);
     monitor_checkboxes_rating();
   }
-  // }
 }
 
 function clear_ratings(word) {
@@ -332,6 +334,7 @@ function update_select_all_rating_checkbox(rating, num_words_with_rating) {
 function hide_popups() {
   $(".popup").hide();
 }
+
 function show_articles_popup() {
   $("#articles-popup").show();
   let words_selected_count = $(".select-word-checkbox:checked").length;
@@ -357,36 +360,6 @@ function hide_unselected() {
 function update_words_selected_counter() {
   let words_selected_count = $(".select-word-checkbox:checked").length;
   $("#selcted_count").text(words_selected_count);
-}
-
-function show_edit_popup(word) {
-  $("#popup-word").text(word.word);
-  $("#root").text(word.root);
-  $("#translation").text(word.translation);
-  $("#existing-translations").text(word.user_translations);
-
-  $("#new_translation").val("");
-  $("#new_root").val("");
-
-  $("#edit-popup").show();
-
-  var datalist = $("#existing_translations_list");
-  datalist.empty();
-  $("#existing-translations").empty();
-  word.user_translations.forEach(function (t) {
-    $("#existing-translations").append(
-      "<div class='existing-entry'>" + t + "</div>"
-    );
-    datalist.append("<option value='" + t + "'>");
-  });
-
-  var datalist = $("#existing_roots_list");
-  datalist.empty();
-  $("#existing-roots").empty();
-  word.user_roots.forEach(function (r) {
-    $("#existing-roots").append("<div class='existing-entry'>" + r + "</div>");
-    datalist.append("<option value='" + r + "'>");
-  });
 }
 
 function hide_edit_popup() {
@@ -469,6 +442,12 @@ function context_menu_open_definition(element, language) {
   );
 }
 
+function context_menu_open_pealim(element) {
+  window.open(
+    "https://www.pealim.com/search/?q=" + $("#context-menu").attr("word")
+  );
+}
+
 function context_menu_examples_word(element, token) {
   examples_word($("#context-menu").attr("word"), token);
 }
@@ -478,8 +457,9 @@ function context_menu_edit_word() {
 }
 
 function context_menu_show_word() {
+  language = window.location.pathname.split("/")[1];
   html_txt = $("#context-menu").attr("word");
-  window.open("/words/word?word=" + html_txt);
+  window.open("/" + language + "/words/word?word=" + html_txt);
 }
 
 function update_translation() {
@@ -488,10 +468,11 @@ function update_translation() {
 
   data = {
     new_user_translation: new_translation,
+    user_id: user_id,
   };
   $.ajax({
     type: "PATCH",
-    url: "http://localhost:8001/api/words/" + word + "/",
+    url: "/api/words/" + word + "/",
     data: JSON.stringify(data),
     processData: false,
     contentType: "application/json",
@@ -517,7 +498,7 @@ function update_root() {
   };
   $.ajax({
     type: "PATCH",
-    url: "http://localhost:8001/api/words/" + word + "/",
+    url: "/api/words/" + word + "/",
     data: JSON.stringify(data),
     processData: false,
     contentType: "application/json",
@@ -534,19 +515,14 @@ function update_root() {
     });
 }
 
-// function that gets the logged in user's token in django
-// function get_token() {
-
-// }
-
 function update_rating(word, rating) {
   data = {
-    word_text: word,
-    rating: rating,
+    find_text: word,
+    new_rating: rating,
   };
   $.ajax({
     type: "POST",
-    url: "http://localhost:8001/api/rating/",
+    url: "/api/rating/",
     data: JSON.stringify(data),
     processData: false,
     contentType: "application/json",

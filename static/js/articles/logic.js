@@ -1,10 +1,12 @@
+var speech_rate = 0.7;
+
 function position_tooltips() {
   var tooltips = $(".word_tooltip");
   $.each(tooltips, function (index, tooltip) {
     var box = tooltip.previousElementSibling.getBoundingClientRect();
     tooltip.style.position = "absolute";
-    tooltip.style.top = box.top + 20 + window.scrollY + "px";
-    tooltip.style.left = box.left + (box.right - box.left) / 2 - 50 + "px";
+    tooltip.style.top = box.top + 60 + window.scrollY + "px";
+    tooltip.style.left = box.left + (box.right - box.left) / 2 - 60 + "px";
   });
 }
 
@@ -30,7 +32,7 @@ function speak_title(speakElement) {
   var msg = new SpeechSynthesisUtterance();
   msg.text = bigstring;
   msg.lang = speech_voice;
-  msg.rate = 0.7;
+  msg.rate = speech_rate;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(msg);
 
@@ -53,7 +55,7 @@ function speak(text) {
   var msg = new SpeechSynthesisUtterance();
   msg.text = text;
   msg.lang = speech_voice;
-  msg.rate = 0.5;
+  msg.rate = speech_rate;
   window.speechSynthesis.cancel();
   window.speechSynthesis.speak(msg);
 }
@@ -91,7 +93,23 @@ function show_partial_translation(element) {
   position_tooltips();
 }
 
+window.onload = position_tooltips;
+
 $(document).ready(function () {
+  $(function () {
+    $(window).keydown(function (e) {
+      var key = e.which;
+      if (key == 61) {
+        speech_rate += 0.1;
+        console.log("speech_rate: ", speech_rate.toFixed(1));
+      }
+      if (key == 173) {
+        speech_rate -= 0.1;
+        console.log("speech_rate: ", speech_rate.toFixed(1));
+      }
+    });
+  });
+
   function google_translate_word() {
     html_txt = $(event.target).attr("original_txt");
 
@@ -109,9 +127,10 @@ $(document).ready(function () {
   window.addEventListener("resize", position_tooltips, true);
 
   $(".word").click(function (event) {
+    language = window.location.pathname.split("/")[1];
     if (event.altKey) {
       html_txt = $(event.target).attr("lemma");
-      window.open("/words/word?word=" + html_txt);
+      window.open("/"+language+"/words/word?word=" + html_txt);
 
       // google_translate_word();
     } else if (event.shiftKey) {
@@ -124,6 +143,13 @@ $(document).ready(function () {
     }
   });
 });
+
+// TODO method not used and hard coded already.
+function open_word_details_page(element) {
+  language = window.location.pathname.split("/")[1];
+  html_txt = $(element).attr("lemma");
+  window.open("/" +language + "/words/word?word=" + html_txt);
+}
 
 function clicked_source(element) {
   $(".card")
@@ -163,7 +189,7 @@ function update_rating(word, rating) {
   };
   $.ajax({
     type: "POST",
-    url: "http://localhost:8001/api/rating/",
+    url: "/api/rating/",
     data: JSON.stringify(data),
     processData: false,
     contentType: "application/json",

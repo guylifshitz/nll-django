@@ -1,14 +1,14 @@
-from numpy import sort, source
 from .forms import WordsForm
 from django.shortcuts import redirect, render
-from words.models import Words, WordRatings
+from words.models import Word, WordRating
 from django.conf import settings
-
+from django.db.models import Prefetch
 
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
+language_code_mapping = {"ar": "arabic", "he": "hebrew"}
 
 
-def model_result_to_dict(model_result, key="_id"):
+def model_result_to_dict(model_result, key="text"):
     out_dict = {}
     for res in model_result:
         out_dict[res[key]] = res
@@ -37,7 +37,7 @@ def get_root(word):
         if word.user_roots:
             hyphens = ["־", "–", "-"]
             root = word.user_roots[-1]
-            root = root.replace(" ", "")
+            root = root.replace(" ", "-")
             for h in hyphens:
                 root = root.replace(h, " - ")
     if not root:
@@ -60,12 +60,12 @@ def build_words_to_show(words, sort_source=None):
     words_to_show = []
     for idx, word in enumerate(words):
         try:
-            rating = word.wordratings_set.last().rating
+            rating = word.word_ratings_list[-1].rating
         except:
             rating = None
-        print(word._id)
+
         word_to_show = {
-            "word": word._id,
+            "word": word.text,
             "word_diacritic": word.word_diacritic,
             "translation": get_translation(word),
             "root": get_root(word),
@@ -88,16 +88,25 @@ def build_words_to_show(words, sort_source=None):
     return words_to_show
 
 
-def word(request):
+def word(request, language_code):
+    language = language_code_mapping[language_code]
+
     if not request.user.is_authenticated:
         return redirect(f"{settings.LOGIN_URL}?next={request.path}")
 
     if request.method == "GET":
-        language = request.GET.get("language", "hebrew")
+        language = request.GET.get("language", language)
         word_text = request.GET.get("word", 0)
 
-        word = Words.objects.get(_id=word_text)
-        word_to_show = build_words_to_show([word])[0]
+        queryset = WordRating.objects.filter(user=request.user)
+
+        word = Word.objects.prefetch_related(
+            Prefetch("word_ratings", to_attr="word_ratings_list", queryset=queryset)
+        ).filter(
+            language=language,
+            text=word_text
+        )
+        word_to_show = build_words_to_show(word)[0]
 
     elif request.method == "POST":
         raise notImplementedError
@@ -111,44 +120,53 @@ def word(request):
             "words": [word_to_show],
             "words_to_show_dict": model_result_to_dict([word_to_show], "word"),
             "speech_voice": speech_voice,
-            "url_parameters": {},
+            "url_parameters": {
+                "language": language
+            },
             "user_auth_token": request.user.auth_token,
+            "user_username": request.user.username,
         },
     )
 
 
-def flashcards(request):
+def flashcards(request, language_code):
+    language = language_code_mapping[language_code]
+
     if not request.user.is_authenticated:
         return redirect(f"{settings.LOGIN_URL}?next={request.path}")
 
     if request.method == "GET":
-        language = request.GET.get("language", "hebrew")
         lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
         upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
-        words = Words.objects.filter(
+        queryset = WordRating.objects.filter(user=request.user)
+        words = Word.objects.prefetch_related(
+            Prefetch("word_ratings", to_attr="word_ratings_list", queryset=queryset)
+        ).filter(
             language=language,
             rank__gt=lower_freq_cutoff,
             rank__lte=upper_freq_cutoff,
-        ).order_by("rank_open_subtitles")
+        )
+
         words_to_show = build_words_to_show(words)
         words_to_show = sorted(words_to_show, key=lambda d: d["frequency"], reverse=True)
 
         url_parameters = {
             "lower_freq_cutoff": lower_freq_cutoff,
             "upper_freq_cutoff": upper_freq_cutoff,
-            "language": language,
+            "language_code": language_code,
         }
     elif request.method == "POST":
-        language = request.POST.get("language", "hebrew")
-
         words_to_show = []
 
         for key, value in request.POST.items():
             if key.startswith("select-word-"):
                 words_to_show.append(value)
 
-        words = Words.objects.filter(language=language, _id__in=words_to_show)
+        queryset = WordRating.objects.filter(user=request.user)
+        words = Word.objects.prefetch_related(
+            Prefetch("word_ratings", to_attr="word_ratings_list", queryset=queryset)
+        ).filter(language=language, text__in=words_to_show)
         words_to_show = build_words_to_show(words)
         url_parameters = {
             "lower_freq_cutoff": 0,
@@ -171,30 +189,25 @@ def flashcards(request):
         },
     )
 
+def index(request, language_code):
+    language = language_code_mapping[language_code]
 
-def index(request):
     if not request.user.is_authenticated:
         return redirect(f"{settings.LOGIN_URL}?next={request.path}")
 
     sort_source = ""
 
-    language = request.GET.get("language", "hebrew")
     lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
     upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
-    words = None
-    if sort_source == "open_subtitles":
-        words = Words.objects.filter(
-            language=language,
-            rank_open_subtitles__gt=lower_freq_cutoff,
-            rank_open_subtitles__lte=upper_freq_cutoff,
-        ).order_by("rank_open_subtitles")
-    else:
-        words = Words.objects.filter(
-            language=language,
-            rank__gt=lower_freq_cutoff,
-            rank__lte=upper_freq_cutoff,
-        ).order_by("rank")
+    queryset = WordRating.objects.filter(user=request.user)
+    words = Word.objects.prefetch_related(
+        Prefetch("word_ratings", to_attr="word_ratings_list", queryset=queryset)
+    ).filter(
+        language=language,
+        rank__gt=lower_freq_cutoff,
+        rank__lte=upper_freq_cutoff,
+    ).order_by("rank")
 
     words_to_show = build_words_to_show(words, sort_source=sort_source)
 
@@ -212,7 +225,7 @@ def index(request):
     url_parameters = {
         "lower_freq_cutoff": lower_freq_cutoff,
         "upper_freq_cutoff": upper_freq_cutoff,
-        "language": language,
+        "language_code": language_code,
     }
     return render(
         request,
@@ -228,8 +241,13 @@ def index(request):
     )
 
 
+def index_default(request):
+    return index(request, "he")
+
+
 def build_user_word_ratings(user):
     words = []
-    for w in WordRatings.objects.filter(user=user):
-        words.append({"word": w.word._id, "rating": w.rating})
+    res = WordRating.objects.select_related().filter(user=user)
+    for w in res:
+        words.append({"word": w.word.text, "rating": w.rating})
     return words
