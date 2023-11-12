@@ -21,7 +21,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get(
-    "SECRET_KEY", os.environ["NLL_DJANGO_SECRET_KEY"]"
+    "SECRET_KEY", os.environ["NLL_DJANGO_SECRET_KEY"]
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -30,10 +30,15 @@ DEBUG = os.environ.get("NLL_DJANGO_DEBUG", "True") != "False"
 ENVIRONMENT = os.environ.get("NLL_DJANGO_ENVIRONMENT", "local")
 
 ALLOWED_HOSTS = [
+    # "localhost",
     "guylifshitz.com",
-    "langauge.guylifshitz.com",
+    "language.guylifshitz.com",
 ]
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = True
 
 # Application definition
 

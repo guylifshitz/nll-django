@@ -6,7 +6,7 @@ import rest_framework
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 
-
+# TODO rename classes in this file, follow django form
 class WordsSerializer(serializers.ModelSerializer):
     new_user_root = rest_framework.serializers.CharField(
         max_length=300, allow_blank=True, write_only=True
@@ -59,7 +59,6 @@ class WordsSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-
 class WordsSerializer2(serializers.ModelSerializer):
     root = rest_framework.serializers.CharField(max_length=300, allow_blank=True, read_only=True)
     similar_words = rest_framework.serializers.CharField(
@@ -79,6 +78,8 @@ class WordsSerializer2(serializers.ModelSerializer):
             "similar_words": {"read_only": True},
         }
 
+    # TODO move comparison methods to a helper class
+    # TODO handle arabic
     def comparable_word_maker(self, word):
         similar_look_matchings = [
             ["ח", "ה", "ת"],
@@ -112,9 +113,11 @@ class WordsSerializer2(serializers.ModelSerializer):
                 word = word.replace(letter, str(idx))
         return word
 
+    # TODO handle arabic
     def find_similar_words(self, instance, field):
         from fuzzywuzzy import fuzz
 
+        language = instance.language
         root = instance.serializable_value(field)
 
         if not root:
@@ -122,7 +125,7 @@ class WordsSerializer2(serializers.ModelSerializer):
 
         comparable_word = self.comparable_word_maker(root)
 
-        top_words = Word.objects.filter(language="hebrew").order_by("rank").all()[0:1000]
+        top_words = Word.objects.filter(language=language).order_by("rank").all()[0:1000]
         similar_roots = []
         for top_word in top_words:
             if not top_word.serializable_value(field):
@@ -150,6 +153,7 @@ class WordsSerializer2(serializers.ModelSerializer):
         }
 
 
+# TODO handle arabic
 class WordsViewSet(viewsets.ModelViewSet):
     lookup_field = "text"
     queryset = Word.objects.filter(language="hebrew").order_by("rank").all()
@@ -158,7 +162,7 @@ class WordsViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsNotTestUser]
     serializer_class = WordsSerializer
 
-
+# TODO handle arabic
 class WordDetail(viewsets.ReadOnlyModelViewSet):
     lookup_field = "text"
     permission_classes = ()

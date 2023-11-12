@@ -1,9 +1,14 @@
+<!-- TODO : split this up using partials -->
+<!-- TODO : move style tags to classes -->
+
 {% extends 'base.html' %}
 {% load static %}
 
 {% block header %}
 <link rel="stylesheet" href="{% static 'css/articles/style.css' %}">
 <script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
+<link rel="stylesheet" media="screen" href="http://fonts.googleapis.com/earlyaccess/droidarabickufi.css" type="text/css"/>
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <script src="http://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <script src="{% static '/js/jquery-3.6.0.min.js' %}"></script>

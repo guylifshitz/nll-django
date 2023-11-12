@@ -2,7 +2,7 @@
     <div class="blocker" onclick="hide_popups()"></div>
     <div class="popup-content" id="article-popup">
         <h3> Build Articles </h3>
-        <form action="{% url 'list_articles' %}" id="ART_FORM" method="post">
+        <form action="{% url 'list_articles' url_parameters.language_code %}" id="ART_FORM" method="post">
             {% csrf_token %}
             <div>
                 <label for="articles-count">Number of articles:</label>
@@ -88,7 +88,7 @@
 
             <input type="hidden" id="practice_words" name="practice_words" value="">
             <input type="hidden" id="known_words" name="known_words" value="">
-            <input type="hidden" id="language" name="language" value="{{url_parameters.language}}">
+            <input type="hidden" id="language" name="language" value="{{url_parameters.language_code}}">
 
             <div class="build_articles_submit_button_section">
                 <div class="button build_articles_submit_button" id="SUB_ARTICLES" onclick="submit_form('ART_FORM')">

@@ -457,8 +457,9 @@ function context_menu_edit_word() {
 }
 
 function context_menu_show_word() {
+  language = window.location.pathname.split("/")[1];
   html_txt = $("#context-menu").attr("word");
-  window.open("/words/word?word=" + html_txt);
+  window.open("/" + language + "/words/word?word=" + html_txt);
 }
 
 function update_translation() {

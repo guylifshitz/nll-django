@@ -9,7 +9,8 @@ import json
 from django.db import connection
 from django.db.models import Prefetch
 
-language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
+language_speech_mapping = {"ar": "ar-SA", "he": "he"}
+language_code_mapping = {"ar": "arabic", "he": "hebrew"}
 
 default_end_date = datetime.datetime.now()
 default_start_date = default_end_date - datetime.timedelta(days=7)
@@ -135,7 +136,10 @@ def build_article_words(article, words, word_known_categories, flexions):
         #########
         # ARTICLE STUFF
         word_foreign_flexion = article.title_parsed_clean[article_lemma_index]
-        flexion_translation = flexions.get(word_foreign_flexion).translation_google
+        try:
+            flexion_translation = flexions.get(word_foreign_flexion).translation_google
+        except:
+            flexion_translation = "[[error]]"
         if not flexion_translation:
             flexion_translation = flexions.get(word_foreign_flexion).translation_azure
         if not flexion_translation:
@@ -215,23 +219,27 @@ def get_root(word):
 
 
 def cleanup_source_name(source_name):
+    # TODO split this up by language.
     source_name_mapping = {
         "ynet-hebrew": "ynet",
         "mako-hebrew": "mako",
         "haaretz-hebrew": "haaretz",
         "globes-hebrew": "globes",
+        "bbc-arabic": "bbc-arabic",
+        "cnn-arabic": "cnn-arabic",
+        "aljazeera-arabic": "aljazeera-arabic",
     }
     return source_name_mapping[source_name]
 
 
-def index(request):
+def index(request, language_code):
+    language = language_code_mapping[language_code]
+
     if not request.user.is_authenticated:
         return redirect(f"{settings.LOGIN_URL}?next={request.path}")
 
     if request.method == "POST":
         form = ArticlesFormFromPOST(request.POST)
-
-        language = request.POST.get("language", "hebrew")
 
         practice_words = request.POST.get("practice_words")
         practice_words = json.loads(practice_words)
@@ -262,7 +270,6 @@ def index(request):
         # article_display_count = int(request.POST.get("article_display_count", 100))
 
     if request.method == "GET":
-        language = request.GET.get("language", "arabic")
         known_cutoff = int(request.GET.get("known_cutoff", 50))
         practice_cutoff = int(request.GET.get("practice_cutoff", 50))
         seen_cutoff = int(request.GET.get("seen_cutoff", 50))
@@ -513,7 +520,7 @@ def index(request):
         articles_to_render = sort_articles_by_word(articles_to_render)
 
     articles_to_render = articles_to_render[0:article_display_count]
-    speech_voice = language_speech_mapping[language]
+    speech_voice = language_speech_mapping[language_code]
 
     if request.method == "GET":
         form = ArticlesForm(
@@ -572,8 +579,8 @@ def sort_articles_by_word(articles):
     return ret_articles
 
 
-def configure(request):
-    language = request.GET.get("language", "hebrew")
+def configure(request, language_code):
+    language = language_code_mapping[language_code]
     known_cutoff = int(request.GET.get("known_cutoff", 50))
     practice_cutoff = int(request.GET.get("practice_cutoff", 100))
     seen_cutoff = int(request.GET.get("seen_cutoff", practice_cutoff))
@@ -608,298 +615,6 @@ def is_article_about_sports(article):
         )
 
     return link_contains_sport_word or feedname_contains_sport_word
-
-
-# def indexOPENSUBS(request):
-#     if request.method == "POST":
-#         form = ArticlesFormFromPOST(request.POST)
-
-#         language = request.POST.get("language", "hebrew")
-
-#         practice_words = request.POST.get("practice_words")
-#         practice_words = json.loads(practice_words)
-
-#         known_words = request.POST.get("known_words")
-#         known_words = json.loads(known_words)
-#         start_date_cutoff_raw = request.POST.get("start_date", default_start_date)
-#         start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%Y-%m-%d")
-#         end_date_cutoff_raw = request.POST.get("end_date", default_end_date)
-#         end_date_cutoff = datetime.datetime.strptime(end_date_cutoff_raw, "%Y-%m-%d")
-#         article_display_count = int(request.POST.get("article_display_count", 100))
-#         sort_by_word = request.POST.get("sort_by_word", "NOTESET") != "NOTESET"
-#         sort_by_practice_only = request.POST.get("sort_by_practice_only", "SET") != "NOTESET"
-
-#         # if form.is_valid():
-#         # print(form)
-#         # print("request.POST", request.POST)
-#         # data = request.
-#         # # known_words_df = pd.read_csv(BytesIO(data))
-#         # known_words_df = known_words_json
-#         # language = request.POST.get("language", "hebrew")
-#         # start_date_cutoff_raw = request.POST.get("start_date", default_start_date)
-#         # start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%d-%m-%Y")
-#         # end_date_cutoff_raw = request.POST.get("end_date", default_end_date)
-#         # end_date_cutoff = datetime.datetime.strptime(end_date_cutoff_raw, "%d-%m-%Y")
-#         # article_display_count = int(request.POST.get("article_display_count", 100))
-
-#     if request.method == "GET":
-#         language = request.GET.get("language", "hebrew")
-#         known_cutoff = int(request.GET.get("known_cutoff", 50))
-#         practice_cutoff = int(request.GET.get("practice_cutoff", 50))
-#         seen_cutoff = int(request.GET.get("seen_cutoff", 50))
-#         start_date_cutoff_raw = request.GET.get("start_date", default_start_date)
-#         start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%d-%m-%Y")
-#         end_date_cutoff_raw = request.GET.get("end_date", default_end_date)
-#         end_date_cutoff = datetime.datetime.strptime(end_date_cutoff_raw, "%d-%m-%Y")
-#         article_display_count = int(request.GET.get("article_display_count", 100))
-#         sort_by_word = request.GET.get("sort_by_word", "NOTESET") != "NOTESET"
-
-#     if request.method == "POST":
-#         query_words = practice_words
-#         query_sort_words = list(practice_words)
-#         if sort_by_practice_only:
-#             query_sort_words.extend(known_words)
-#     else:
-#         query_words = Words.objects.filter(
-#             language=language,
-#             rank__gt=known_cutoff,
-#             rank__lte=practice_cutoff,
-#             # rank__gt=0,
-#             # rank__lte=seen_cutoff,
-#         ).order_by("-count")
-#         query_words = model_result_to_dict(query_words)
-#         query_words = list(query_words.keys())
-
-#     # sort_query_words = (
-#     #     Words.objects.filter(
-#     #         language=language,
-#     #         # rank__gt=known_cutoff,
-#     #         # rank__lte=practice_cutoff,
-#     #         rank__gt=0,
-#     #         rank__lte=seen_cutoff,
-#     #     )
-#     #     .order_by("-count")
-#     # )
-#     # sort_query_words = model_result_to_dict(sort_query_words)
-#     # sort_query_words = list(sort_query_words.keys())
-#     print("AGG START")
-#     cursor = open_subtitles.objects.filter(
-#         language=language,
-#         # published_datetime__gte=start_date_cutoff,
-#         # published_datetime__lte=end_date_cutoff,
-#         title_translation__ne=None,
-#         title_parsed_clean__ne=None,
-#         title_parsed_lemma={"$elemMatch": {"$in": query_words}},
-#         # ).limit(1000)
-#     ).aggregate(
-#         [
-#             {"$match": {"language": "hebrew", "title_parsed_lemma": {"$type": "array"}}},
-#             {
-#                 "$project": {
-#                     "title_parsed_lemma": "$title_parsed_lemma",
-#                     "title": "$title_parsed_lemma",
-#                     "found_lemmas": {
-#                         "$filter": {
-#                             "input": "$title_parsed_lemma",
-#                             "as": "thing",
-#                             "cond": {"$in": ["$$thing", query_sort_words]},
-#                         }
-#                     },
-#                 }
-#             },
-#             {
-#                 "$project": {
-#                     "title_parsed_lemma": {"$size": "$title_parsed_lemma"},
-#                     "found_lemmas": {"$size": "$found_lemmas"},
-#                     "delta": {
-#                         "$divide": [
-#                             {"$size": "$title_parsed_lemma"},
-#                             {"$size": "$found_lemmas"},
-#                         ]
-#                     },
-#                 }
-#             },
-#             {"$match": {"found_lemmas": {"$gt": 0}}},
-#             {"$sort": {"delta": 1, "found_lemmas": -1}},
-#             {"$limit": article_display_count},
-#         ]
-#     )
-#     print("AGG DONE")
-
-#     article_ids = []
-#     for r in cursor:
-#         article_ids.append(r["_id"])
-#     print("article_ids", article_ids)
-
-#     article_ids = article_ids[0:article_display_count]
-#     articles = open_subtitles.objects.filter(_id__in=article_ids)
-
-#     print(f"Got {len(articles)} articles")
-
-#     lemmas = set()
-#     flexions = set()
-#     for article in articles:
-#         lemmas = lemmas | set(article.title_parsed_lemma)
-#         flexions = flexions | set(article.title_parsed_clean)
-
-#     lemmas = Words.objects.filter(language=language, _id__in=list(lemmas))
-
-#     if request.method == "POST":
-#         # word_known_categories = get_word_known_categories_from_df(lemmas, known_words_df)
-#         word_known_categories = get_word_known_categories_from_lists(
-#             lemmas, known_words, practice_words, []
-#         )
-#     else:
-#         word_known_categories = get_word_known_categories_from_cutoffs(
-#             lemmas, known_cutoff, practice_cutoff, seen_cutoff
-#         )
-
-#     lemmas = model_result_to_dict(lemmas)
-#     print(f"Got {len(lemmas)} lemmas")
-
-#     flexions = Flexions.objects.filter(language=language, _id__in=list(flexions))
-#     flexions = model_result_to_dict(flexions)
-#     print(f"Got {len(flexions)} flexions")
-
-#     articles_to_render = []
-#     article_sources = defaultdict(dict)
-
-#     for article in articles:
-#         try:
-#             article_to_render = {}
-#             # article_to_render["title"] = article["title"]
-#             article_to_render["title_parsed_clean"] = article.title_parsed_clean
-#             # article_to_render["feed_source"] = article["source"]
-#             # article_to_render["feed_names"] = article["feed_name"]
-#             # for feed_name in article["feed_name"]:
-#             #     article_sources[article["source"]][feed_name] = 1
-
-#             # article_to_render["published_datetime"] = article["published_datetime"]
-#             article_to_render["title_translation"] = article.title_translation
-#             article_to_render["link"] = article._id
-
-#             article_words = build_article_words(article, lemmas, word_known_categories, flexions)
-#             article_to_render["words"] = article_words
-#             known_words_count = sum([aw["lemma_known"] for aw in article_words])
-#             practice_words_count = sum([aw["lemma_practice"] for aw in article_words])
-#             seen_words_count = sum([aw["lemma_seen"] for aw in article_words])
-#             unknown_words_count = sum(
-#                 [
-#                     not (
-#                         aw["lemma_seen"]
-#                         or aw["lemma_known"]
-#                         or aw["lemma_practice"]
-#                         or aw["is_proper_noun"]
-#                     )
-#                     for aw in article_words
-#                 ]
-#             )
-#             # proper_nouns_count = sum([aw["is_proper_noun"] for aw in article_words])
-#             article_to_render["is_about_sports"] = False
-
-#             article_to_render["known_words_count"] = known_words_count
-#             article_to_render["practice_words_count"] = practice_words_count
-#             article_to_render["seen_words_count"] = seen_words_count
-#             # article_to_render["proper_nouns_count"] = proper_nouns_count
-#             article_to_render["practice_words_ratio"] = int(
-#                 practice_words_count / max(len(article_words), 1) * 100
-#             )
-#             article_to_render["known_practice_seen_words_ratio"] = int(
-#                 (
-#                     unknown_words_count
-#                     # (
-#                     #     known_words_count
-#                     #     + practice_words_count
-#                     #     + seen_words_count
-#                     #     # + proper_nouns_count
-#                     # )
-#                     / max(len(article_words), 1)
-#                 )
-#                 * 100
-#             )
-
-#             if article_to_render["words"] and article_to_render["practice_words_count"] > 0:
-#                 articles_to_render.append(article_to_render)
-#         except Exception:
-#             traceback.print_exc()
-
-#     articles_to_render = filter(lambda a: a["practice_words_count"] > 0, articles_to_render)
-
-#     # articles_to_render = sorted(
-#     #     articles_to_render, key=lambda d: d["published_datetime"], reverse=True
-#     # )
-
-#     articles_to_render = sorted(
-#         articles_to_render, key=lambda d: d["known_practice_seen_words_ratio"], reverse=False
-#     )
-
-#     # Remove sports
-#     articles_to_render = list(filter(lambda a: (not a["is_about_sports"]), articles_to_render))
-
-#     # if sort_by_practice_only:
-#     #     articles_to_render = sorted(
-#     #         articles_to_render, key=lambda d: d["practice_words_ratio"], reverse=True
-#     #     )
-
-#     # articles_to_render = sorted(
-#     #     articles_to_render, key=lambda d: d["practice_words_ratio"], reverse=True
-#     # )
-#     # articles_to_render = sorted(
-#     #     articles_to_render, key=lambda d: d["practice_words_count"], reverse=True
-#     # )
-
-#     # articles_to_render = sorted(
-#     #     articles_to_render,
-#     #     key=lambda d: len(d["words"])
-#     #     - (d["known_words_count"] + d["seen_words_count"] + d["practice_words_count"]),
-#     #     reverse=False,
-#     # )
-
-#     # DEBUG
-#     # import debug
-#     # debug.count_article_words(articles_to_render, practice_cutoff)
-
-#     if sort_by_word:
-#         articles_to_render = sort_articles_by_word(articles_to_render)
-
-#     articles_to_render = articles_to_render[0:article_display_count]
-#     speech_voice = language_speech_mapping[language]
-
-#     if request.method == "GET":
-#         form = ArticlesForm(
-#             initial={
-#                 "start_date": start_date_cutoff_raw,
-#                 "end_date": end_date_cutoff_raw,
-#                 "language": language,
-#                 "known_cutoff": known_cutoff,
-#                 "practice_cutoff": practice_cutoff,
-#                 "seen_cutoff": seen_cutoff,
-#                 "article_display_count": article_display_count,
-#                 "sort_by_word": sort_by_word,
-#             }
-#         )
-
-#         url_parameters = {
-#             "known_cutoff": known_cutoff,
-#             "practice_cutoff": practice_cutoff,
-#             "seen_cutoff": seen_cutoff,
-#             "language": language,
-#         }
-#     else:
-#         form = None
-#         url_parameters = None
-
-#     return render(
-#         request,
-#         "articles.html",
-#         {
-#             "articles": articles_to_render,
-#             "speech_voice": speech_voice,
-#             "form": form,
-#             "url_parameters": url_parameters,
-#             "article_sources": dict(article_sources),
-#         },
-#     )
 
 
 def sort_articles_by_word(articles):

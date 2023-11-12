@@ -5,6 +5,7 @@ from django.conf import settings
 from django.db.models import Prefetch
 
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
+language_code_mapping = {"ar": "arabic", "he": "hebrew"}
 
 
 def model_result_to_dict(model_result, key="text"):
@@ -36,7 +37,7 @@ def get_root(word):
         if word.user_roots:
             hyphens = ["־", "–", "-"]
             root = word.user_roots[-1]
-            root = root.replace(" ", "")
+            root = root.replace(" ", "-")
             for h in hyphens:
                 root = root.replace(h, " - ")
     if not root:
@@ -87,12 +88,14 @@ def build_words_to_show(words, sort_source=None):
     return words_to_show
 
 
-def word(request):
+def word(request, language_code):
+    language = language_code_mapping[language_code]
+
     if not request.user.is_authenticated:
         return redirect(f"{settings.LOGIN_URL}?next={request.path}")
 
     if request.method == "GET":
-        language = request.GET.get("language", "hebrew")
+        language = request.GET.get("language", language)
         word_text = request.GET.get("word", 0)
 
         queryset = WordRating.objects.filter(user=request.user)
@@ -117,19 +120,22 @@ def word(request):
             "words": [word_to_show],
             "words_to_show_dict": model_result_to_dict([word_to_show], "word"),
             "speech_voice": speech_voice,
-            "url_parameters": {},
+            "url_parameters": {
+                "language": language
+            },
             "user_auth_token": request.user.auth_token,
             "user_username": request.user.username,
         },
     )
 
 
-def flashcards(request):
+def flashcards(request, language_code):
+    language = language_code_mapping[language_code]
+
     if not request.user.is_authenticated:
         return redirect(f"{settings.LOGIN_URL}?next={request.path}")
 
     if request.method == "GET":
-        language = request.GET.get("language", "hebrew")
         lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
         upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
@@ -148,11 +154,9 @@ def flashcards(request):
         url_parameters = {
             "lower_freq_cutoff": lower_freq_cutoff,
             "upper_freq_cutoff": upper_freq_cutoff,
-            "language": language,
+            "language_code": language_code,
         }
     elif request.method == "POST":
-        language = request.POST.get("language", "hebrew")
-
         words_to_show = []
 
         for key, value in request.POST.items():
@@ -185,14 +189,14 @@ def flashcards(request):
         },
     )
 
+def index(request, language_code):
+    language = language_code_mapping[language_code]
 
-def index(request):
     if not request.user.is_authenticated:
         return redirect(f"{settings.LOGIN_URL}?next={request.path}")
 
     sort_source = ""
 
-    language = request.GET.get("language", "hebrew")
     lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
     upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
@@ -221,7 +225,7 @@ def index(request):
     url_parameters = {
         "lower_freq_cutoff": lower_freq_cutoff,
         "upper_freq_cutoff": upper_freq_cutoff,
-        "language": language,
+        "language_code": language_code,
     }
     return render(
         request,
@@ -235,6 +239,10 @@ def index(request):
             "user_auth_token": request.user.auth_token,
         },
     )
+
+
+def index_default(request):
+    return index(request, "he")
 
 
 def build_user_word_ratings(user):

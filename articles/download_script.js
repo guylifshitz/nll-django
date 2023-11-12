@@ -1,3 +1,4 @@
+// TODO : is this still used ?
 var csvContent = "data:text/csv;charset=utf-8," + words.map(e=>e["word"]).join(",\n");
 
 var encodedUri = encodeURI(csvContent);

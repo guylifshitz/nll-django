@@ -127,9 +127,10 @@ $(document).ready(function () {
   window.addEventListener("resize", position_tooltips, true);
 
   $(".word").click(function (event) {
+    language = window.location.pathname.split("/")[1];
     if (event.altKey) {
       html_txt = $(event.target).attr("lemma");
-      window.open("/words/word?word=" + html_txt);
+      window.open("/"+language+"/words/word?word=" + html_txt);
 
       // google_translate_word();
     } else if (event.shiftKey) {
@@ -143,9 +144,11 @@ $(document).ready(function () {
   });
 });
 
+// TODO method not used and hard coded already.
 function open_word_details_page(element) {
+  language = window.location.pathname.split("/")[1];
   html_txt = $(element).attr("lemma");
-  window.open("/words/word?word=" + html_txt);
+  window.open("/" +language + "/words/word?word=" + html_txt);
 }
 
 function clicked_source(element) {

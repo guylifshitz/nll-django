@@ -57,7 +57,7 @@
             <i class="fa fa-check-square" aria-hidden="true"></i>
         </div>
 
-        <form id="main_form" class="section-second" action="{% url 'flashcards' %}" method="POST">
+        <form id="main_form" class="section-second" action="{% url 'flashcards' url_parameters.language_code %}" method="POST">
             {% csrf_token %}
             <div class="word-line first-word-line">
                 <input type="checkbox" id="select-deselect-all" class="select-deselet-checkbox pointer"
@@ -85,7 +85,7 @@
                 <div></div>
             </div>
 
-            <input type="hidden" name="language" value="{{url_parameters.language}}">
+            <input type="hidden" name="language" value="{{url_parameters.language_code}}">
             {% for word in words %}
             <div>
                 <div class="word-line">
@@ -149,7 +149,7 @@
             See examples
         </div>
         <div class="context-menu-element" target="_blank"
-            onclick="context_menu_open_definition(this, '{{url_parameters.language|title}}')">
+            onclick="context_menu_open_definition(this, '{{url_parameters.language_code|title}}')">
             Wiktionary <i class="fa fa-external-link"></i>
         </div>
         <div class="context-menu-element" target="_blank" onclick="context_menu_open_pealim(this)">
