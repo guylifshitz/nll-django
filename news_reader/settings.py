@@ -31,11 +31,9 @@ DEBUG = os.environ.get("DEBUG") != "False"
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "local")
 
 ALLOWED_HOSTS = [
-    "localhost",
-    "news-lang-learn-staging.herokuapp.com",
-    "news-lang-learn-prod.herokuapp.com",
-    "192.168.0.17",
+    # "localhost",
     "guylifshitz.com",
+    "language.guylifshitz.com",
 ]
 
 
