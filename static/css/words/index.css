@@ -58,6 +58,7 @@ a {
 
 .rating-buttons {
   display: flex;
+  justify-content: center;
 }
 
 .buttons {
@@ -146,7 +147,7 @@ a {
 
 .popup-content {
   position: fixed;
-  top: 123px;
+  top: 80px;
   left: 50%;
   transform: translateX(-50%);
   background-color: white;
@@ -196,21 +197,6 @@ a {
   background-color: #ddd
 }
 
-
-.existing-entries {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  align-items: center;
-}
-
-.existing-entry {
-  background-color: rgb(170, 184, 244);
-  border-radius: 10px;
-  padding: 0.5rem;
-}
-
-
 .xxxx {
   width: 200px;
   padding: 1.0rem;
@@ -245,6 +231,23 @@ a {
 }
 
 .eyeer {
-  padding: 3rem;
+  margin: 3rem;
+  width: fit-content;
   align-items: center;
+}
+
+h4 {
+  margin-bottom: 0.3rem;
+}
+
+.build_articles_submit_button_section {
+  display: flex;
+  align-content: center;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+}
+
+.build_articles_submit_button {
+  padding: 1rem;
 }

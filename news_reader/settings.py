@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 import os
-import django_heroku
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -22,22 +21,24 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get(
-    "SECRET_KEY", "django-insecure-v(=oysl=hriom8gq$_^)&f-d$h-x_=#ube^^wp)5)g_$uaxrmv"
+    "SECRET_KEY", os.environ["NLL_DJANGO_SECRET_KEY"]
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG") != "False"
+DEBUG = os.environ.get("NLL_DJANGO_DEBUG", "True") != "False"
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "local")
+ENVIRONMENT = os.environ.get("NLL_DJANGO_ENVIRONMENT", "local")
 
 ALLOWED_HOSTS = [
-    "localhost",
-    "news-lang-learn-staging.herokuapp.com",
-    "news-lang-learn-prod.herokuapp.com",
-    "192.168.0.17",
+    # "localhost",
     "guylifshitz.com",
+    "language.guylifshitz.com",
 ]
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = True
 
 # Application definition
 
@@ -53,6 +54,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework.authtoken",
+    "accounts"
 ]
 
 REST_FRAMEWORK = {
@@ -107,23 +109,12 @@ WSGI_APPLICATION = "news_reader.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "djongo",
-        "NAME": "newspaper-language-learner",
-        "ENFORCE_SCHEMA": False,
-        "CLIENT": {
-            "host": "guylifshitz.com",
-            "port": 27017,
-            "username": "django",
-            "password": "PASSWORD",
-            "authSource": "newspaper-language-learner",
-            "authMechanism": "SCRAM-SHA-1",
-            # "host": "localhost",
-            # "port": 27017,
-            # "username": "guy",
-            # "password": "password",
-            # "authSource": "newspaper-language-learner",
-            # "authMechanism": "SCRAM-SHA-1",
-        },
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'nll',
+        'USER': 'django',
+        'PASSWORD': os.environ["NLL_DJANGO_DB_PASS"],
+        'HOST': 'guylifshitz.com',
+        'PORT': '5438', 
     }
 }
 
@@ -176,8 +167,6 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# django_heroku.settings(locals())
 
 DATE_INPUT_FORMATS = ["%d-%m-%Y"]
 

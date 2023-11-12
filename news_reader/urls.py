@@ -20,8 +20,10 @@ import words.views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
-    path("articles/", include("articles.urls")),
-    path("words/", include("words.urls")),
-    path("", words.views.index, name="homepage"),
+    path("<str:language_code>/articles/", include("articles.urls")),
+    path("<str:language_code>/words/", include("words.urls")),
+    path("<str:language_code>/", words.views.index, name="homepage"),
+    path("", words.views.index_default, name="homepage"),
+    path("accounts/", include("accounts.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
 ]
