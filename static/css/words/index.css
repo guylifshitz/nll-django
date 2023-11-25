@@ -1,3 +1,4 @@
+/* TODO merge this with the flashcards css */
 .TODO {
   background-color: red;
 }
@@ -104,12 +105,11 @@ a {
 }
 
 .button-rating-4 {
-  background-color: green;
-  color: white;
+  background-color:#b7dd29;
 }
 
 .button-rating-5 {
-  background-color: blue;
+  background-color: green;
   color: white;
 }
 
@@ -250,4 +250,45 @@ h4 {
 
 .build_articles_submit_button {
   padding: 1rem;
+}
+
+.word-index-display{
+  color: grey;
+  text-align: center;
+}
+
+.select-deselect-rating-1{
+  filter: hue-rotate(40deg) brightness(1.5);
+}
+.select-deselect-rating-2{
+  filter: hue-rotate(90deg) brightness(1.5);
+}
+.select-deselect-rating-3{
+  filter: hue-rotate(190deg) brightness(1.5);
+}
+.select-deselect-rating-4{
+  filter: hue-rotate(90deg) brightness(1.5);
+}
+.select-deselect-rating-5{
+  filter: hue-rotate(90deg) brightness(1.5);
+}
+.select-deselect-rating-1:checked{
+  filter: hue-rotate(0deg) brightness(1.1);
+  accent-color: red;
+}
+.select-deselect-rating-2:checked{
+  filter: hue-rotate(0deg) brightness(1.1);
+  accent-color: orange;
+}
+.select-deselect-rating-3:checked{
+  filter: hue-rotate(0deg) brightness(1.1);
+  accent-color: yellow;
+}
+.select-deselect-rating-4:checked{
+  filter: hue-rotate(0deg) brightness(1.1);
+  accent-color: #b7dd29;
+}
+.select-deselect-rating-5:checked{
+  filter: hue-rotate(0deg) brightness(1.1);
+  accent-color: green;
 }

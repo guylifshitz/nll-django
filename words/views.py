@@ -200,6 +200,12 @@ def index(request, language_code):
     lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
     upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
+    if (upper_freq_cutoff - lower_freq_cutoff > 500):
+        request.GET._mutable = True
+        request.GET["lower_freq_cutoff"] = lower_freq_cutoff
+        request.GET["upper_freq_cutoff"] = lower_freq_cutoff + 100
+        return index(request, language_code)
+    
     queryset = WordRating.objects.filter(user=request.user)
     words = Word.objects.prefetch_related(
         Prefetch("word_ratings", to_attr="word_ratings_list", queryset=queryset)

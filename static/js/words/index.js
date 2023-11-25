@@ -254,6 +254,15 @@ function monitor_checkboxes() {
       $(this).parent().parent().removeClass("word-line-selected");
     }
 
+    if ($(".select-word-checkbox:checked").length == 0){
+      $("#build_flashcards").addClass("button-disabled");
+      $("#build_flashcards").attr("onclick", "alert('Please select words first')");
+    }
+    else{
+      $("#build_flashcards").removeClass("button-disabled");
+      $("#build_flashcards").attr("onclick", "submit_form('main_form')");
+    }
+
     if (
       $(".select-word-checkbox:checked").length ==
       $(".select-word-checkbox").length
@@ -540,6 +549,11 @@ function update_rating(word, rating) {
 function submit_filter_form() {
   let form_data = new FormData(document.querySelector("#filter-form"));
   let form_str = new URLSearchParams(form_data).toString();
+
+  if (parseInt(form_data.get("upper_freq_cutoff")) - parseInt(form_data.get("lower_freq_cutoff")) > 500){
+    alert("Range must contain fewer than 500 words total.");
+    return;
+  }
 
   var getUrl = window.location;
   window.location.href =

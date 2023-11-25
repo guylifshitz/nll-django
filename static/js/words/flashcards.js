@@ -122,7 +122,7 @@ function set_words_ui_two() {
 
 function get_next_word() {
   if (all_words.length == 0) {
-    alert("Error 1617: Empty array not implemented");
+    alert("Error: No words were selected. Go back to the main page and select some words first.");
   }
 
   current_word_index = current_word_index + 1;

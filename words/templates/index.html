@@ -22,6 +22,7 @@
     <div class="card">
         <div class="section-first">
             <div class="wordslist-form">
+                Filter range:
                 <form id="filter-form" method="get">
                     <input name="lower_freq_cutoff" class="number-input" type="number"
                         value="{{url_parameters.lower_freq_cutoff}}" /> -
@@ -29,20 +30,11 @@
                         value="{{url_parameters.upper_freq_cutoff}}" />
                     <i class="button pointer fa fa-filter" aria-hidden="true" onclick="submit_filter_form()"
                         title="Filter selection"></i> &nbsp;
-                    <input type="submit" hidden value="filter">
+                    <input type="submit" hidden value="filter"> 
                 </form>
-                <div>
-                    <!-- TODO toggle this and add a helper text -->
-                    <input type="checkbox" id="filter-unselected" hidden>
-                    <div>
-                        <div class="pointer eyeer" id="filter-unselected-toggle" onclick="toggle_visible_words()"
-                            title="Show selected only"> <i id="filter-unselected-icon" class="fa fa-eye-slash"
-                                aria-hidden="true"></i> </div>
-                    </div>
-                </div>
             </div>
             <div>
-                <div class="button xxxx" onclick="submit_form('main_form')">
+                <div id="build_flashcards" class="button xxxx button-disabled" onclick="alert('Please select words first')">
                     Build Flashcards
                 </div>
                 <div class="button xxxx" onclick="show_articles_popup()">
@@ -50,19 +42,42 @@
                 </div>
             </div>
         </div>
+
         <hr>
+
         <div>
-            <span id="selcted_count">0</span>
-            <!-- selected words -->
-            <i class="fa fa-check-square" aria-hidden="true"></i>
+            <!-- TODO toggle this and add a helper text -->
+            <input type="checkbox" id="filter-unselected" hidden>
+            <div>
+                <div class="pointer eyeer" id="filter-unselected-toggle" onclick="toggle_visible_words()"
+                    title="Show selected only"> <i id="filter-unselected-icon" class="fa fa-eye-slash"
+                        aria-hidden="true"></i> unselected </div>
+            </div>
+        </div>
+
+        <div>
+            <i class="fa fa-check-square-o" aria-hidden="true"></i>
+            
+            <span id="selcted_count">0</span> words selected
         </div>
 
         <form id="main_form" class="section-second" action="{% url 'flashcards' url_parameters.language_code %}" method="POST">
             {% csrf_token %}
+            <div class="word-line">
+                <div> </div>
+                <div> </div>
+                <div class="word-line-element">
+                    familiarity label
+                </div>
+                <div></div>
+                <div> </div>
+                <div> </div>
+            </div>
             <div class="word-line first-word-line">
+                <div class="word-index-display">#</div>
                 <input type="checkbox" id="select-deselect-all" class="select-deselet-checkbox pointer"
                     onclick="select_all()">
-                <div></div>
+                    <!-- TODO: style the checkboxes better -->
                 <div class="rating-buttons ">
                     <input type="checkbox" id="select-deselect-rating-1"
                         class="pointer select-deselet-checkbox select-deselect-rating-1" onclick="select_by_filter(1)">
@@ -84,18 +99,17 @@
                 <div></div>
                 <div></div>
             </div>
-
             <input type="hidden" name="language" value="{{url_parameters.language_code}}">
             {% for word in words %}
             <div>
                 <div class="word-line">
+                    <div class="word-line-element word-index-display">
+                        {{word.index}}
+                    </div>
                     <div class="word-line-element">
                         <input type="checkbox" class="select-word-checkbox pointer" id="select-word-{{word.word}}"
                             rating="0" name="select-word-{{word.word}}" value="{{word.word}}">
                         <label for="select-word-{{word.word}}"></label>
-                    </div>
-                    <div class="word-line-element">
-                        {{word.index}}
                     </div>
                     <div class="rating-buttons word-line-element">
                         <div id="button-rating-1-{{word.word}}" class="button button-rating button-rating-1"
