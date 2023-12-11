@@ -114,7 +114,7 @@ $(document).ready(function () {
     html_txt = $(event.target).attr("original_txt");
 
     var url =
-      "https://translation.googleapis.com/language/translate/v2?key=AIzaSyDFM-_ShPiWSGtCtiDidNXa_CagmuM2Jk4";
+      "https://translation.googleapis.com/language/translate/v2?key=XXXXXX";
     url += "&source=he";
     url += "&target=en";
     url += "&q=" + html_txt;
