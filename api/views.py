@@ -10,6 +10,7 @@ class WordsViewSet(viewsets.ModelViewSet):
     lookup_field = "text"
     queryset = Word.objects.filter(language="hebrew").order_by("rank")[:100]
     authentication_classes = [TokenAuthentication]
+    # why isn't the test user allowed here?
     permission_classes = [IsAuthenticated, IsNotTestUser]
     # authentication_classes = []
     # permission_classes = []

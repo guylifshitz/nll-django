@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 
-
+# TODO make a base class and extend it for each use (RSS, open_subtitle)
 class Rss_feed(models.Model):
     id = models.CharField(max_length=1000, primary_key=True)
     source = models.CharField(max_length=300)

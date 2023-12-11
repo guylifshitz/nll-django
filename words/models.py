@@ -1,25 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-# from djongo import models
-
-# import djongo.models.indexes
-
-
 def default_json_values():
     return []
 
-
+# TODO: change primary key to an "id" AutoField
 class Word(models.Model):
-    # objects = models.DjongoManager()
-
-    class Meta:
-        indexes = [
-            models.Index(fields=["text"]),
-            models.Index(fields=["language"]),
-            models.Index(fields=["rank"]),
-        ]
-
     # _id = models.CharField(primary_key=True, max_length=100)
     text = models.CharField(primary_key=True, max_length=100, null=False)
     word_diacritic = models.CharField(max_length=100, null=True)
@@ -40,14 +26,14 @@ class Word(models.Model):
     )
     user_roots_with_user = models.JSONField(null=True, blank=True, default=default_json_values)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["text"]),
+            models.Index(fields=["language"]),
+            models.Index(fields=["rank"]),
+        ]
 
 class Flexion(models.Model):
-    # objects = models.DjongoManager()
-
-    # class Meta:
-    #     db_table = "flexions"
-
-    # text = models.CharField(primary_key=True, max_length=100)
     # _id = models.CharField(max_length=100)
     text = models.CharField(primary_key=True, max_length=100, null=False)
     language = models.CharField(max_length=100)
@@ -59,10 +45,12 @@ class Flexion(models.Model):
 
 
 class WordRating(models.Model):
-    # objects = models.DjongoManager()
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    word = models.ForeignKey(Word, on_delete=models.CASCADE, related_name="word_ratings")
+    rating = models.IntegerField(default=0)
 
     class Meta:
-        # db_table = "word_ratings"
         unique_together = (
             "word",
             "user",
@@ -72,16 +60,9 @@ class WordRating(models.Model):
             models.Index(fields=["word"]),
             models.Index(fields=["user"]),
         ]
-
         constraints = [
             models.UniqueConstraint(fields=["word", "user"], name="unique_word_user_combination")
         ]
-        # indexes = [TextIndex(fields=["word", "user"])]
-
-    id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    word = models.ForeignKey(Word, on_delete=models.CASCADE, related_name="word_ratings")
-    rating = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.rating}"
