@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
 <script src="{% static '/js/jquery-3.6.0.min.js' %}"></script>
 {{ words|json_script:"words-data" }}
-{{ words_to_show_dict|json_script:"words_to_show_dict-data" }}
+{{ words_dict|json_script:"words_dict-data" }}
 {{ user_word_ratings|json_script:"user_word_ratings-data" }}
 <script>
     var user_auth_token = "{{ user_auth_token }}";

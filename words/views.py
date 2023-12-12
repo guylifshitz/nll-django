@@ -14,8 +14,6 @@ def index(request, language_code):
     if not request.user.is_authenticated:
         return redirect(f"{settings.LOGIN_URL}?next={request.path}")
 
-    sort_source = ""
-
     lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
     upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
@@ -34,7 +32,7 @@ def index(request, language_code):
         rank__lte=upper_freq_cutoff,
     ).order_by("rank")
 
-    words_to_show = build_words_to_show(words, sort_source=sort_source)
+    words_to_show = build_words_to_show(words)
 
     # DEBUG
     # import debug
@@ -178,7 +176,8 @@ def model_result_to_dict(model_result, key="text"):
     return out_dict
 
 
-def build_words_to_show(words, sort_source=None):
+# We can remove this and simply directly access the data from the word object, adding custom methods when needed
+def build_words_to_show(words):
     words_to_show = []
     for idx, word in enumerate(words):
         try:
@@ -199,11 +198,6 @@ def build_words_to_show(words, sort_source=None):
             "user_translations": word.user_translations or [],
             "user_roots": word.user_roots or [],
         }
-
-        if sort_source == "open_subtitles":
-            word_to_show["index"] = word.rank_open_subtitles
-            word_to_show["frequency"] = word.count_open_subtitles
-
         if not word.word_diacritic:
             word_to_show["word_diacritic"] = word_to_show["word"]
         words_to_show.append(word_to_show)

@@ -1,5 +1,5 @@
 var words;
-var words_to_show_dict;
+var words_dict;
 var user_word_ratings;
 
 async function initialize_ratings() {
@@ -134,8 +134,8 @@ function download(filename, text) {
 
 $(document).ready(function () {
   words = JSON.parse(document.getElementById("words-data").textContent);
-  words_to_show_dict = JSON.parse(
-    document.getElementById("words_to_show_dict-data").textContent
+  words_dict = JSON.parse(
+    document.getElementById("words_dict-data").textContent
   );
   user_word_ratings = JSON.parse(
     document.getElementById("user_word_ratings-data").textContent
@@ -462,7 +462,7 @@ function context_menu_examples_word(element, token) {
 }
 
 function context_menu_edit_word() {
-  show_edit_popup(words_to_show_dict[$("#context-menu").attr("word")]);
+  show_edit_popup(words_dict[$("#context-menu").attr("word")]);
 }
 
 function context_menu_show_word() {

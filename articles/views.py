@@ -18,218 +18,30 @@ default_end_date = default_end_date.strftime("%Y-%m-%d")
 default_start_date = default_start_date.strftime("%Y-%m-%d")
 
 
-def model_result_to_dict(model_result):
-    out_dict = {}
-    for res in model_result:
-        out_dict[res.text] = res
-    return out_dict
+def configure(request, language_code):
+    language = language_code_mapping[language_code]
+    known_cutoff = int(request.GET.get("known_cutoff", 50))
+    practice_cutoff = int(request.GET.get("practice_cutoff", 100))
+    seen_cutoff = int(request.GET.get("seen_cutoff", practice_cutoff))
+    start_date_cutoff = request.GET.get("start_date", default_start_date)
+    end_date_cutoff = request.GET.get("end_date", default_end_date)
+    article_display_count = int(request.GET.get("article_display_count", 100))
+    sort_by_word = request.GET.get("sort_by_word", "False") == "False"
 
-
-def format_features(postag, features):
-    if not features:
-        return ""
-
-    number = ""
-    if "num=S" in features:
-        number = "s"
-    elif "num=P" in features:
-        number = "p"
-
-    gender = ""
-    if "gen=M" in features:
-        gender = "m"
-    elif "gen=F" in features:
-        gender = "f"
-
-    person = ""
-    if "per=1" in features:
-        person = "1"
-    elif "per=2" in features:
-        person = "2"
-    elif "per=3" in features:
-        person = "3"
-
-    tense = ""
-    if "tense=FUTURE" in features:
-        tense = "futr."
-    elif "tense=PAST" in features:
-        tense = "past."
-    elif "tense=IMPERATIVE" in features:
-        tense = "impe."
-    elif "tense=BEINONI" in features:
-        tense = "bein."
-
-    return "".join([tense, person, gender, number])
-
-
-def get_word_known_categories_from_df(words, known_words_df):
-
-    practice_words = known_words_df[known_words_df["TYPE"] == "PRACTICE"]["word"].values.tolist()
-    known_words = known_words_df[known_words_df["TYPE"] == "KNOWN"]["word"].values.tolist()
-    seen_words = known_words_df[known_words_df["TYPE"] == "SEEN"]["word"].values.tolist()
-
-    word_known_category = get_word_known_categories_from_lists(
-        words, known_words, practice_words, seen_words
-    )
-    return word_known_category
-
-
-def get_word_known_categories_from_lists(words, known_words, practice_words, seen_words):
-    word_known_category = {}
-
-    for word in known_words:
-        word_known_category[word] = "known"
-    for word in practice_words:
-        word_known_category[word] = "practice"
-    for word in seen_words:
-        word_known_category[word] = "seen"
-
-    return word_known_category
-
-
-def get_word_known_categories_from_cutoffs(words, known_cutoff, practice_cutoff, seen_cutoff):
-    word_known_category = {}
-    for word in words:
-        if word["rank"] <= known_cutoff:
-            word_known_category[word["_id"]] = "known"
-        elif known_cutoff < word["rank"] <= practice_cutoff:
-            word_known_category[word["_id"]] = "practice"
-        elif practice_cutoff < word["rank"] <= seen_cutoff:
-            word_known_category[word["_id"]] = "seen"
-    return word_known_category
-
-
-def build_article_words(article, words, word_known_categories, flexions):
-
-    article_words = []
-    for article_lemma_index, lemma_text in enumerate(article.title_parsed_lemma):
-
-        ##########
-        # LEMMA STUFF
-        lemma_diacritic = lemma_text
-        word_rank = 0
-
-        try:
-            lemma_obj = words[lemma_text]
-            lemma_diacritic = lemma_obj.word_diacritic
-            word_rank = lemma_obj.rank
-            word_translation = lemma_obj.translation
-            if not word_translation:
-                word_translation = "[[error]]"
-            word_translation = word_translation.lower()
-            lemma_root = get_root(lemma_obj)
-        except Exception:
-            word_rank = "-"
-            word_translation = "[[error]]"
-            lemma_root = "[[error]]"
-
-        try:
-            lemma_rating = lemma_obj.word_ratings_list[-1].rating
-        except:
-            lemma_rating = "-"
-
-        lemma_known_status = word_known_categories.get(lemma_text, "unknown")
-
-        if not lemma_diacritic:
-            lemma_diacritic = lemma_text
-
-        #########
-        # ARTICLE STUFF
-        word_foreign_flexion = article.title_parsed_clean[article_lemma_index]
-        try:
-            flexion_translation = flexions.get(word_foreign_flexion).translation_google
-        except:
-            flexion_translation = "[[error]]"
-        if not flexion_translation:
-            flexion_translation = flexions.get(word_foreign_flexion).translation_azure
-        if not flexion_translation:
-            flexion_translation = ""
-        flexion_translation = flexion_translation.lower()
-
-        token_segmented = article.title_parsed_segmented[article_lemma_index]
-
-        token_POS = article.title_parsed_postag[article_lemma_index]
-
-        # NNP = proper noun
-        is_proper_noun = False
-        if token_POS == "NNP":
-            # word_translation = f"##{word_foreign_flexion}##"
-            # flexion_translation = f"##{word_foreign_flexion}##"
-            # word_foreign_flexion = f"##{word_foreign_flexion}##"
-            is_proper_noun = True
-
-        is_prep_pronoun = False
-        if token_POS == "S_PRN":
-            is_prep_pronoun = True
-
-        # CD = cardinal digit?
-        if token_POS == "CD":
-            word_translation = word_foreign_flexion
-
-        features = article.title_parsed_feats[article_lemma_index]
-        features = format_features(token_POS, features)
-
-        token_prefixes = article.title_parsed_prefixes[article_lemma_index]
-        token_prefixes = ("".join(token_prefixes) + "+") if token_prefixes else ""
-
-        # CUSTOM TRANSLATIONS (currently verbs that are precomputed, later maybe user suggested words)
-        translation_override = article.title_parsed_translation_override[article_lemma_index]
-        if translation_override:
-            word_translation = translation_override
-
-        word_components = {
-            "word_foreign": word_foreign_flexion,
-            "flexion_translation": flexion_translation,
-            "lemma_foreign": lemma_text,
-            "lemma_foreign_diacritic": lemma_diacritic,
-            "lemma_foreign_index": word_rank,
-            "lemma_root": lemma_root,
-            "lemma_known": lemma_known_status == "known",
-            "lemma_practice": lemma_known_status == "practice",
-            "lemma_seen": lemma_known_status == "seen",
-            "lemma_known_status": lemma_known_status,
-            "lemma_rating": lemma_rating,
-            "word_translation": word_translation,
-            "token_segmented": token_segmented,
-            # "verb_tense": verb_tense,
-            "is_proper_noun": is_proper_noun,
-            "is_prep_pronoun": is_prep_pronoun,
-            "features": features,
-            "token_prefixes": token_prefixes,
+    form = ArticlesForm(
+        initial={
+            "start_date": start_date_cutoff,
+            "end_date": end_date_cutoff,
+            "language": language,
+            "known_cutoff": known_cutoff,
+            "practice_cutoff": practice_cutoff,
+            "seen_cutoff": seen_cutoff,
+            "article_display_count": article_display_count,
+            "sort_by_word": sort_by_word,
         }
-        article_words.append(word_components)
+    )
+    return render(request, "configure.html", {"form": form})
 
-    return article_words
-
-
-def get_root(word):
-    root = word.root
-
-    if not root:
-        if word.user_roots:
-            hyphens = ["־", "–", "-"]
-            root = word.user_roots[-1]
-            root = root.replace(" ", "")
-            for h in hyphens:
-                root = root.replace(h, " - ")
-    if not root:
-        root = ""
-
-    return root
-
-
-def cleanup_source_name(source_name):
-    # TODO split this up by language.
-    source_name_mapping = {
-        "ynet-hebrew": "ynet",
-        "mako-hebrew": "mako",
-        "haaretz-hebrew": "haaretz",
-        "globes-hebrew": "globes",
-        "bbc-arabic": "bbc-arabic",
-        "cnn-arabic": "cnn-arabic",
-        "aljazeera-arabic": "aljazeera-arabic",
-    }
-    return source_name_mapping[source_name]
 
 
 def index(request, language_code):
@@ -559,6 +371,183 @@ def index(request, language_code):
         },
     )
 
+def get_word_known_categories_from_df(words, known_words_df):
+
+    practice_words = known_words_df[known_words_df["TYPE"] == "PRACTICE"]["word"].values.tolist()
+    known_words = known_words_df[known_words_df["TYPE"] == "KNOWN"]["word"].values.tolist()
+    seen_words = known_words_df[known_words_df["TYPE"] == "SEEN"]["word"].values.tolist()
+
+    word_known_category = get_word_known_categories_from_lists(
+        words, known_words, practice_words, seen_words
+    )
+    return word_known_category
+
+
+def get_word_known_categories_from_lists(words, known_words, practice_words, seen_words):
+    word_known_category = {}
+
+    for word in known_words:
+        word_known_category[word] = "known"
+    for word in practice_words:
+        word_known_category[word] = "practice"
+    for word in seen_words:
+        word_known_category[word] = "seen"
+
+    return word_known_category
+
+
+def get_word_known_categories_from_cutoffs(words, known_cutoff, practice_cutoff, seen_cutoff):
+    word_known_category = {}
+    for word in words:
+        if word["rank"] <= known_cutoff:
+            word_known_category[word["_id"]] = "known"
+        elif known_cutoff < word["rank"] <= practice_cutoff:
+            word_known_category[word["_id"]] = "practice"
+        elif practice_cutoff < word["rank"] <= seen_cutoff:
+            word_known_category[word["_id"]] = "seen"
+    return word_known_category
+
+
+def build_article_words(article, words, word_known_categories, flexions):
+
+    article_words = []
+    for article_lemma_index, lemma_text in enumerate(article.title_parsed_lemma):
+
+        ##########
+        # LEMMA STUFF
+        lemma_diacritic = lemma_text
+        word_rank = 0
+
+        try:
+            lemma_obj = words[lemma_text]
+            lemma_diacritic = lemma_obj.word_diacritic
+            word_rank = lemma_obj.rank
+            word_translation = lemma_obj.translation
+            if not word_translation:
+                word_translation = "[[error]]"
+            word_translation = word_translation.lower()
+            lemma_root = get_root(lemma_obj)
+        except Exception:
+            word_rank = "-"
+            word_translation = "[[error]]"
+            lemma_root = "[[error]]"
+
+        try:
+            lemma_rating = lemma_obj.word_ratings_list[-1].rating
+        except:
+            lemma_rating = "-"
+
+        lemma_known_status = word_known_categories.get(lemma_text, "unknown")
+
+        if not lemma_diacritic:
+            lemma_diacritic = lemma_text
+
+        #########
+        # ARTICLE STUFF
+        word_foreign_flexion = article.title_parsed_clean[article_lemma_index]
+        try:
+            flexion_translation = flexions.get(word_foreign_flexion).translation_google
+        except:
+            flexion_translation = "[[error]]"
+        if not flexion_translation:
+            flexion_translation = flexions.get(word_foreign_flexion).translation_azure
+        if not flexion_translation:
+            flexion_translation = ""
+        flexion_translation = flexion_translation.lower()
+
+        token_segmented = article.title_parsed_segmented[article_lemma_index]
+
+        token_POS = article.title_parsed_postag[article_lemma_index]
+
+        # NNP = proper noun
+        is_proper_noun = False
+        if token_POS == "NNP":
+            # word_translation = f"##{word_foreign_flexion}##"
+            # flexion_translation = f"##{word_foreign_flexion}##"
+            # word_foreign_flexion = f"##{word_foreign_flexion}##"
+            is_proper_noun = True
+
+        is_prep_pronoun = False
+        if token_POS == "S_PRN":
+            is_prep_pronoun = True
+
+        # CD = cardinal digit?
+        if token_POS == "CD":
+            word_translation = word_foreign_flexion
+
+        features = article.title_parsed_feats[article_lemma_index]
+        features = token_POS
+        # features = format_features(token_POS, features)
+
+        token_prefixes = article.title_parsed_prefixes[article_lemma_index]
+        token_prefixes = ("".join(token_prefixes) + "+") if token_prefixes else ""
+
+        # CUSTOM TRANSLATIONS (currently verbs that are precomputed, later maybe user suggested words)
+        translation_override = article.title_parsed_translation_override[article_lemma_index]
+        if translation_override:
+            word_translation = translation_override
+
+        word_components = {
+            "word_foreign": word_foreign_flexion,
+            "flexion_translation": flexion_translation,
+            "lemma_foreign": lemma_text,
+            "lemma_foreign_diacritic": lemma_diacritic,
+            "lemma_foreign_index": word_rank,
+            "lemma_root": lemma_root,
+            "lemma_known": lemma_known_status == "known",
+            "lemma_practice": lemma_known_status == "practice",
+            "lemma_seen": lemma_known_status == "seen",
+            "lemma_known_status": lemma_known_status,
+            "lemma_rating": lemma_rating,
+            "word_translation": word_translation,
+            "token_segmented": token_segmented,
+            # "verb_tense": verb_tense,
+            "is_proper_noun": is_proper_noun,
+            "is_prep_pronoun": is_prep_pronoun,
+            "features": features,
+            "token_prefixes": token_prefixes,
+        }
+        article_words.append(word_components)
+
+    return article_words
+
+
+def model_result_to_dict(model_result):
+    out_dict = {}
+    for res in model_result:
+        out_dict[res.text] = res
+    return out_dict
+
+
+def get_root(word):
+    root = word.root
+
+    if not root:
+        if word.user_roots:
+            hyphens = ["־", "–", "-"]
+            root = word.user_roots[-1]
+            root = root.replace(" ", "")
+            for h in hyphens:
+                root = root.replace(h, " - ")
+    if not root:
+        root = ""
+
+    return root
+
+
+def cleanup_source_name(source_name):
+    # TODO split this up by language.
+    source_name_mapping = {
+        "ynet-hebrew": "ynet",
+        "mako-hebrew": "mako",
+        "haaretz-hebrew": "haaretz",
+        "globes-hebrew": "globes",
+        "bbc-arabic": "bbc-arabic",
+        "cnn-arabic": "cnn-arabic",
+        "aljazeera-arabic": "aljazeera-arabic",
+    }
+    return source_name_mapping[source_name]
+
 
 def sort_articles_by_word(articles):
     articles_per_lemma = {}
@@ -577,31 +566,6 @@ def sort_articles_by_word(articles):
             if len(articles_per_lemma[lemma]) == 0:
                 del articles_per_lemma[lemma]
     return ret_articles
-
-
-def configure(request, language_code):
-    language = language_code_mapping[language_code]
-    known_cutoff = int(request.GET.get("known_cutoff", 50))
-    practice_cutoff = int(request.GET.get("practice_cutoff", 100))
-    seen_cutoff = int(request.GET.get("seen_cutoff", practice_cutoff))
-    start_date_cutoff = request.GET.get("start_date", default_start_date)
-    end_date_cutoff = request.GET.get("end_date", default_end_date)
-    article_display_count = int(request.GET.get("article_display_count", 100))
-    sort_by_word = request.GET.get("sort_by_word", "False") == "False"
-
-    form = ArticlesForm(
-        initial={
-            "start_date": start_date_cutoff,
-            "end_date": end_date_cutoff,
-            "language": language,
-            "known_cutoff": known_cutoff,
-            "practice_cutoff": practice_cutoff,
-            "seen_cutoff": seen_cutoff,
-            "article_display_count": article_display_count,
-            "sort_by_word": sort_by_word,
-        }
-    )
-    return render(request, "configure.html", {"form": form})
 
 
 def is_article_about_sports(article):
@@ -616,21 +580,60 @@ def is_article_about_sports(article):
 
     return link_contains_sport_word or feedname_contains_sport_word
 
+# TODO modify to handle arabic, or modify the format by t he language parser
+#      into a standardized format.
 
-def sort_articles_by_word(articles):
-    articles_per_lemma = {}
-    ret_articles = []
-    for article in articles:
-        for word in article["words"]:
-            if word["lemma_practice"]:
-                articles_per_lemma.setdefault(word["lemma_foreign"], []).append(article)
+def format_features(postag, features):
+    # if not features:
+    #     return ""
+    # feature_mapping = {
+    #     "num=S": "s",
+    #     "num=P": "p",
+    #     "gen=M": "m",
+    #     "gen=F": "f",
+    #     "per=1": "1",
+    #     "per=2": "2",
+    #     "per=3": "3",
+    #     "tense=FUTURE": "futr.",
+    #     "tense=PAST": "past.",
+    #     "tense=IMPERATIVE": "impe.",
+    #     "tense=BEINONI": "bein."
+    # }
 
-    while len(articles_per_lemma) > 0:
-        for lemma in list(articles_per_lemma.keys()):
-            art = articles_per_lemma[lemma].pop(0)
-            if art not in ret_articles:
-                art["title_translation"] = lemma + ":" + art["title_translation"]
-                ret_articles.append(art)
-            if len(articles_per_lemma[lemma]) == 0:
-                del articles_per_lemma[lemma]
-    return ret_articles
+    # result = ""
+    # for feature in feature_mapping:
+    #     if feature in features:
+    #         result += feature_mapping[feature]
+
+    # return result
+    number = ""
+    if "num=S" in features:
+        number = "s"
+    elif "num=P" in features:
+        number = "p"
+
+    gender = ""
+    if "gen=M" in features:
+        gender = "m"
+    elif "gen=F" in features:
+        gender = "f"
+
+    person = ""
+    if "per=1" in features:
+        person = "1"
+    elif "per=2" in features:
+        person = "2"
+    elif "per=3" in features:
+        person = "3"
+
+    tense = ""
+    if "tense=FUTURE" in features:
+        tense = "futr."
+    elif "tense=PAST" in features:
+        tense = "past."
+    elif "tense=IMPERATIVE" in features:
+        tense = "impe."
+    elif "tense=BEINONI" in features:
+        tense = "bein."
+
+    return "".join([tense, person, gender, number])
