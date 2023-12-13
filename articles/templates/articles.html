@@ -112,6 +112,7 @@
                     Summary:<div>{{article.summary}}</div>
                     {% endautoescape %}
                 </div>
+                {% if DEBUG %}
                 <div class="article_debug">
                     {{article.feed_source}}
                     --
@@ -126,17 +127,18 @@
                     is_about_sports: {{article.is_about_sports}}
                     ---
                 </div>
+                {% endif %}
 
             </div>
-            <div style="width: 10%; display: table-cell;">
-                <div class="button_speak button" onclick="speak_title_helper(this)"> <i class="fa fa-volume-up"></i>
+            <div style="width: 10%; display: table-cell; text-align: right;">
+                <div class="side-button button_speak button" onclick="speak_title_helper(this)"> <i class="fa fa-volume-up"></i>
                 </div>
-                <div class="button_partial_translation button" onclick="show_partial_translation(this)"><i
+                <div class="side-button button_partial_translation button button-active" onclick="toggle_section(this, 'title_mix')"><i
                         class="fa fa-tasks"></i></div>
-                <div class="button_full_translation button" onclick="show_full_translation(this)"><i
+                <div class="side-button button_full_translation button" onclick="toggle_section(this, 'title_translation')"><i
                         class="fa fa-language"></i></div>
-                <div class="button" onclick="window.open('{{article.link}}');"><i class="fa fa-newspaper-o"></i></div>
-                <div class="button" onclick="window.open('{{article.link}}');"><i class="fa fa-external-link"></i></div>
+                <div class="side-button button_summary button button-active" onclick="toggle_section(this, 'article_summary')"><i class="fa fa-newspaper-o"></i></div>
+                <div class="side-button button" onclick="window.open('{{article.link}}');"><i class="fa fa-external-link"></i></div>
             </div>
 
         </div>
@@ -154,6 +156,17 @@
         <label for="source_{{source}}">{{source}}</label>
         <br>
         {% endfor %}
+    </div>
+
+    <div class="right_panel_section">
+        Show/Hide all:
+
+        <div id="button_title_mix_all" class="side-button button-active button" onclick="toggle_section_all(this, '.title_mix', '.button_partial_translation')">
+            <i class="fa fa-tasks"></i></div>
+        <div id="button_title_translation_all" class="side-button button" onclick="toggle_section_all(this,  '.title_translation', '.button_full_translation')">
+            <i class="fa fa-language"></i></div>
+        <div id="button_article_summary_all" class="side-button button-active button" onclick="toggle_section_all(this, '.article_summary', '.button_summary')">
+            <i class="fa fa-newspaper-o"></i></div>
     </div>
 </div>
 

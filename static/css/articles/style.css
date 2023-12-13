@@ -246,3 +246,20 @@ a {
 .article_summary {
   padding: 2rem;
 }
+
+.button {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.6rem;
+  outline: black 1px solid;
+}
+.button-active {
+  -webkit-box-shadow:inset 0px 0px 12px 0.2rem #2196F3;
+  -moz-box-shadow:inset  0px 0px 12px 0.2rem #2196F3;
+  box-shadow:inset  0px 0px 12px 0.2rem #2196F3;
+}
+
+.side-button{
+  margin-left: auto;
+  margin-right: 0;
+}
