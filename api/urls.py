@@ -174,7 +174,7 @@ class WordRatingsSerializer(serializers.ModelSerializer):
     find_text = rest_framework.serializers.CharField(
         max_length=300, allow_blank=False, write_only=True
     )
-    new_rating = rest_framework.serializers.IntegerField(write_only=True, min_value=1, max_value=5)
+    new_rating = rest_framework.serializers.IntegerField(write_only=True, min_value=0, max_value=5)
 
     class Meta:
         model = WordRating

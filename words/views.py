@@ -37,7 +37,7 @@ def get_root(word):
         if word.user_roots:
             hyphens = ["־", "–", "-"]
             root = word.user_roots[-1]
-            root = root.replace(" ", "-")
+            root = root.replace(" ", "")
             for h in hyphens:
                 root = root.replace(h, " - ")
     if not root:

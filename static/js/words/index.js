@@ -11,9 +11,9 @@ async function initialize_ratings() {
     }
     $(
       "#" +
-        $.escapeSelector(
-          "button-rating-" + rating + "-" + word["word"].replace("'", "\\'")
-        )
+      $.escapeSelector(
+        "button-rating-" + rating + "-" + word["word"].replace("'", "\\'")
+      )
     ).addClass("rating-checked");
     $(
       "#" + $.escapeSelector("select-word-" + word["word"].replace("'", "\\'"))
@@ -23,7 +23,7 @@ async function initialize_ratings() {
 }
 
 function clear_ratings(word) {
-  for (let rating = 1; rating <= 5; rating++) {
+  for (let rating = 0; rating <= 5; rating++) {
     $(
       "#" + $.escapeSelector("button-rating-" + rating + "-" + word)
     ).removeClass("rating-checked");
@@ -254,11 +254,11 @@ function monitor_checkboxes() {
       $(this).parent().parent().removeClass("word-line-selected");
     }
 
-    if ($(".select-word-checkbox:checked").length == 0){
+    if ($(".select-word-checkbox:checked").length == 0) {
       $("#build_flashcards").addClass("button-disabled");
       $("#build_flashcards").attr("onclick", "alert('Please select words first')");
     }
-    else{
+    else {
       $("#build_flashcards").removeClass("button-disabled");
       $("#build_flashcards").attr("onclick", "submit_form('main_form')");
     }
@@ -267,19 +267,10 @@ function monitor_checkboxes() {
       $(".select-word-checkbox:checked").length ==
       $(".select-word-checkbox").length
     ) {
-      $("#select-deselect-all").attr("checked", true);
-      $("#select-deselect-all").prop("checked", true);
-      $("#select-deselect-all").prop("indeterminate", false);
+      $("#select-deselect-all").text("None");
       $("#select-deselect-all").attr("onclick", "clear_selection()");
-    } else if ($(".select-word-checkbox:checked").length == 0) {
-      $("#select-deselect-all").attr("checked", false);
-      $("#select-deselect-all").prop("checked", false);
-      $("#select-deselect-all").prop("indeterminate", false);
-      $("#select-deselect-all").attr("onclick", "select_all()");
     } else {
-      $("#select-deselect-all").attr("checked", false);
-      $("#select-deselect-all").prop("checked", false);
-      $("#select-deselect-all").prop("indeterminate", true);
+      $("#select-deselect-all").text("All");
       $("#select-deselect-all").attr("onclick", "select_all()");
     }
   });
@@ -302,37 +293,23 @@ function monitor_checkboxes_rating() {
 }
 
 function update_select_all_rating_checkbox(rating, num_words_with_rating) {
+  console.log(rating, num_words_with_rating);
   if (num_words_with_rating == 0) {
-    $("#select-deselect-rating-" + rating).prop("disabled", true);
+    $("#select-deselect-rating-" + rating).removeClass("rating-checked");
   } else {
-    $("#select-deselect-rating-" + rating).prop("disabled", false);
+    $("#select-deselect-rating-" + rating).addClass("rating-checked");
     if (
       $(".select-word-checkbox[rating='" + rating + "']:checked").length ==
       num_words_with_rating
     ) {
-      $("#select-deselect-rating-" + rating).attr("checked", true);
-      $("#select-deselect-rating-" + rating).prop("checked", true);
-
-      $("#select-deselect-rating-" + rating).prop("indeterminate", false);
-
+      $("#select-deselect-rating-" + rating).addClass("rating-selected");
       $("#select-deselect-rating-" + rating).attr(
         "onclick",
         "deselect_by_filter(" + rating + ")"
       );
-    } else if (
-      $(".select-word-checkbox[rating='" + rating + "']:checked").length == 0
-    ) {
-      $("#select-deselect-rating-" + rating).attr("checked", false);
-      $("#select-deselect-rating-" + rating).prop("checked", false);
-      $("#select-deselect-rating-" + rating).prop("indeterminate", false);
-      $("#select-deselect-rating-" + rating).attr(
-        "onclick",
-        "select_by_filter(" + rating + ")"
-      );
-    } else {
-      $("#select-deselect-rating-" + rating).attr("checked", false);
-      $("#select-deselect-rating-" + rating).prop("checked", false);
-      $("#select-deselect-rating-" + rating).prop("indeterminate", true);
+    }
+    else {
+      $("#select-deselect-rating-" + rating).removeClass("rating-selected");
       $("#select-deselect-rating-" + rating).attr(
         "onclick",
         "select_by_filter(" + rating + ")"
@@ -340,6 +317,7 @@ function update_select_all_rating_checkbox(rating, num_words_with_rating) {
     }
   }
 }
+
 function hide_popups() {
   $(".popup").hide();
 }
@@ -445,9 +423,9 @@ window.onclick = function (event) {
 function context_menu_open_definition(element, language) {
   window.open(
     "https://en.wiktionary.org/wiki/" +
-      $("#context-menu").attr("word") +
-      "#" +
-      language
+    $("#context-menu").attr("word") +
+    "#" +
+    language
   );
 }
 
@@ -542,15 +520,15 @@ function update_rating(word, rating) {
     .done(function () {
       //# TODO move the update gui here
     })
-    .fail(function () {})
-    .always(function () {});
+    .fail(function () { })
+    .always(function () { });
 }
 
 function submit_filter_form() {
   let form_data = new FormData(document.querySelector("#filter-form"));
   let form_str = new URLSearchParams(form_data).toString();
 
-  if (parseInt(form_data.get("upper_freq_cutoff")) - parseInt(form_data.get("lower_freq_cutoff")) > 500){
+  if (parseInt(form_data.get("upper_freq_cutoff")) - parseInt(form_data.get("lower_freq_cutoff")) > 500) {
     alert("Range must contain fewer than 500 words total.");
     return;
   }

@@ -40,7 +40,7 @@ a {
   justify-content: space-between;
   align-content: center;
   align-items: center;
-  grid-template-columns: 5% 5% 20% 25% 20% 20% 5%;
+  grid-template-columns: 5% 5% 25% 25% 15% 20% 5%;
   margin-top: 0.3em;
   margin-bottom: 0.3em;
 }
@@ -80,6 +80,10 @@ a {
   cursor: pointer;
 }
 
+.round-button{
+  border-radius: 3rem;
+}
+
 .button:hover {
   background-color: rgb(166, 166, 166);
 }
@@ -113,14 +117,37 @@ a {
   color: white;
 }
 
+.button-rating-0{
+  /* box-shadow: 2px 2px 3px black; */
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: fit-content;
+  padding: 0.5rem;
+  /* border-radius: 5px; */
+  /* background-color: rgb(220, 220, 220); */
+  cursor: pointer;
+}
+
+.button-rating-unrated {
+  background-color:#496585;
+  color: white;
+}
+
+.button-rating-opposite:is(.rating-checked) {
+  opacity: 0.1;
+}
+
 .button-rating:not(.rating-checked) {
   opacity: 0.1;
 }
 
-.rating-checked {
-  outline: rgb(34, 144, 20);
-  outline-style: solid;
-  outline-width: 0.2rem;
+.rating-selected {
+  -webkit-box-shadow:inset 0px 0px 3px 0.5rem #2196F3;
+  -moz-box-shadow:inset  0px 0px 3px 0.5rem #2196F3;
+  box-shadow:inset  0px 0px 3px 0.5rem #2196F3;
 }
 
 .select-word-checkbox {
@@ -213,7 +240,7 @@ a {
   justify-content: space-between;
   align-content: center;
   align-items: center;
-  grid-template-columns: 50% 50%;
+  grid-template-columns: 40% 10% 40%;
   margin-top: 0.3em;
   margin-bottom: 3rem;
 }
@@ -231,7 +258,6 @@ a {
 }
 
 .eyeer {
-  margin: 3rem;
   width: fit-content;
   align-items: center;
 }
@@ -291,4 +317,29 @@ h4 {
 .select-deselect-rating-5:checked{
   filter: hue-rotate(0deg) brightness(1.1);
   accent-color: green;
+}
+
+.distinct-section{
+  border: 1px solid black;
+  border-radius: 2rem;
+  padding: 3rem;
+}
+
+.select-filter-line {
+  display: grid;
+  justify-content: space-between;
+  align-content: center;
+  align-items: center;
+  grid-template-columns: 5% 40% 20% 20%;
+  margin-top: 0.3em;
+  margin-bottom: 0.3em;
+}
+
+.extra-gap{
+  gap: 0.5rem;
+}
+
+.select-all-button {
+  width: 6rem;
+  margin-right: 1rem;
 }
