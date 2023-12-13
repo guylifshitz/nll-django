@@ -9,16 +9,14 @@ async function initialize_ratings() {
     if (rating == null) {
       rating = 0;
     }
-    $(
-      "#" +
-      $.escapeSelector(
-        "button-rating-" + rating + "-" + word["word"].replace("'", "\\'")
-      )
-    ).addClass("rating-checked");
-    $(
-      "#" + $.escapeSelector("select-word-" + word["word"].replace("'", "\\'"))
-    ).attr("rating", rating);
-    monitor_checkboxes_rating();
+    let newWord = document.querySelector(
+      `#button-rating-${rating}-${word.word.replace("'", "\\'")}`
+    );
+    newWord.classList.add("rating-checked");
+    const wordCheckbox = document.querySelector(
+      `#select-word-${word.word.replace("'", "\\'")}`
+    );
+    wordCheckbox.setAttribute("rating", rating);
   }
 }
 
@@ -256,9 +254,11 @@ function monitor_checkboxes() {
 
     if ($(".select-word-checkbox:checked").length == 0) {
       $("#build_flashcards").addClass("button-disabled");
-      $("#build_flashcards").attr("onclick", "alert('Please select words first')");
-    }
-    else {
+      $("#build_flashcards").attr(
+        "onclick",
+        "alert('Please select words first')"
+      );
+    } else {
       $("#build_flashcards").removeClass("button-disabled");
       $("#build_flashcards").attr("onclick", "submit_form('main_form')");
     }
@@ -307,8 +307,7 @@ function update_select_all_rating_checkbox(rating, num_words_with_rating) {
         "onclick",
         "deselect_by_filter(" + rating + ")"
       );
-    }
-    else {
+    } else {
       $("#select-deselect-rating-" + rating).removeClass("rating-selected");
       $("#select-deselect-rating-" + rating).attr(
         "onclick",
@@ -423,9 +422,9 @@ window.onclick = function (event) {
 function context_menu_open_definition(element, language) {
   window.open(
     "https://en.wiktionary.org/wiki/" +
-    $("#context-menu").attr("word") +
-    "#" +
-    language
+      $("#context-menu").attr("word") +
+      "#" +
+      language
   );
 }
 
@@ -520,15 +519,19 @@ function update_rating(word, rating) {
     .done(function () {
       //# TODO move the update gui here
     })
-    .fail(function () { })
-    .always(function () { });
+    .fail(function () {})
+    .always(function () {});
 }
 
 function submit_filter_form() {
   let form_data = new FormData(document.querySelector("#filter-form"));
   let form_str = new URLSearchParams(form_data).toString();
 
-  if (parseInt(form_data.get("upper_freq_cutoff")) - parseInt(form_data.get("lower_freq_cutoff")) > 500) {
+  if (
+    parseInt(form_data.get("upper_freq_cutoff")) -
+      parseInt(form_data.get("lower_freq_cutoff")) >
+    500
+  ) {
     alert("Range must contain fewer than 500 words total.");
     return;
   }

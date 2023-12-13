@@ -30,7 +30,7 @@ DEBUG = os.environ.get("NLL_DJANGO_DEBUG", "True") != "False"
 ENVIRONMENT = os.environ.get("NLL_DJANGO_ENVIRONMENT", "local")
 
 ALLOWED_HOSTS = [
-    # "localhost",
+    "localhost",
     "guylifshitz.com",
     "language.guylifshitz.com",
 ]
@@ -112,9 +112,9 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'nll',
         'USER': 'django',
-        'PASSWORD': os.environ["NLL_DJANGO_DB_PASS"],
-        'HOST': 'guylifshitz.com',
-        'PORT': '5438', 
+        'PASSWORD':"DJLK21094mCui12",
+        'HOST': 'localhost',
+        'PORT': '5432', 
     }
 }
 
