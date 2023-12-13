@@ -1,6 +1,13 @@
-var words;
-var words_to_show_dict;
-var user_word_ratings;
+const words = JSON.parse(document.getElementById("words-data").textContent);
+const words_to_show_dict = JSON.parse(
+  document.getElementById("words_to_show_dict-data").textContent
+);
+const user_word_ratings = JSON.parse(
+  document.getElementById("user_word_ratings-data").textContent
+);
+
+initialize_ratings();
+monitor_checkboxes();
 
 async function initialize_ratings() {
   for (const word of words) {
@@ -17,24 +24,25 @@ async function initialize_ratings() {
       `#select-word-${word.word.replace("'", "\\'")}`
     );
     wordCheckbox.setAttribute("rating", rating);
+    monitor_checkboxes_rating();
   }
 }
 
 function clear_ratings(word) {
   for (let rating = 0; rating <= 5; rating++) {
-    $(
-      "#" + $.escapeSelector("button-rating-" + rating + "-" + word)
-    ).removeClass("rating-checked");
+    const wordRating = document.querySelector(
+      `#button-rating-${rating}-${word}`
+    );
+    wordRating.classList.remove("rating-checked");
   }
 }
 
 async function clicked_update(word, rating) {
   clear_ratings(word);
-  $("#" + $.escapeSelector("button-rating-" + rating + "-" + word)).addClass(
-    "rating-checked"
-  );
+  const wordRating = document.querySelector(`#button-rating-${rating}-${word}`);
+  wordRating.classList.add("rating-checked");
 
-  $("#" + $.escapeSelector("select-word-" + word)).attr("rating", rating);
+  document.querySelector(`#select-word-${word}`).setAttribute("rating", rating);
 
   monitor_checkboxes_rating();
   update_rating(word, rating);
@@ -82,9 +90,11 @@ async function deselect_by_filter(filter_rating) {
   for (const word of words) {
     word_rating = word.rating;
     if (filter_rating == word_rating) {
-      $("#" + $.escapeSelector("select-word-" + word["word"]))
-        .prop("checked", false)
-        .change();
+      document.getElementById(`select-word-${word.word}`).checked = false;
+      document
+        .getElementById(`select-word-${word.word}`)
+        // TODO upgrade change event logic
+        .dispatchEvent(new Event("change"));
     }
   }
   hide_unselected();
@@ -95,62 +105,45 @@ async function deselect_unrated() {
     word_has_rating = false;
     word_has_rating = word.rating !== null;
     if (!word_has_rating) {
-      $("#" + $.escapeSelector("select-word-" + word["word"]))
-        .prop("checked", false)
-        .change();
+      document.getElementById(`select-word-${word.word}`).checked = false;
+      document
+        .getElementById(`select-word-${word.word}`)
+        // TODO upgrade change event logic
+
+        .dispatchEvent(new Event("change"));
     }
   }
   hide_unselected();
 }
 
 function clear_selection() {
-  $(".select-word-checkbox").prop("checked", false).change();
+  document.querySelectorAll(".select-word-checkbox").forEach((element) => {
+    element.checked = false;
+    element.dispatchEvent(new Event("change"));
+  });
+
   hide_unselected();
 }
 
 function select_all() {
-  $(".select-word-checkbox").prop("checked", true).change();
+  document.querySelectorAll(".select-word-checkbox").forEach((element) => {
+    element.checked = true;
+    // TODO upgrade change event logic
+    element.dispatchEvent(new Event("change"));
+  });
   hide_unselected();
 }
 
-function download(filename, text) {
-  var pom = document.createElement("a");
-  pom.setAttribute(
-    "href",
-    "data:text/plain;charset=utf-8," + encodeURIComponent(text)
-  );
-  pom.setAttribute("download", filename);
-
-  if (document.createEvent) {
-    var event = document.createEvent("MouseEvents");
-    event.initEvent("click", true, true);
-    pom.dispatchEvent(event);
-  } else {
-    pom.click();
-  }
-}
-
-$(document).ready(function () {
-  words = JSON.parse(document.getElementById("words-data").textContent);
-  words_to_show_dict = JSON.parse(
-    document.getElementById("words_to_show_dict-data").textContent
-  );
-  user_word_ratings = JSON.parse(
-    document.getElementById("user_word_ratings-data").textContent
-  );
-
-  initialize_ratings();
-  monitor_checkboxes();
-
-  var today = new Date().toISOString().split("T")[0];
-  var prev_day = new Date();
+document.addEventListener("DOMContentLoaded", () => {
+  const today = new Date().toISOString().split("T")[0];
+  const prev_day = new Date();
   prev_day.setDate(prev_day.getDate() - 7);
   prev_day = prev_day.toISOString().split("T")[0];
 
-  $("#start-date").val(prev_day);
-  $("#end-date").val(today);
+  document.querySelector("#start-date").value = prev_day;
+  document.querySelector("#end-date").value = today;
 
-  $("#ART_FORM").submit(function (e) {
+  document.querySelector("#ART_FORM").addEventListener("submit", (e) => {
     submit_articles_form(this);
     return false;
   });
@@ -278,10 +271,9 @@ function monitor_checkboxes() {
 
 function monitor_checkboxes_rating() {
   for (let rating = 0; rating <= 5; rating++) {
-    let num_words_with_rating = $(
-      ".select-word-checkbox[rating='" + rating + "']"
+    let num_words_with_rating = document.querySelectorAll(
+      `.select-word-checkbox[rating='"${rating}"']`
     ).length;
-
     $(".select-word-checkbox[rating='" + rating + "']")
       .off("change.rating")
       .on("change.rating", function () {
