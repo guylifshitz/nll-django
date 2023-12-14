@@ -148,15 +148,12 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelector("#end-date").value = today;
 
   document.querySelector("#ART_FORM").addEventListener("submit", async (e) => {
-    submit_articles_form(this);
+    e.preventDefault();
+    await set_articles_submit_json();
+    e.target.submit();
     return false;
   });
 });
-
-async function submit_articles_form(form) {
-  await set_articles_submit_json();
-  form.submit();
-}
 
 async function set_articles_submit_json() {
   let practice_words = [];
@@ -198,82 +195,97 @@ async function set_articles_submit_json() {
   document.getElementById("known_words").setAttribute("value", known_words2);
 }
 
-function xxx(url, csrfToken) {
-  var parameters = {};
-  parameters["csrfmiddlewaretoken"] = csrfToken;
+// function xxx(url, csrfToken) {
+//   var parameters = {};
+//   parameters["csrfmiddlewaretoken"] = csrfToken;
 
-  parameters["test-1"] = get_known_words();
-  sendData(url, parameters);
-}
+//   parameters["test-1"] = get_known_words();
+//   sendData(url, parameters);
+// }
 
-async function get_known_words() {
-  var practice_words = [];
-  $(".select-word-checkbox:checkbox:checked").each(function (checkbox) {
-    practice_words.push(this.value);
-  });
+// async function get_known_words() {
+//   let practice_words = [];
+//   document.querySelectorAll(`.select-word-checkbox:checked`).forEach((word) => {
+//     practice_words.push(word.value);
+//   });
 
-  for (const word of words) {
-    if (word["word"] in user_word_ratings) {
-      if (practice_words.includes(word["word"])) {
-        rating_text = "PRACTICE";
-      } else if (word_user_ratings[word["word"]] === 5) {
-        rating_text = "KNOWN";
-      } else {
-        rating_text = "SEEN";
-      }
-      output.push([word["word"], rating_text]);
-    }
-  }
-}
+//   for (const word of words) {
+//     if (word["word"] in user_word_ratings) {
+//       if (practice_words.includes(word["word"])) {
+//         rating_text = "PRACTICE";
+//       } else if (word_user_ratings[word["word"]] === 5) {
+//         rating_text = "KNOWN";
+//       } else {
+//         rating_text = "SEEN";
+//       }
+//       output.push([word["word"], rating_text]);
+//     }
+//   }
+// }
 
-function sendData(url, parameters) {
-  const form = document.createElement("form");
-  form.method = "post";
-  form.action = url;
-  document.body.appendChild(form);
+// function sendData(url, parameters) {
+//   const form = document.createElement("form");
+//   form.method = "post";
+//   form.action = url;
+//   document.body.appendChild(form);
 
-  for (const key in parameters) {
-    const formField = document.createElement("input");
-    formField.type = "hidden";
-    formField.name = key;
-    formField.value = parameters[key];
+//   for (const key in parameters) {
+//     const formField = document.createElement("input");
+//     formField.type = "hidden";
+//     formField.name = key;
+//     formField.value = parameters[key];
 
-    form.appendChild(formField);
-  }
-  form.submit();
-}
+//     form.appendChild(formField);
+//   }
+//   form.submit();
+// }
 
 function monitor_checkboxes() {
-  $(".select-word-checkbox").change(function () {
-    update_words_selected_counter();
-    hide_unselected();
-    if ($(this).is(":checked")) {
-      $(this).parent().parent().addClass("word-line-selected");
-    } else {
-      $(this).parent().parent().removeClass("word-line-selected");
-    }
+  const selectWordCheckboxes = document.querySelectorAll(
+    ".select-word-checkbox"
+  );
 
-    if ($(".select-word-checkbox:checked").length == 0) {
-      $("#build_flashcards").addClass("button-disabled");
-      $("#build_flashcards").attr(
-        "onclick",
-        "alert('Please select words first')"
-      );
-    } else {
-      $("#build_flashcards").removeClass("button-disabled");
-      $("#build_flashcards").attr("onclick", "submit_form('main_form')");
-    }
+  selectWordCheckboxes.forEach((checkbox) => {
+    checkbox.addEventListener("change", function () {
+      update_words_selected_counter();
+      hide_unselected();
+      if (this.checked) {
+        this.parentNode.parentNode.classList.add("word-line-selected");
+      } else {
+        this.parentNode.parentNode.classList.remove("word-line-selected");
+      }
 
-    if (
-      $(".select-word-checkbox:checked").length ==
-      $(".select-word-checkbox").length
-    ) {
-      $("#select-deselect-all").text("None");
-      $("#select-deselect-all").attr("onclick", "clear_selection()");
-    } else {
-      $("#select-deselect-all").text("All");
-      $("#select-deselect-all").attr("onclick", "select_all()");
-    }
+      const numChecked = document.querySelectorAll(
+        ".select-word-checkbox:checked"
+      ).length;
+      if (numChecked === 0) {
+        document
+          .getElementById("build_flashcards")
+          .classList.add("button-disabled");
+        document.getElementById("build_flashcards").onclick = function () {
+          alert("Please select words first");
+        };
+      } else {
+        document
+          .getElementById("build_flashcards")
+          .classList.remove("button-disabled");
+        document.getElementById("build_flashcards").onclick = function () {
+          submit_form("main_form");
+        };
+      }
+
+      if (numChecked === selectWordCheckboxes.length) {
+        document.getElementById("select-deselect-all").textContent = "None";
+        document.getElementById("select-deselect-all").onclick = function () {
+          clear_selection();
+        };
+      } else {
+        document.getElementById("select-deselect-all").textContent = "All";
+        document.getElementById("select-deselect-all").onclick = function () {
+          select_all();
+        };
+      }
+    });
   });
 }
 
@@ -326,9 +338,9 @@ function show_articles_popup() {
   let words_selected_count = $(".select-word-checkbox:checked").length;
   $("#words-selected-count").text(words_selected_count);
 }
-
+// Change submit divs to buttons
 function submit_form(form_id) {
-  $("#" + form_id).submit();
+  document.querySelector(`#${form_id}`).requestSubmit();
 }
 
 function hide_unselected() {
