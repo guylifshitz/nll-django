@@ -62,9 +62,11 @@ async function select_by_filter(filter_rating) {
   for (const word of words) {
     word_rating = word.rating;
     if (filter_rating == word_rating) {
-      $("#" + $.escapeSelector("select-word-" + word["word"]))
-        .prop("checked", true)
-        .change();
+      document.getElementById(`select-word-${word.word}`).checked = true;
+      document
+        .getElementById(`select-word-${word.word}`)
+        // TODO upgrade change event logic
+        .dispatchEvent(new Event("change"));
     }
   }
   hide_unselected();
@@ -74,9 +76,11 @@ async function select_unrated() {
   for (const word of words) {
     word_has_rating = word.rating !== null;
     if (!word_has_rating) {
-      $("#" + $.escapeSelector("select-word-" + word["word"]))
-        .prop("checked", true)
-        .change();
+      document.getElementById(`select-word-${word.word}`).checked = true;
+      document
+        .getElementById(`select-word-${word.word}`)
+        // TODO upgrade change event logic
+        .dispatchEvent(new Event("change"));
     }
   }
   hide_unselected();
@@ -136,14 +140,14 @@ function select_all() {
 
 document.addEventListener("DOMContentLoaded", () => {
   const today = new Date().toISOString().split("T")[0];
-  const prev_day = new Date();
+  let prev_day = new Date();
   prev_day.setDate(prev_day.getDate() - 7);
   prev_day = prev_day.toISOString().split("T")[0];
 
   document.querySelector("#start-date").value = prev_day;
   document.querySelector("#end-date").value = today;
 
-  document.querySelector("#ART_FORM").addEventListener("submit", (e) => {
+  document.querySelector("#ART_FORM").addEventListener("submit", async (e) => {
     submit_articles_form(this);
     return false;
   });
@@ -155,9 +159,9 @@ async function submit_articles_form(form) {
 }
 
 async function set_articles_submit_json() {
-  var practice_words = [];
+  let practice_words = [];
   for (let rating = 1; rating <= 5; rating++) {
-    if ($("#select-practice-rating-" + rating).is(":checked")) {
+    if (document.querySelector(`#select-practice-rating-${rating}`).checked) {
       practice_words.push.apply(
         practice_words,
         user_word_ratings
@@ -166,19 +170,23 @@ async function set_articles_submit_json() {
       );
     }
   }
-  if ($("#select-practice-by-selected").is(":checked")) {
-    $(".select-word-checkbox:checked").each(function () {
-      practice_words.push($(this).val());
-    });
+  if (document.querySelector(`#select-practice-by-selected`).checked) {
+    document
+      .querySelectorAll(`.select-word-checkbox:checked`)
+      .forEach((word) => {
+        practice_words.push(word.value);
+      });
   }
   practice_words = JSON.stringify(practice_words);
-  $("#practice_words").attr("value", practice_words);
+  document
+    .getElementById("practice_words")
+    .setAttribute("value", practice_words);
 
-  var known_words2 = user_word_ratings.map((item) => item["word"]);
+  let known_words2 = user_word_ratings.map((item) => item["word"]);
 
-  if ($("#include-unrated").is(":checked")) {
-    $(".select-word-checkbox").each(function () {
-      known_words2.push($(this).val());
+  if (document.querySelector("#include-unrated").checked) {
+    document.querySelectorAll(`.select-word-checkbox`).forEach((word) => {
+      known_words2.push(word.value);
     });
   }
 
@@ -187,7 +195,7 @@ async function set_articles_submit_json() {
   });
 
   known_words2 = JSON.stringify(known_words2);
-  $("#known_words").attr("value", known_words2);
+  document.getElementById("known_words").setAttribute("value", known_words2);
 }
 
 function xxx(url, csrfToken) {
