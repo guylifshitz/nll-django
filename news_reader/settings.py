@@ -30,10 +30,12 @@ DEBUG = os.environ.get("NLL_DJANGO_DEBUG", "True") != "False"
 ENVIRONMENT = os.environ.get("NLL_DJANGO_ENVIRONMENT", "local")
 
 ALLOWED_HOSTS = [
-    # "localhost",
     "guylifshitz.com",
     "language.guylifshitz.com",
 ]
+
+if ENVIRONMENT == "local":
+    ALLOWED_HOSTS.append("localhost")
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = False
@@ -106,17 +108,28 @@ WSGI_APPLICATION = "news_reader.wsgi.application"
 #     }
 # }
 # mongodb://:@guylifshitz.com:27017/newspaper-language-learner
-
-DATABASES = {
-    "default": {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'nll',
-        'USER': 'django',
-        'PASSWORD': os.environ["NLL_DJANGO_DB_PASS"],
-        'HOST': 'guylifshitz.com',
-        'PORT': '5438', 
+if ENVIRONMENT == "local":
+    DATABASES = {
+        "default": {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'nll',
+            'USER': 'django',
+            'PASSWORD': os.environ["NLL_DJANGO_DB_PASS"],
+            'HOST': 'localhost',
+            'PORT': '5432', 
+        }
     }
-}
+else:
+    DATABASES = {
+            "default": {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': 'nll',
+                'USER': 'django',
+                'PASSWORD': os.environ["NLL_DJANGO_DB_PASS"],
+                'HOST': 'guylifshitz.com',
+                'PORT': '5438', 
+            }
+        }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

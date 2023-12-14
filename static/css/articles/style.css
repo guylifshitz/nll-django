@@ -263,3 +263,47 @@ a {
   margin-left: auto;
   margin-right: 0;
 }
+
+.rating-1 {
+  background-color: red;
+}
+
+.rating-2 {
+  background-color: orange;
+}
+
+.rating-3 {
+  background-color: yellow;
+}
+
+.rating-4 {
+  background-color:#b7dd29;
+}
+
+.rating-5 {
+  background-color: green;
+  color: white;
+}
+
+.round-rating {
+  border-radius: 50%;
+  display: flex;
+  box-shadow: 2px 2px 3px black;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  outline: black 1px solid;
+}
+
+.center-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.row-item {
+  margin-right: 0.5rem;
+  margin-left: 0.5rem;
+}

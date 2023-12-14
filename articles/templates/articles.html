@@ -7,7 +7,8 @@
 {% block header %}
 <link rel="stylesheet" href="{% static 'css/articles/style.css' %}">
 <script src="https://cdn.jsdelivr.net/npm/idb@7/build/umd.js"></script>
-<link rel="stylesheet" media="screen" href="http://fonts.googleapis.com/earlyaccess/droidarabickufi.css" type="text/css"/>
+<link rel="stylesheet" media="screen" href="http://fonts.googleapis.com/earlyaccess/droidarabickufi.css"
+    type="text/css" />
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <script src="http://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
@@ -47,9 +48,12 @@
                             <div class="section_trans" onclick="open_word_details_page(this)"
                                 lemma="{{word.lemma_foreign}}">
                                 <div>{{word.lemma_foreign_diacritic}}</div>
-                                <div><i class="fa fa-sort" aria-hidden="true"></i>
-                                    {{word.lemma_foreign_index}} &nbsp; <i class="fa fa-star-o"
-                                        aria-hidden="true"></i>{{word.lemma_rating}}</div>
+                                <div class="center-row">
+                                    <div class="row-item"><i class="fa fa-sort"
+                                            aria-hidden="true"></i>{{word.lemma_foreign_index}}</div>
+                                    <div class="row-item round-rating rating-{{word.lemma_rating}}" aria-hidden="true">
+                                        {{word.lemma_rating}}</div>
+                                </div>
                                 <div>{{word.lemma_root}}</div>
                                 <div class="mix_tooltip_2" hidden>{{word.token_prefixes}}{{word.word_translation}}</div>
                                 <div class="mix_tooltip_2">---</div>
@@ -86,9 +90,12 @@
                             <div class="section_trans" onclick="open_word_details_page(this)"
                                 lemma="{{word.lemma_foreign}}">
                                 <div>{{word.lemma_foreign_diacritic}}</div>
-                                <div><i class="fa fa-sort" aria-hidden="true"></i>
-                                    {{word.lemma_foreign_index}} &nbsp; <i class="fa fa-star-o"
-                                        aria-hidden="true"></i>{{word.lemma_rating}}</div>
+                                <div class="center-row">
+                                    <div class="row-item"><i class="fa fa-sort"
+                                            aria-hidden="true"></i>{{word.lemma_foreign_index}}</div>
+                                    <div class="row-item round-rating rating-{{word.lemma_rating}}" aria-hidden="true">
+                                        {{word.lemma_rating}}</div>
+                                </div>
                                 <div>{{word.lemma_root}}</div>
                                 <div class="mix_tooltip_2" hidden>{{word.token_prefixes}}{{word.word_translation}}</div>
                                 <div class="mix_tooltip_2">---</div>
@@ -131,14 +138,17 @@
 
             </div>
             <div style="width: 10%; display: table-cell; text-align: right;">
-                <div class="side-button button_speak button" onclick="speak_title_helper(this)"> <i class="fa fa-volume-up"></i>
+                <div class="side-button button_speak button" onclick="speak_title_helper(this)"> <i
+                        class="fa fa-volume-up"></i>
                 </div>
-                <div class="side-button button_partial_translation button button-active" onclick="toggle_section(this, 'title_mix')"><i
-                        class="fa fa-tasks"></i></div>
-                <div class="side-button button_full_translation button" onclick="toggle_section(this, 'title_translation')"><i
-                        class="fa fa-language"></i></div>
-                <div class="side-button button_summary button button-active" onclick="toggle_section(this, 'article_summary')"><i class="fa fa-newspaper-o"></i></div>
-                <div class="side-button button" onclick="window.open('{{article.link}}');"><i class="fa fa-external-link"></i></div>
+                <div class="side-button button_partial_translation button button-active"
+                    onclick="toggle_section(this, 'title_mix')"><i class="fa fa-tasks"></i></div>
+                <div class="side-button button_full_translation button"
+                    onclick="toggle_section(this, 'title_translation')"><i class="fa fa-language"></i></div>
+                <div class="side-button button_summary button button-active"
+                    onclick="toggle_section(this, 'article_summary')"><i class="fa fa-newspaper-o"></i></div>
+                <div class="side-button button" onclick="window.open('{{article.link}}');"><i
+                        class="fa fa-external-link"></i></div>
             </div>
 
         </div>
@@ -161,12 +171,18 @@
     <div class="right_panel_section">
         Show/Hide all:
 
-        <div id="button_title_mix_all" class="side-button button-active button" onclick="toggle_section_all(this, '.title_mix', '.button_partial_translation')">
-            <i class="fa fa-tasks"></i></div>
-        <div id="button_title_translation_all" class="side-button button" onclick="toggle_section_all(this,  '.title_translation', '.button_full_translation')">
-            <i class="fa fa-language"></i></div>
-        <div id="button_article_summary_all" class="side-button button-active button" onclick="toggle_section_all(this, '.article_summary', '.button_summary')">
-            <i class="fa fa-newspaper-o"></i></div>
+        <div id="button_title_mix_all" class="side-button button-active button"
+            onclick="toggle_section_all(this, '.title_mix', '.button_partial_translation')">
+            <i class="fa fa-tasks"></i>
+        </div>
+        <div id="button_title_translation_all" class="side-button button"
+            onclick="toggle_section_all(this,  '.title_translation', '.button_full_translation')">
+            <i class="fa fa-language"></i>
+        </div>
+        <div id="button_article_summary_all" class="side-button button-active button"
+            onclick="toggle_section_all(this, '.article_summary', '.button_summary')">
+            <i class="fa fa-newspaper-o"></i>
+        </div>
     </div>
 </div>
 

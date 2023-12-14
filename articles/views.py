@@ -383,7 +383,7 @@ def index(request, language_code):
             article_ids.append(r[0])
         print("article_ids", article_ids)
 
-        article_ids = article_ids[0:article_display_count]
+        article_ids = article_ids[0:article_display_count+1]
 
     articles = Rss_feed.objects.filter(link__in=article_ids)
 
