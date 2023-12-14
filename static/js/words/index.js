@@ -195,51 +195,6 @@ async function set_articles_submit_json() {
   document.getElementById("known_words").setAttribute("value", known_words2);
 }
 
-// function xxx(url, csrfToken) {
-//   var parameters = {};
-//   parameters["csrfmiddlewaretoken"] = csrfToken;
-
-//   parameters["test-1"] = get_known_words();
-//   sendData(url, parameters);
-// }
-
-// async function get_known_words() {
-//   let practice_words = [];
-//   document.querySelectorAll(`.select-word-checkbox:checked`).forEach((word) => {
-//     practice_words.push(word.value);
-//   });
-
-//   for (const word of words) {
-//     if (word["word"] in user_word_ratings) {
-//       if (practice_words.includes(word["word"])) {
-//         rating_text = "PRACTICE";
-//       } else if (word_user_ratings[word["word"]] === 5) {
-//         rating_text = "KNOWN";
-//       } else {
-//         rating_text = "SEEN";
-//       }
-//       output.push([word["word"], rating_text]);
-//     }
-//   }
-// }
-
-// function sendData(url, parameters) {
-//   const form = document.createElement("form");
-//   form.method = "post";
-//   form.action = url;
-//   document.body.appendChild(form);
-
-//   for (const key in parameters) {
-//     const formField = document.createElement("input");
-//     formField.type = "hidden";
-//     formField.name = key;
-//     formField.value = parameters[key];
-
-//     form.appendChild(formField);
-//   }
-//   form.submit();
-// }
-
 function monitor_checkboxes() {
   const selectWordCheckboxes = document.querySelectorAll(
     ".select-word-checkbox"
@@ -291,52 +246,54 @@ function monitor_checkboxes() {
 
 function monitor_checkboxes_rating() {
   for (let rating = 0; rating <= 5; rating++) {
-    let num_words_with_rating = document.querySelectorAll(
-      `.select-word-checkbox[rating='"${rating}"']`
+    const num_words_with_rating = document.querySelectorAll(
+      `.select-word-checkbox[rating="${rating}"]`
     ).length;
-    $(".select-word-checkbox[rating='" + rating + "']")
-      .off("change.rating")
-      .on("change.rating", function () {
-        update_select_all_rating_checkbox(rating, num_words_with_rating);
+    document
+      .querySelectorAll(`.select-word-checkbox[rating="${rating}"]`)
+      .forEach((checkbox) => {
+        checkbox.addEventListener("change", () => {
+          update_select_all_rating_checkbox(rating, num_words_with_rating);
+        });
       });
-
     update_select_all_rating_checkbox(rating, num_words_with_rating);
   }
 }
 
 function update_select_all_rating_checkbox(rating, num_words_with_rating) {
   console.log(rating, num_words_with_rating);
+  const ratingBox = document.querySelector(`#select-deselect-rating-${rating}`);
   if (num_words_with_rating == 0) {
-    $("#select-deselect-rating-" + rating).removeClass("rating-checked");
+    ratingBox.classList.remove("rating-checked");
   } else {
-    $("#select-deselect-rating-" + rating).addClass("rating-checked");
+    ratingBox.classList.add("rating-checked");
     if (
-      $(".select-word-checkbox[rating='" + rating + "']:checked").length ==
-      num_words_with_rating
+      document.querySelectorAll(
+        `.select-word-checkbox[rating="${rating}"]:checked`
+      ).length == num_words_with_rating
     ) {
-      $("#select-deselect-rating-" + rating).addClass("rating-selected");
-      $("#select-deselect-rating-" + rating).attr(
-        "onclick",
-        "deselect_by_filter(" + rating + ")"
-      );
+      ratingBox.classList.add("rating-selected");
+      ratingBox.setAttribute("onclick", `deselect_by_filter("${rating}")`);
     } else {
-      $("#select-deselect-rating-" + rating).removeClass("rating-selected");
-      $("#select-deselect-rating-" + rating).attr(
-        "onclick",
-        "select_by_filter(" + rating + ")"
-      );
+      ratingBox.classList.remove("rating-selected");
+      ratingBox.setAttribute("onclick", `select_by_filter("${rating}")`);
     }
   }
 }
 
 function hide_popups() {
-  $(".popup").hide();
+  document.querySelectorAll(".popup").forEach((popup) => {
+    popup.style.display = "none";
+  });
 }
 
 function show_articles_popup() {
-  $("#articles-popup").show();
-  let words_selected_count = $(".select-word-checkbox:checked").length;
-  $("#words-selected-count").text(words_selected_count);
+  document.querySelector("#articles-popup").style.display = "block";
+  let words_selected_count = document.querySelectorAll(
+    ".select-word-checkbox:checked"
+  ).length;
+  const count = document.querySelector("#words-selected-count");
+  count.innerText = words_selected_count;
 }
 // Change submit divs to buttons
 function submit_form(form_id) {
