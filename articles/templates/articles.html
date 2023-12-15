@@ -28,6 +28,14 @@
         <div class="card" style="width: 100%; display: table;" feed_source="{{article.feed_source}}"
             feed_name="{% for feed_name in article.feed_names %}{{feed_name}} {%endfor %}">
             <div style="width: 90%; display: table-cell;">
+                <div class="article_metadata">
+                    {{article.published_datetime}}
+                    //
+                    {{article.feed_source}}
+                    :
+                    {% for feed_name in article.feed_names %}{{feed_name}} {%endfor %}
+                </div>
+
                 <div class="title" text="{{article.title}}">
                     {% for word in article.words %}
                     <span class="word" id="word_{{forloop.counter}}" original_txt="{{word.word_foreign}}"
@@ -107,16 +115,10 @@
                 <div class="title_translation" hidden>
                     {{article.title_translation}}
                 </div>
-                <div class="article_metadata">
-                    {{article.published_datetime}}
-                    //
-                    {{article.feed_source}}
-                    :
-                    {% for feed_name in article.feed_names %}{{feed_name}} {%endfor %}
-                </div>
                 <div class="article_summary">
                     {% autoescape off %}
-                    Summary:<div>{{article.summary}}</div>
+                    <div class="section_title">Summary:</div>
+                    <div>{{article.summary}}</div>
                     {% endautoescape %}
                 </div>
                 {% if DEBUG %}

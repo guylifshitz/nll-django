@@ -362,9 +362,13 @@ async function examples_word(practice_word, token) {
 
   var form = document.createElement("form");
 
+  language = window.location.pathname.split("/")[1];
+  if (language === "") {
+    language = "he";
+  }
   form.setAttribute("method", "post");
   form.setAttribute("target", "_blank");
-  form.setAttribute("action", "articles/index");
+  form.setAttribute("action", `/${language}/articles/index`);
 
   var token_input = document.createElement("input");
   token_input.setAttribute("type", "hidden");
@@ -378,11 +382,11 @@ async function examples_word(practice_word, token) {
   practice_words_input.setAttribute("value", JSON.stringify(practice_words));
   form.appendChild(practice_words_input);
 
-  var known_words_input = document.createElement("input");
-  known_words_input.setAttribute("type", "hidden");
-  known_words_input.setAttribute("name", "known_words");
-  known_words_input.setAttribute("value", JSON.stringify(known_words2));
-  form.appendChild(known_words_input);
+  // var known_words_input = document.createElement("input");
+  // known_words_input.setAttribute("type", "hidden");
+  // known_words_input.setAttribute("name", "known_words");
+  // known_words_input.setAttribute("value", JSON.stringify(known_words2));
+  // form.appendChild(known_words_input);
 
   var start_date_input = document.createElement("input");
   start_date_input.setAttribute("type", "hidden");
@@ -420,12 +424,13 @@ window.onclick = function (event) {
   }
 };
 
-function context_menu_open_definition(element, language) {
+function context_menu_open_definition(element, language_code) {
+  const language_code_mapping = {"Ar": "Arabic", "He": "Hebrew"}
   window.open(
     "https://en.wiktionary.org/wiki/" +
     $("#context-menu").attr("word") +
     "#" +
-    language
+    language_code_mapping[language_code]
   );
 }
 

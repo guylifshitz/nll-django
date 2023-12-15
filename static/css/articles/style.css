@@ -78,7 +78,7 @@ a {
   font-size: 1.5rem;
   direction: rtl;
   border-radius: 5px;
-  /* background-color: hsl(120, 100%, 95%); */
+  background-color: hsl(120, 18%, 96%);
   padding: 10px;
 }
 
@@ -244,7 +244,10 @@ a {
 }
 
 .article_summary {
-  padding: 2rem;
+  padding: 1rem;
+  margin: 1rem;
+  border-radius: 1rem;
+  border: 1px solid black;
 }
 
 .button {
@@ -253,6 +256,7 @@ a {
   border-radius: 0.6rem;
   outline: black 1px solid;
 }
+
 .button-active {
   -webkit-box-shadow:inset 0px 0px 12px 0.2rem #2196F3;
   -moz-box-shadow:inset  0px 0px 12px 0.2rem #2196F3;
@@ -306,4 +310,8 @@ a {
 .row-item {
   margin-right: 0.5rem;
   margin-left: 0.5rem;
+}
+
+.section_title{
+  font-style: italic;
 }

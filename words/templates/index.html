@@ -161,9 +161,11 @@
             onclick="context_menu_open_definition(this, '{{url_parameters.language_code|title}}')">
             Wiktionary <i class="fa fa-external-link"></i>
         </div>
-        <div class="context-menu-element" target="_blank" onclick="context_menu_open_pealim(this)">
-            Pealim <i class="fa fa-external-link"></i>
-        </div>
+        {% if url_parameters.language_code == 'he' %}
+            <div class="context-menu-element" target="_blank" onclick="context_menu_open_pealim(this)">
+               Pealim <i class="fa fa-external-link"></i>
+            </div>
+        {% endif %}
     </div>
 
 

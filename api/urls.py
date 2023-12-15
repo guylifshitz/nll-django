@@ -116,7 +116,6 @@ class WordsSerializer2(serializers.ModelSerializer):
     # TODO handle arabic
     def find_similar_words(self, instance, field):
         from fuzzywuzzy import fuzz
-
         language = instance.language
         root = instance.serializable_value(field)
 
@@ -156,17 +155,18 @@ class WordsSerializer2(serializers.ModelSerializer):
 # TODO handle arabic
 class WordsViewSet(viewsets.ModelViewSet):
     lookup_field = "text"
-    queryset = Word.objects.filter(language="hebrew").order_by("rank").all()
+    queryset = Word.objects.order_by("rank").all()
 
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated, IsNotTestUser]
     serializer_class = WordsSerializer
-
+ 
 # TODO handle arabic
 class WordDetail(viewsets.ReadOnlyModelViewSet):
     lookup_field = "text"
+    # request.query_params["language"] 
     permission_classes = ()
-    queryset = Word.objects.filter(language="hebrew").order_by("rank").all()
+    queryset = Word.objects.order_by("rank").all()
     serializer_class = WordsSerializer2
 
 
