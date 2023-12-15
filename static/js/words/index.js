@@ -144,13 +144,7 @@ $(document).ready(function () {
   initialize_ratings();
   monitor_checkboxes();
 
-  var today = new Date().toISOString().split("T")[0];
-  var prev_day = new Date();
-  prev_day.setDate(prev_day.getDate() - 7);
-  prev_day = prev_day.toISOString().split("T")[0];
-
-  $("#start-date").val(prev_day);
-  $("#end-date").val(today);
+  set_date_range("week");
 
   $("#ART_FORM").submit(function (e) {
     submit_articles_form(this);
@@ -166,7 +160,7 @@ async function submit_articles_form(form) {
 async function set_articles_submit_json() {
   var practice_words = [];
   for (let rating = 1; rating <= 5; rating++) {
-    if ($("#select-practice-rating-" + rating).is(":checked")) {
+    if (document.getElementById("form-select-practice-rating-"+rating).classList.contains("rating-selected")){
       practice_words.push.apply(
         practice_words,
         user_word_ratings
@@ -199,12 +193,51 @@ async function set_articles_submit_json() {
   $("#known_words").attr("value", known_words2);
 }
 
-function xxx(url, csrfToken) {
-  var parameters = {};
-  parameters["csrfmiddlewaretoken"] = csrfToken;
+function click_article_form_rating_button(rating){
+  if (rating == "all"){
 
-  parameters["test-1"] = get_known_words();
-  sendData(url, parameters);
+    if (document.getElementById("form-select-practice-rating-all").classList.contains("rating-selected")){
+      for (let rating = 1; rating <= 5; rating++) {
+        document.getElementById("form-select-practice-rating-" + rating).classList.remove("rating-selected");
+      }
+      document.getElementById("form-select-practice-rating-all").classList.remove("rating-selected");
+      document.getElementById("form-select-practice-rating-all").innerHTML = "+";
+    }
+      else{
+        for (let rating = 1; rating <= 5; rating++) {
+          document.getElementById("form-select-practice-rating-" + rating).classList.add("rating-selected");
+        }
+        document.getElementById("form-select-practice-rating-all").classList.add("rating-selected");
+        document.getElementById("form-select-practice-rating-all").innerHTML = "-";
+      }
+  }
+  else{
+    let el = document.getElementById("form-select-practice-rating-" + rating)
+    if (el.classList.contains("rating-selected")){
+      el.classList.remove("rating-selected");
+    }
+    else{
+      el.classList.add("rating-selected");
+    }
+  }
+
+  let practice_words = get_practice_words_from_ratings();
+  document.getElementById("practice-rating-words-selected-count").innerText = practice_words.length;
+}
+
+function get_practice_words_from_ratings(){
+  var practice_words = [];
+  for (let rating = 1; rating <= 5; rating++) {
+    if (document.getElementById("form-select-practice-rating-"+rating).classList.contains("rating-selected")){
+      practice_words.push.apply(
+        practice_words,
+        user_word_ratings
+          .filter((wordrating) => wordrating["rating"] === rating)
+          .map((item) => item["word"])
+      );
+    }
+  }
+  return practice_words;
 }
 
 async function get_known_words() {
@@ -562,4 +595,28 @@ function toggle_visible_words() {
 
   $("#filter-unselected").prop("checked", !is_checked);
   hide_unselected();
+}
+
+function set_date_range(range_type){
+  console.log(range_type);
+  var today = new Date().toISOString().split("T")[0];
+  
+  var prev_day = new Date();
+  if (range_type === "day"){
+    prev_day.setDate(prev_day.getDate() - 1);
+  }
+  else if (range_type === "week"){
+    prev_day.setDate(prev_day.getDate() - 7);
+  }
+  else if (range_type === "month"){
+    prev_day.setDate(prev_day.getDate() - 30);
+  }
+  else if (range_type === "max"){
+    prev_day = new Date("2021-01-01");
+  }
+
+  prev_day = prev_day.toISOString().split("T")[0];
+
+  $("#start-date").val(prev_day);
+  $("#end-date").val(today);
 }

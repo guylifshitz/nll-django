@@ -1,101 +1,105 @@
-<div id="articles-popup" class="popup" hidden>
-    <div class="blocker" onclick="hide_popups()"></div>
-    <div class="popup-content" id="article-popup">
-        <h3> Build Articles </h3>
-        <form action="{% url 'list_articles' url_parameters.language_code %}" id="ART_FORM" method="post">
-            {% csrf_token %}
-            <div>
-                <label for="articles-count">Number of articles:</label>
-                <input type="number" id="articles-count" name="article_display_count" value=100>
-            </div>
-            <div>
-                <label for="start-date">From</label>
-                <input type="date" id="start-date" name="start_date">
-                <label for="end-date">to</label>
-                <input type="date" id="end-date" name="end_date">
-            </div>
-
-            <div>
-                <H4>Practice Words</H4>
-                <div>
-                    <label for="select-practice-by-selected">Selection (<span
-                            id="words-selected-count">###</span>)</label>
-                    <input type="checkbox" class="select-deselet-checkbox" id="select-practice-by-selected"
-                        name="select-practice-by-selected" value="XXXX" checked>
-                </div>
-                <div class="rating-buttons">
-                    <div>Rated</div>
-                    <input type="checkbox" class="select-deselet-checkbox" id="select-practice-rating-1" rating=""
-                        name="select-practice-rating-1" value="{{word.word}}">
-                    <label for="select-practice-rating-1">
-                        <div id="select-practice-rating-1-{{word.word}}"
-                            class="button button-rating button-rating-1 rating-checked">
-                            1
+<!-- <div id="articles-popup" class="popup" hidden> -->
+    <div id="articles-popup" class="popup">
+        <div class="blocker" onclick="hide_popups()"></div>
+        <div class="popup-content" id="article-popup">
+            <form action="{% url 'list_articles' url_parameters.language_code %}" id="ART_FORM" method="post">
+                {% csrf_token %}
+    
+    
+                <input type="hidden" id="practice_words" name="practice_words" value="">
+                <input type="hidden" id="known_words" name="known_words" value="">
+                <input type="hidden" id="language" name="language" value="{{url_parameters.language_code}}">
+    
+                <div class="distinct-form-section">
+                    <div class="form-section-title">
+                        General
+                    </div>
+                    <div class="form-line form-line-middle">
+                        <label for="articles-count" class="form-field-name">Number of articles:</label>
+                        <input class="form-field-name" type="number" id="articles-count" name="article_display_count"
+                            value=100>
+                    </div>
+                    <div class="form-line">
+                        <label for="start-date" class="form-field-name">Date</label>
+                        <div class="form-field-name">
+                            <input type="date" id="start-date" name="start_date">
+                            <label for="end-date">to</label>
+                            <input type="date" id="end-date" name="end_date">
+                            <div class="date-quick-select">
+                                <div class="button-small" onclick="set_date_range('day')">1 day</div>
+                                <div class="button-small" onclick="set_date_range('week')">1 week</div>
+                                <div class="button-small" onclick="set_date_range('month')">1 month</div>
+                                <div class="button-small" onclick="set_date_range('max')">max</div>
+                            </div>
                         </div>
-                    </label>
-
-                    <input type="checkbox" class="select-deselet-checkbox" id="select-practice-rating-2" rating=""
-                        name="select-practice-rating-2" value="{{word.word}}">
-                    <label for="select-practice-rating-2">
-                        <div id="select-practice-rating-2-{{word.word}}"
-                            class="button button-rating button-rating-2 rating-checked">
-                            2
-                        </div>
-                    </label>
-
-                    <input type="checkbox" class="select-deselet-checkbox" id="select-practice-rating-3" rating=""
-                        name="select-practice-rating-3" value="{{word.word}}">
-                    <label for="select-practice-rating-3">
-                        <div id="select-practice-rating-3-{{word.word}}"
-                            class="button button-rating button-rating-3 rating-checked">
-                            3
-                        </div>
-                    </label>
-
-                    <input type="checkbox" class="select-deselet-checkbox" id="select-practice-rating-4" rating=""
-                        name="select-practice-rating-4" value="{{word.word}}">
-                    <label for="select-practice-rating-4">
-                        <div id="select-practice-rating-4-{{word.word}}"
-                            class="button button-rating button-rating-4 rating-checked">
-                            4
-                        </div>
-                    </label>
-
-                    <input type="checkbox" class="select-deselet-checkbox" id="select-practice-rating-5" rating=""
-                        name="select-practice-rating-5" value="{{word.word}}">
-                    <label for="select-practice-rating-5">
-                        <div id="select-practice-rating-5-{{word.word}}"
-                            class="button button-rating button-rating-5 rating-checked">
-                            5
-                        </div>
-                    </label>
-
+                    </div>
                 </div>
-            </div>
-
-            <div>
-                <H4>Known Words</H4>
-                <div>
-                    <input type="checkbox" class="select-deselet-checkbox" id="XXX1" name="XXX1" value="XXXX">
-                    <label for="XXX1">Limit to words in filter range</label>
+    
+                <div class="distinct-form-section">
+                    <div class="form-section-title">
+                        Practice Words
+                    </div>
+                    <div class="form-section-subtitle">
+                        Find article titles containing these words
+                    </div>
+                    <div class="form-line form-line-middle">
+                        <label for="select-practice-by-selected" class="form-field-name">Selected (<span
+                                id="words-selected-count">###</span>)</label>
+                        <div class="form-field-name">
+                            <input type="checkbox" id="select-practice-by-selected" name="select-practice-by-selected"
+                                checked>
+                        </div>
+                    </div>
+                    <div class="form-line form-line">
+                        <div for="select-practice-by-selected" class="form-field-name">All labeled (<span
+                                id="practice-rating-words-selected-count">0</span>)</div>
+                        <div class="rating-buttons extra-gap ">
+                            <div id="form-select-practice-rating-all"
+                                class="button round-button-small button-rating button-rating-all rating-checked"
+                                onclick="click_article_form_rating_button('all')">+</div>
+                            <div id="form-select-practice-rating-1"
+                                class="button round-button-small button-rating button-rating-1 rating-checked"
+                                onclick="click_article_form_rating_button(1)">1</div>
+                            <div id="form-select-practice-rating-2"
+                                class="button round-button-small button-rating button-rating-2 rating-checked"
+                                onclick="click_article_form_rating_button(2)">2</div>
+                            <div id="form-select-practice-rating-3"
+                                class="button round-button-small button-rating button-rating-3 rating-checked"
+                                onclick="click_article_form_rating_button(3)">3</div>
+                            <div id="form-select-practice-rating-4"
+                                class="button round-button-small button-rating button-rating-4 rating-checked"
+                                onclick="click_article_form_rating_button(4)">4</div>
+                            <div id="form-select-practice-rating-5"
+                                class="button round-button-small button-rating button-rating-5 rating-checked"
+                                onclick="click_article_form_rating_button(5)">5</div>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <input type="checkbox" class="select-deselet-checkbox" id="include-unrated" name="XXX2"
-                        value="XXXX">
-                    <label for="include-unrated">Include unrated words in filter range </label>
+    
+                <div class="distinct-form-section">
+                    <div class="form-section-title">
+                        Translated Words
+                    </div>
+                    <div class="form-section-subtitle">
+                        Decide how to handle translation in the mixed translation view. 
+                        By default, labeled words not in the practice set, will be left in their original language.
+                    </div>
+                    <div class="form-line form-line-middle">
+                        <label for="select-translate-labeled" class="form-field-name">Translate labeled words not in the practice set</label>
+                        <div class="form-field-name">
+                            <input type="checkbox" id="select-translate-labeled" name="select-translate-labeled">
+                        </div>
+                    </div>
                 </div>
-            </div>
-
-            <input type="hidden" id="practice_words" name="practice_words" value="">
-            <input type="hidden" id="known_words" name="known_words" value="">
-            <input type="hidden" id="language" name="language" value="{{url_parameters.language_code}}">
-
-            <div class="build_articles_submit_button_section">
-                <div class="button build_articles_submit_button" id="SUB_ARTICLES" onclick="submit_form('ART_FORM')">
-                    Build
+    
+                <div class="build_articles_submit_button_section">
+                    <div class="button build_articles_submit_button" id="SUB_ARTICLES"
+                        onclick="submit_form('ART_FORM')">
+                        Find Articles &nbsp;<i class="fa fa-arrow-circle-right aria-hidden="true"></i>
+                    </div>
                 </div>
-            </div>
-
-        </form>
+    
+    
+            </form>
+        </div>
     </div>
-</div>

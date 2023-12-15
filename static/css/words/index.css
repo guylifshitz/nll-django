@@ -171,7 +171,6 @@ a {
   background-color: #2196F3;
 }
 
-
 .popup-content {
   position: fixed;
   top: 80px;
@@ -184,7 +183,7 @@ a {
   border-radius: 10px;
   color: rgb(38, 38, 38);
   text-align: center;
-  padding: 20px;
+  padding: 4rem;
 }
 
 .blocker {
@@ -241,8 +240,6 @@ a {
   align-content: center;
   align-items: center;
   grid-template-columns: 40% 10% 40%;
-  margin-top: 0.3em;
-  margin-bottom: 3rem;
 }
 
 .section-second {
@@ -322,7 +319,9 @@ h4 {
 .distinct-section{
   border: 1px solid black;
   border-radius: 2rem;
-  padding: 3rem;
+  padding: 2rem;
+  margin-top: 0.3rem;
+  margin-bottom: 1rem;
 }
 
 .select-filter-line {
@@ -342,4 +341,76 @@ h4 {
 .select-all-button {
   width: 6rem;
   margin-right: 1rem;
+}
+
+.form-section-title{
+  font-weight: bold;
+  text-align: left;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.form-section-subtitle {
+  color: grey;
+  font-size: 2rem;
+  text-align: left;
+}
+
+.distinct-form-section{
+  border-radius: 2rem;
+  padding: 2rem;
+  margin: 0.3rem;
+  margin-bottom: 1rem;
+}
+
+
+.form-line{
+  display: grid;
+  justify-content: space-between;
+  align-content: center;
+  align-items: center;
+  grid-template-columns: 40% 60%;
+  padding-bottom: 1rem;
+  padding-top: 1rem;
+}
+
+.form-field-name{
+  text-align: left;
+  font-size: 2rem;
+
+
+}
+
+.form-line-middle{
+  border-bottom: solid 1px rgb(209, 209, 209);
+}
+
+.round-button-small{
+  border-radius: 100%;
+  font-size: 2rem;
+  width: 4rem;
+  height: 4rem;
+  padding: 0px;
+  flex: initial;
+}
+
+.button-small{
+  box-shadow: 2px 2px 3px black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: fit-content;
+  padding: 0.5rem;
+  border-radius: 5px;
+  background-color: rgb(220, 220, 220);
+  cursor: pointer;
+  width: fit-content;
+  font-size: 1.5rem;
+  margin: 0.3rem;
+}
+
+.date-quick-select{
+  margin: 1rem;
+  display: flex;
 }
