@@ -183,7 +183,7 @@ def flashcards(request, language_code):
             "words": words_to_show,
             "words_to_show_dict": model_result_to_dict(words_to_show, "word"),
             "speech_voice": speech_voice,
-            "user_word_ratings": build_user_word_ratings(request.user),
+            "user_word_ratings": build_user_word_ratings(request.user, language),
             "url_parameters": url_parameters,
             "user_auth_token": request.user.auth_token,
         },
@@ -239,7 +239,7 @@ def index(request, language_code):
         {
             "words": words_to_show,
             "words_to_show_dict": model_result_to_dict(words_to_show, "word"),
-            "user_word_ratings": build_user_word_ratings(request.user),
+            "user_word_ratings": build_user_word_ratings(request.user, language),
             "url_parameters": url_parameters,
             "form": form,
             "user_auth_token": request.user.auth_token,
@@ -251,9 +251,10 @@ def index_default(request):
     return index(request, "he")
 
 
-def build_user_word_ratings(user):
+def build_user_word_ratings(user, language):
     words = []
     res = WordRating.objects.select_related().filter(user=user)
     for w in res:
-        words.append({"word": w.word.text, "rating": w.rating})
+        if w.word.language == language:
+            words.append({"word": w.word.text, "rating": w.rating})
     return words

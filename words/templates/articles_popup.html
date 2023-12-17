@@ -1,6 +1,5 @@
-<!-- <div id="articles-popup" class="popup" hidden> -->
-    <div id="articles-popup" class="popup">
-        <div class="blocker" onclick="hide_popups()"></div>
+<div id="articles-popup" class="popup" hidden>
+    <div class="blocker" onclick="hide_popups()"></div>
         <div class="popup-content" id="article-popup">
             <form action="{% url 'list_articles' url_parameters.language_code %}" id="ART_FORM" method="post">
                 {% csrf_token %}

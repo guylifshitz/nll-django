@@ -288,7 +288,7 @@ def index(request, language_code):
         if sort_by_practice_only:
             query_sort_words.extend(known_words)
     else:
-        query_words = Words.objects.filter(
+        query_words = Word.objects.filter(
             language=language,
             rank__gt=known_cutoff,
             rank__lte=practice_cutoff,
@@ -366,14 +366,13 @@ def index(request, language_code):
     #         # title_translation__ne=None,
     #         title_parsed_lemma={"$elemMatch": {"$in": query_words}},
     #     # )
-
     article_ids = []
     with connection.cursor() as cursor:
-        query = """SELECT id, ratio FROM 
+        query = """(SELECT id, ratio FROM 
         (SELECT id, lemma_found_count::decimal / title_parsed_lemma_length::decimal AS ratio FROM
         (SELECT id, array_length("title_parsed_lemma", 1) AS title_parsed_lemma_length, 
         array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS lemma_found_count
-        FROM articles_rss_feed WHERE published_datetime >= %s AND published_datetime <= %s AND language = %s) t1 ) t2 WHERE ratio NOTNULL ORDER BY ratio desc limit %s;"""
+        FROM articles_rss_feed WHERE published_datetime >= %s AND published_datetime <= %s AND language = %s) t1 ) t2 WHERE ratio NOTNULL ORDER BY ratio desc limit %s);"""
         cursor.execute(
             query, [query_words, start_date_cutoff, end_date_cutoff, language, article_display_count]
         )
