@@ -40,7 +40,7 @@ a {
   justify-content: space-between;
   align-content: center;
   align-items: center;
-  grid-template-columns: 5% 5% 25% 25% 15% 20% 5%;
+  grid-template-columns: 10% 5% 25% 25% 10% 20% 5%;
   margin-top: 0.3em;
   margin-bottom: 0.3em;
 }
@@ -232,6 +232,11 @@ a {
 
 .number-input {
   width: 8rem;
+  padding: 1.0rem;
+}
+
+.textbox-input {
+  width: 15rem;
   padding: 1.0rem;
 }
 

@@ -3,6 +3,8 @@ from django.shortcuts import redirect, render
 from words.models import Word, WordRating
 from django.conf import settings
 from django.db.models import Prefetch
+from django.db.models import Q
+import pyarabic.araby as araby
 
 language_speech_mapping = {"arabic": "ar-SA", "hebrew": "he"}
 language_code_mapping = {"ar": "arabic", "he": "hebrew"}
@@ -200,20 +202,59 @@ def index(request, language_code):
     lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
     upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
 
-    if (upper_freq_cutoff - lower_freq_cutoff > 500):
+    if (lower_freq_cutoff  > upper_freq_cutoff):
         request.GET._mutable = True
         request.GET["lower_freq_cutoff"] = lower_freq_cutoff
         request.GET["upper_freq_cutoff"] = lower_freq_cutoff + 100
         return index(request, language_code)
-    
+
+    if (upper_freq_cutoff - lower_freq_cutoff > 500):
+        request.GET._mutable = True
+        request.GET["lower_freq_cutoff"] = lower_freq_cutoff
+        request.GET["upper_freq_cutoff"] = lower_freq_cutoff + 500
+        return index(request, language_code)
+        
+
+    search_words = request.GET.get("search_words", "")
+    translation_search = request.GET.get("search_translation", "")
+    search_exact = request.GET.get("search_exact", False)
+
     queryset = WordRating.objects.filter(user=request.user)
     words = Word.objects.prefetch_related(
-        Prefetch("word_ratings", to_attr="word_ratings_list", queryset=queryset)
-    ).filter(
-        language=language,
-        rank__gt=lower_freq_cutoff,
-        rank__lte=upper_freq_cutoff,
-    ).order_by("rank")
+        Prefetch("word_ratings", to_attr="word_ratings_list", queryset=queryset)).filter(language=language)
+
+    search_query = Q()
+    if search_words or translation_search:
+        if search_words:
+            search_words = search_words.split("\n")
+            search_words = [w.strip() for w in search_words]
+            search_words = [w for w in search_words if w]
+            search_words = [araby.strip_diacritics(w) for w in search_words]
+            for w in search_words:
+                print("search_words", w)
+                if search_exact:
+                    search_query |= Q(text__iexact=w)
+                    search_query |= Q(flexion_counts__iexact=w)
+                else:
+                    search_query |= Q(text__icontains=w)
+                    search_query |= Q(flexion_counts__icontains=w)
+                    
+        if translation_search:
+            translation_search = translation_search.split("\n")
+            translation_search = [w.strip() for w in translation_search]
+            translation_search = [w for w in translation_search if w]
+            for w in translation_search:
+                print("translation_search", w)
+                if search_exact:
+                    search_query |= Q(translation__iexact=w)
+                else:
+                    search_query |= Q(translation__icontains=w)
+        search_query &= Q(count__gt=1)
+        words = words.filter(search_query)
+    else:
+        words = words.filter(rank__gt=lower_freq_cutoff, rank__lte=upper_freq_cutoff)
+
+    words = words.order_by("rank")[:1000]
 
     words_to_show = build_words_to_show(words, sort_source=sort_source)
 
