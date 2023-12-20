@@ -542,10 +542,13 @@ def index(request, language_code):
             "practice_cutoff": practice_cutoff,
             "seen_cutoff": seen_cutoff,
             "language": language,
+            "language_code": language_code,
         }
     else:
         form = None
-        url_parameters = None
+        url_parameters = {
+            "language_code": language_code,
+        }
 
     return render(
         request,
