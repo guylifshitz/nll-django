@@ -28,6 +28,10 @@
                         value="{{url_parameters.lower_freq_cutoff}}" /> -
                     <input name="upper_freq_cutoff" class="number-input" type="number"
                         value="{{url_parameters.upper_freq_cutoff}}" />
+                    <div>
+                        <label for="only_labeled">Only labeled:</label>
+                        <input type="checkbox" id="only_labeled" name="only_labeled" {% if url_parameters.only_labeled %} checked {% endif %} >
+                    </div>
                     <i class="button pointer fa fa-filter" aria-hidden="true" onclick="submit_filter_form()"
                         title="Filter selection"></i> &nbsp;
                     <input type="submit" hidden value="filter"> 
@@ -40,12 +44,13 @@
                     <textarea name="search_words" class="textbox-input" placeholder="Search word"></textarea> 
                     <label for="search_translation">Translation:</label>
                     <textarea name="search_translation" class="textbox-input" placeholder="Search translation"></textarea> 
-                    <label for="search_exact">Exact match:</label>
-                    <input type="checkbox" name="search_exact"> 
+                    <div>
+                        <label for="search_exact">Exact match:</label>
+                        <input type="checkbox" id="search_exact" name="search_exact"> 
+                    </div>
                     <input type="submit" value="Search"> 
                 </form>
               </div>
-            <div></div>
             <div class="build-buttons">
                 <div id="build_flashcards" class="button xxxx button-disabled" onclick="alert('Please select words first')">
                     Build Flashcards

@@ -106,7 +106,7 @@ def word(request, language_code):
             Prefetch("word_ratings", to_attr="word_ratings_list", queryset=queryset)
         ).filter(
             language=language,
-            text=word_text
+            text=word_text,
         )
         word_to_show = build_words_to_show(word)[0]
 
@@ -218,10 +218,19 @@ def index(request, language_code):
     search_words = request.GET.get("search_words", "")
     translation_search = request.GET.get("search_translation", "")
     search_exact = request.GET.get("search_exact", False)
+    only_rated_words = request.GET.get("only_labeled", False)
 
     queryset = WordRating.objects.filter(user=request.user)
     words = Word.objects.prefetch_related(
-        Prefetch("word_ratings", to_attr="word_ratings_list", queryset=queryset)).filter(language=language)
+        Prefetch("word_ratings", to_attr="word_ratings_list", queryset=queryset)
+    ).filter(
+        language=language,
+    )
+
+    if only_rated_words:
+        words = words.filter(
+            word_ratings__rating__gt=0,
+        )
 
     search_query = Q()
     if search_words or translation_search:
@@ -262,16 +271,10 @@ def index(request, language_code):
     # import debug
     # debug.calculate_word_distances(words_to_show)
 
-    form = WordsForm(
-        initial={
-            "language": language,
-            "lower_freq_cutoff": lower_freq_cutoff,
-            "upper_freq_cutoff": upper_freq_cutoff,
-        }
-    )
     url_parameters = {
         "lower_freq_cutoff": lower_freq_cutoff,
         "upper_freq_cutoff": upper_freq_cutoff,
+        "only_labeled": only_rated_words,
         "language_code": language_code,
     }
     return render(
@@ -282,7 +285,6 @@ def index(request, language_code):
             "words_to_show_dict": model_result_to_dict(words_to_show, "word"),
             "user_word_ratings": build_user_word_ratings(request.user, language),
             "url_parameters": url_parameters,
-            "form": form,
             "user_auth_token": request.user.auth_token,
         },
     )

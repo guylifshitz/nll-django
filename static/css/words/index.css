@@ -245,7 +245,7 @@ a {
   justify-content: space-between;
   align-content: center;
   align-items: center;
-  grid-template-columns: 40% 10% 40%;
+  grid-template-columns: 40% 30% 30%;
 }
 
 .section-second {
