@@ -201,8 +201,10 @@ def index(request, language_code):
 
     sort_source = ""
 
-    lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 0))
+    lower_freq_cutoff = int(request.GET.get("lower_freq_cutoff", 1))
     upper_freq_cutoff = int(request.GET.get("upper_freq_cutoff", 100))
+
+    lower_freq_cutoff = max(lower_freq_cutoff, 1)
 
     if (lower_freq_cutoff  > upper_freq_cutoff):
         request.GET._mutable = True
@@ -232,7 +234,7 @@ def index(request, language_code):
     if only_rated_words:
         words = words.filter(
             word_ratings__rating__gt=0,
-        )
+        ).distinct()
 
     search_query = Q()
     if search_words or translation_search:
@@ -263,7 +265,7 @@ def index(request, language_code):
         search_query &= Q(count__gt=1)
         words = words.filter(search_query)
     else:
-        words = words.filter(rank__gt=lower_freq_cutoff, rank__lte=upper_freq_cutoff)
+        words = words.filter(rank__gte=lower_freq_cutoff, rank__lte=upper_freq_cutoff)
 
     words = words.order_by("rank")[:1000]
 
