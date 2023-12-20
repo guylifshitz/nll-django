@@ -123,7 +123,8 @@ def word(request, language_code):
             "words_to_show_dict": model_result_to_dict([word_to_show], "word"),
             "speech_voice": speech_voice,
             "url_parameters": {
-                "language": language
+                "language": language,
+                "language_code": language_code,
             },
             "user_auth_token": request.user.auth_token,
             "user_username": request.user.username,
@@ -174,6 +175,7 @@ def flashcards(request, language_code):
             "lower_freq_cutoff": 0,
             "upper_freq_cutoff": 0,
             "language": language,
+            "language_code": language_code,
         }
 
     speech_voice = language_speech_mapping.get(language, "en")
