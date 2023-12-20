@@ -1,6 +1,6 @@
 from .forms import ArticlesForm, ArticlesFormFromPOST
 from django.shortcuts import render
-from articles.models import Rss_feed
+from articles.models import Rss_feed, Open_subtitle
 from words.models import Word, Flexion, WordRating
 import datetime
 import traceback
@@ -8,6 +8,7 @@ from collections import defaultdict
 import json
 from django.db import connection
 from django.db.models import Prefetch
+from django.conf import settings
 
 language_speech_mapping = {"ar": "ar-SA", "he": "he"}
 language_code_mapping = {"ar": "arabic", "he": "hebrew"}
@@ -228,6 +229,8 @@ def cleanup_source_name(source_name):
         "bbc-arabic": "bbc-arabic",
         "cnn-arabic": "cnn-arabic",
         "aljazeera-arabic": "aljazeera-arabic",
+        "opensubtitles-he": "opensubtitles-her",
+        "opensubtitles-ar": "opensubtitles-ar",
     }
     return source_name_mapping[source_name]
 
@@ -368,15 +371,26 @@ def index(request, language_code):
     #     # )
     article_ids = []
     with connection.cursor() as cursor:
+        # query = """(SELECT id, ratio FROM 
+        # (SELECT id, lemma_found_count::decimal / title_parsed_lemma_length::decimal AS ratio FROM
+        # (SELECT id, array_length("title_parsed_lemma", 1) AS title_parsed_lemma_length, 
+        # array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS lemma_found_count
+        # FROM articles_rss_feed WHERE published_datetime >= %s AND published_datetime <= %s AND language = %s) t1 ) t2 WHERE ratio NOTNULL ORDER BY ratio desc limit %s);"""
+        # cursor.execute(
+        #     query, [query_words, start_date_cutoff, end_date_cutoff, language, article_display_count]
+        # )
+        # rows = cursor.fetchall()
+
         query = """(SELECT id, ratio FROM 
-        (SELECT id, lemma_found_count::decimal / title_parsed_lemma_length::decimal AS ratio FROM
+        (SELECT id, title_parsed_lemma_length, lemma_found_count::decimal / title_parsed_lemma_length::decimal AS ratio FROM
         (SELECT id, array_length("title_parsed_lemma", 1) AS title_parsed_lemma_length, 
         array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS lemma_found_count
-        FROM articles_rss_feed WHERE published_datetime >= %s AND published_datetime <= %s AND language = %s) t1 ) t2 WHERE ratio NOTNULL ORDER BY ratio desc limit %s);"""
+        FROM articles_open_subtitle WHERE language = %s) t1 ) t2 WHERE ratio NOTNULL AND title_parsed_lemma_length > 5 ORDER BY ratio desc limit %s);"""
         cursor.execute(
-            query, [query_words, start_date_cutoff, end_date_cutoff, language, article_display_count]
+            query, [query_words, language, article_display_count]
         )
         rows = cursor.fetchall()
+
 
         article_ids = []
         for r in rows:
@@ -386,7 +400,8 @@ def index(request, language_code):
 
         article_ids = article_ids[0:article_display_count+1]
 
-    articles = Rss_feed.objects.filter(link__in=article_ids)
+    # articles = Rss_feed.objects.filter(link__in=article_ids)
+    articles = Open_subtitle.objects.filter(id__in=article_ids)
 
     print(f"Got {len(articles)} articles")
 
@@ -560,6 +575,7 @@ def index(request, language_code):
             "url_parameters": url_parameters,
             "article_sources": dict(article_sources),
             "user_auth_token": request.user.auth_token,
+            "DEBUG": settings.DEBUG,
         },
     )
 
