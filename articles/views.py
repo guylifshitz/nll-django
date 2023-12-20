@@ -235,7 +235,7 @@ def cleanup_source_name(source_name):
     return source_name_mapping[source_name]
 
 
-def index(request, language_code):
+def index(request, language_code, data_source="rss"):
     language = language_code_mapping[language_code]
 
     if not request.user.is_authenticated:
@@ -371,26 +371,26 @@ def index(request, language_code):
     #     # )
     article_ids = []
     with connection.cursor() as cursor:
-        # query = """(SELECT id, ratio FROM 
-        # (SELECT id, lemma_found_count::decimal / title_parsed_lemma_length::decimal AS ratio FROM
-        # (SELECT id, array_length("title_parsed_lemma", 1) AS title_parsed_lemma_length, 
-        # array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS lemma_found_count
-        # FROM articles_rss_feed WHERE published_datetime >= %s AND published_datetime <= %s AND language = %s) t1 ) t2 WHERE ratio NOTNULL ORDER BY ratio desc limit %s);"""
-        # cursor.execute(
-        #     query, [query_words, start_date_cutoff, end_date_cutoff, language, article_display_count]
-        # )
-        # rows = cursor.fetchall()
+        if data_source == "opensubtitles":
+            query = """(SELECT id, ratio FROM 
+            (SELECT id, title_parsed_lemma_length, lemma_found_count::decimal / title_parsed_lemma_length::decimal AS ratio FROM
+            (SELECT id, array_length("title_parsed_lemma", 1) AS title_parsed_lemma_length, 
+            array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS lemma_found_count
+            FROM articles_open_subtitle WHERE language = %s) t1 ) t2 WHERE ratio NOTNULL AND title_parsed_lemma_length > 5 ORDER BY ratio desc limit %s);"""
+            cursor.execute(
+                query, [query_words, language, article_display_count]
+            )
+        else:
+            query = """(SELECT id, ratio FROM 
+            (SELECT id, lemma_found_count::decimal / title_parsed_lemma_length::decimal AS ratio FROM
+            (SELECT id, array_length("title_parsed_lemma", 1) AS title_parsed_lemma_length, 
+            array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS lemma_found_count
+            FROM articles_rss_feed WHERE published_datetime >= %s AND published_datetime <= %s AND language = %s) t1 ) t2 WHERE ratio NOTNULL ORDER BY ratio desc limit %s);"""
+            cursor.execute(
+                query, [query_words, start_date_cutoff, end_date_cutoff, language, article_display_count]
+            )
 
-        query = """(SELECT id, ratio FROM 
-        (SELECT id, title_parsed_lemma_length, lemma_found_count::decimal / title_parsed_lemma_length::decimal AS ratio FROM
-        (SELECT id, array_length("title_parsed_lemma", 1) AS title_parsed_lemma_length, 
-        array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS lemma_found_count
-        FROM articles_open_subtitle WHERE language = %s) t1 ) t2 WHERE ratio NOTNULL AND title_parsed_lemma_length > 5 ORDER BY ratio desc limit %s);"""
-        cursor.execute(
-            query, [query_words, language, article_display_count]
-        )
         rows = cursor.fetchall()
-
 
         article_ids = []
         for r in rows:
@@ -400,8 +400,11 @@ def index(request, language_code):
 
         article_ids = article_ids[0:article_display_count+1]
 
-    # articles = Rss_feed.objects.filter(link__in=article_ids)
-    articles = Open_subtitle.objects.filter(id__in=article_ids)
+    if data_source == "opensubtitles":
+        articles = Open_subtitle.objects.filter(id__in=article_ids)
+    else:
+        articles = Rss_feed.objects.filter(link__in=article_ids)
+
 
     print(f"Got {len(articles)} articles")
 

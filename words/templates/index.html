@@ -170,7 +170,10 @@
             Word details
         </div>
         <div class="context-menu-element" onclick="context_menu_examples_word(this, '{{csrf_token}}')">
-            See examples
+            See examples <i class="fa fa-newspaper-o"></i>
+        </div>
+        <div class="context-menu-element" onclick="context_menu_examples_word(this, '{{csrf_token}}', data_source='opensubtitles')">
+            See examples <i class="fa fa-film"></i>
         </div>
         <div class="context-menu-element" target="_blank"
             onclick="context_menu_open_definition(this, '{{url_parameters.language_code|title}}')">

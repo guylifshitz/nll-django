@@ -6,5 +6,6 @@ urlpatterns = (
     [
         path("config", views.configure, name="list_articles_config"),
         path("index", views.index, name="list_articles"),
+        path("<str:data_source>/index", views.index, name="list_articles"),
     ]
 )

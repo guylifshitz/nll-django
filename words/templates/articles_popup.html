@@ -93,8 +93,13 @@
     
                 <div class="build_articles_submit_button_section">
                     <div class="button build_articles_submit_button" id="SUB_ARTICLES"
-                        onclick="submit_form('ART_FORM')">
-                        Find Articles &nbsp;<i class="fa fa-arrow-circle-right aria-hidden="true"></i>
+                        onclick="submit_form('ART_FORM', '{% url 'list_articles' url_parameters.language_code %}')">
+                        Find Articles &nbsp;<i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
+                    </div>
+
+                    <div class="button build_articles_submit_button" id="SUB_ARTICLES"
+                        onclick="submit_form('ART_FORM', '{% url 'list_articles' url_parameters.language_code 'opensubtitles'%}')">
+                        Find Opensubtitles &nbsp;<i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
                     </div>
                 </div>
     
