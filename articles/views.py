@@ -152,7 +152,7 @@ def build_article_words(article, words, word_known_categories, flexions):
 
         # NNP = proper noun
         is_proper_noun = False
-        if token_POS == "NNP":
+        if token_POS == "NNP" or "/PUNC" in token_POS or "/NAME" in token_POS:
             # word_translation = f"##{word_foreign_flexion}##"
             # flexion_translation = f"##{word_foreign_flexion}##"
             # word_foreign_flexion = f"##{word_foreign_flexion}##"

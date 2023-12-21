@@ -92,8 +92,15 @@ class WordsSerializer2(serializers.ModelSerializer):
             ["ו", "וֹ", "וֹ"],
             ["ד", "ר", "ך", "ךּ"],
             ["שׁ", "שׂ"],
+            ["ف", "ق"],
+            ["ص", "ض"],
+            ["ت", "ث"],
+            ["ط", "ظ"],
+            ["ه", "ة", "و"],
+            ["د", "ذ"],
         ]
 
+        # TODO: implement the sound comparison
         similar_sound = [
             ["ב", "ו"],
             ["ט", "ת"],
@@ -101,8 +108,8 @@ class WordsSerializer2(serializers.ModelSerializer):
             ["א", "ע"],
             ["כּ", "ק"],
             ["שׂ", "ס"],
-            [""],
-            [""],
+            ["ت", "ث"]
+            ["د", "ذ", "ض"],
         ]
 
         word = word.replace(" ", "")

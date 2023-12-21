@@ -25,7 +25,7 @@ SECRET_KEY = os.environ.get(
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("NLL_DJANGO_DEBUG", "True") != "False"
+DEBUG = os.environ.get("NLL_DJANGO_DEBUG", "False") == "True"
 
 ENVIRONMENT = os.environ.get("NLL_DJANGO_ENVIRONMENT", "local")
 
