@@ -10,14 +10,10 @@ function position_tooltips() {
   });
 }
 
-function show_full_translation(element) {
-  $(element).parent().parent().find(".title_translation").toggle();
-  position_tooltips();
-}
-
-function speak_title_helper(element) {
-  div = $(element).parent().parent();
+function speak_title_helper(button) {
+  div = $(button).parent().parent();
   speak_title(div);
+  button.classList.toggle("button-active");
 }
 function speak_title(speakElement) {
   bigstring = "";
@@ -48,6 +44,7 @@ function speak_title(speakElement) {
   msg.onend = function (event) {
     $(".word").css("color", "black");
     console.log("DONE");
+    $(".button_speak").removeClass("button-active");
   };
 }
 
@@ -88,11 +85,6 @@ function getWordIndexAtCharIndex(str, pos) {
   return num_words_so_far;
 }
 
-function show_partial_translation(element) {
-  $(element).parent().parent().find(".title_mix").toggle();
-  position_tooltips();
-}
-
 window.onload = position_tooltips;
 
 $(document).ready(function () {
@@ -130,7 +122,7 @@ $(document).ready(function () {
     language = window.location.pathname.split("/")[1];
     if (event.altKey) {
       html_txt = $(event.target).attr("lemma");
-      window.open("/"+language+"/words/word?word=" + html_txt);
+      window.open("/" + language + "/words/word?word=" + html_txt);
 
       // google_translate_word();
     } else if (event.shiftKey) {
@@ -148,7 +140,7 @@ $(document).ready(function () {
 function open_word_details_page(element) {
   language = window.location.pathname.split("/")[1];
   html_txt = $(element).attr("lemma");
-  window.open("/" +language + "/words/word?word=" + html_txt);
+  window.open("/" + language + "/words/word?word=" + html_txt);
 }
 
 function clicked_source(element) {
@@ -200,8 +192,8 @@ function update_rating(word, rating) {
     .done(function () {
       //# TODO move the update gui here
     })
-    .fail(function () {})
-    .always(function () {});
+    .fail(function () { })
+    .always(function () { });
 }
 
 function show_edit_popup(word) {
@@ -214,4 +206,59 @@ function hide_edit_popup() {
   $("#rating_button_1").css("background-color", "#bad3da");
   $("#rating_button_2").css("background-color", "#bad3da");
   $("#rating_button_3").css("background-color", "#bad3da");
+}
+
+function toggle_section(button, section) {
+
+  let section_element = button.parentElement.parentElement.getElementsByClassName(section)[0];
+  let first_hidden = section_element.hidden;
+
+  section_element.hidden = !first_hidden;
+  if (first_hidden === true) {
+    button.classList.add("button-active"); 
+  } else {
+    button.classList.remove("button-active");
+  }
+  position_tooltips();
+  check_all_button_state(section);
+}
+
+function toggle_section_all(button, section_class, button_class){
+  let sections = document.querySelectorAll(section_class)
+  let buttons = document.querySelectorAll(button_class)
+  let hidden = !button.classList.contains("button-active");
+  if (hidden === true) {
+    button.classList.add("button-active");
+    sections.forEach(element => {
+      element.hidden = false;
+    });
+    buttons.forEach(element => {
+      element.classList.add("button-active");
+    });
+  } else {
+    button.classList.remove("button-active");
+    sections.forEach(element => {
+      element.hidden = true;
+    });
+    buttons.forEach(element => {
+      element.classList.remove("button-active");
+    });
+  }  
+  position_tooltips();
+}
+
+function check_all_button_state(section_class){
+  let sections = document.querySelectorAll("."+section_class)
+  console.log(sections);
+  let any_hidden = Array.from(sections).some(element => {
+    console.log(element.hidden);
+    return element.hidden == true;
+  });
+  section_class = section_class.replace(".", "")
+  button_name = "button_" + section_class + "_all"
+  if (any_hidden){
+    document.getElementById(button_name).classList.remove("button-active");
+  }else{
+    document.getElementById(button_name).classList.add("button-active");
+  }
 }

@@ -92,8 +92,15 @@ class WordsSerializer2(serializers.ModelSerializer):
             ["ו", "וֹ", "וֹ"],
             ["ד", "ר", "ך", "ךּ"],
             ["שׁ", "שׂ"],
+            ["ف", "ق"],
+            ["ص", "ض"],
+            ["ت", "ث"],
+            ["ط", "ظ"],
+            ["ه", "ة", "و"],
+            ["د", "ذ"],
         ]
 
+        # TODO: implement the sound comparison
         similar_sound = [
             ["ב", "ו"],
             ["ט", "ת"],
@@ -101,8 +108,8 @@ class WordsSerializer2(serializers.ModelSerializer):
             ["א", "ע"],
             ["כּ", "ק"],
             ["שׂ", "ס"],
-            [""],
-            [""],
+            ["ت", "ث"]
+            ["د", "ذ", "ض"],
         ]
 
         word = word.replace(" ", "")
@@ -116,7 +123,6 @@ class WordsSerializer2(serializers.ModelSerializer):
     # TODO handle arabic
     def find_similar_words(self, instance, field):
         from fuzzywuzzy import fuzz
-
         language = instance.language
         root = instance.serializable_value(field)
 
@@ -156,17 +162,18 @@ class WordsSerializer2(serializers.ModelSerializer):
 # TODO handle arabic
 class WordsViewSet(viewsets.ModelViewSet):
     lookup_field = "text"
-    queryset = Word.objects.filter(language="hebrew").order_by("rank").all()
+    queryset = Word.objects.order_by("rank").all()
 
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated, IsNotTestUser]
     serializer_class = WordsSerializer
-
+ 
 # TODO handle arabic
 class WordDetail(viewsets.ReadOnlyModelViewSet):
     lookup_field = "text"
+    # request.query_params["language"] 
     permission_classes = ()
-    queryset = Word.objects.filter(language="hebrew").order_by("rank").all()
+    queryset = Word.objects.order_by("rank").all()
     serializer_class = WordsSerializer2
 
 
@@ -174,7 +181,7 @@ class WordRatingsSerializer(serializers.ModelSerializer):
     find_text = rest_framework.serializers.CharField(
         max_length=300, allow_blank=False, write_only=True
     )
-    new_rating = rest_framework.serializers.IntegerField(write_only=True, min_value=1, max_value=5)
+    new_rating = rest_framework.serializers.IntegerField(write_only=True, min_value=0, max_value=5)
 
     class Meta:
         model = WordRating

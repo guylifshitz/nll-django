@@ -19,7 +19,9 @@
 <body>
     <div class="navbar">
         <div class="navbar-left">
-            <a class="navbar-element" href="/">all words</a>
+            {% if user.is_authenticated %}
+                <a class="navbar-element" href="{% url 'words_list' language_code=url_parameters.language_code %}">all words</a>
+            {% endif %}
         </div>
         <div class="navbar-center">
             <div class="navbar-element">NLL v0.1</div>

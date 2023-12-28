@@ -152,7 +152,7 @@ def build_article_words(article, words, word_known_categories, flexions):
 
         # NNP = proper noun
         is_proper_noun = False
-        if token_POS == "NNP":
+        if token_POS == "NNP" or "/PUNC" in token_POS or "/NAME" in token_POS:
             # word_translation = f"##{word_foreign_flexion}##"
             # flexion_translation = f"##{word_foreign_flexion}##"
             # word_foreign_flexion = f"##{word_foreign_flexion}##"
@@ -244,10 +244,12 @@ def index(request, language_code):
         practice_words = request.POST.get("practice_words")
         practice_words = json.loads(practice_words)
 
-        print("practice_words", practice_words)
-
         known_words = request.POST.get("known_words")
-        known_words = json.loads(known_words)
+        if known_words:
+            known_words = json.loads(known_words)
+        else:
+            known_words = WordRating.objects.filter(user=request.user).all().values_list("word__text", flat=True)
+
         start_date_cutoff_raw = request.POST.get("start_date", default_start_date)
         start_date_cutoff = datetime.datetime.strptime(start_date_cutoff_raw, "%Y-%m-%d")
         end_date_cutoff_raw = request.POST.get("end_date", default_end_date)
@@ -286,7 +288,7 @@ def index(request, language_code):
         if sort_by_practice_only:
             query_sort_words.extend(known_words)
     else:
-        query_words = Words.objects.filter(
+        query_words = Word.objects.filter(
             language=language,
             rank__gt=known_cutoff,
             rank__lte=practice_cutoff,
@@ -364,16 +366,15 @@ def index(request, language_code):
     #         # title_translation__ne=None,
     #         title_parsed_lemma={"$elemMatch": {"$in": query_words}},
     #     # )
-
     article_ids = []
     with connection.cursor() as cursor:
-        query = """SELECT id, ratio FROM 
+        query = """(SELECT id, ratio FROM 
         (SELECT id, lemma_found_count::decimal / title_parsed_lemma_length::decimal AS ratio FROM
         (SELECT id, array_length("title_parsed_lemma", 1) AS title_parsed_lemma_length, 
         array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS lemma_found_count
-        FROM articles_rss_feed WHERE published_datetime >= %s AND published_datetime <= %s) t1 ) t2 WHERE ratio NOTNULL ORDER BY ratio desc limit %s;"""
+        FROM articles_rss_feed WHERE published_datetime >= %s AND published_datetime <= %s AND language = %s) t1 ) t2 WHERE ratio NOTNULL ORDER BY ratio desc limit %s);"""
         cursor.execute(
-            query, [query_words, start_date_cutoff, end_date_cutoff, article_display_count]
+            query, [query_words, start_date_cutoff, end_date_cutoff, language, article_display_count]
         )
         rows = cursor.fetchall()
 
@@ -383,7 +384,7 @@ def index(request, language_code):
             article_ids.append(r[0])
         print("article_ids", article_ids)
 
-        article_ids = article_ids[0:article_display_count]
+        article_ids = article_ids[0:article_display_count+1]
 
     articles = Rss_feed.objects.filter(link__in=article_ids)
 
@@ -541,10 +542,13 @@ def index(request, language_code):
             "practice_cutoff": practice_cutoff,
             "seen_cutoff": seen_cutoff,
             "language": language,
+            "language_code": language_code,
         }
     else:
         form = None
-        url_parameters = None
+        url_parameters = {
+            "language_code": language_code,
+        }
 
     return render(
         request,

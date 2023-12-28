@@ -70,9 +70,12 @@
         <a id="open-dictionary" class="button" target="_blank" href="" title="Open in Wiktionary (external link)">
             <i class="fa fa-wikipedia-w"></i>
         </a>
+
+        {% if language == "hebrew" %}
         <a id="open-pealim" class="button" target="_blank" href="" title="Open in Pealim.com (external link)">
             <i class="">Pealim</i>
         </a>
+        {% endif %}
 
         {% csrf_token %}
         <a id="open-examples" class="button" onclick="context_menu_examples_word(this, '{{csrf_token}}')"

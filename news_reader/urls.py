@@ -22,8 +22,8 @@ urlpatterns = [
     path("api/", include("api.urls")),
     path("<str:language_code>/articles/", include("articles.urls")),
     path("<str:language_code>/words/", include("words.urls")),
-    path("<str:language_code>/", words.views.index, name="homepage"),
-    path("", words.views.index_default, name="homepage"),
+    path("<str:language_code>/", words.views.index, name="words_list"),
+    path("", words.views.index_default, name="homepage_default"),
     path("accounts/", include("accounts.urls")),
     path("accounts/", include("django.contrib.auth.urls")),
 ]

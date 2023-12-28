@@ -11,9 +11,9 @@ async function initialize_ratings() {
     }
     $(
       "#" +
-        $.escapeSelector(
-          "button-rating-" + rating + "-" + word["word"].replace("'", "\\'")
-        )
+      $.escapeSelector(
+        "button-rating-" + rating + "-" + word["word"].replace("'", "\\'")
+      )
     ).addClass("rating-checked");
     $(
       "#" + $.escapeSelector("select-word-" + word["word"].replace("'", "\\'"))
@@ -23,7 +23,7 @@ async function initialize_ratings() {
 }
 
 function clear_ratings(word) {
-  for (let rating = 1; rating <= 5; rating++) {
+  for (let rating = 0; rating <= 5; rating++) {
     $(
       "#" + $.escapeSelector("button-rating-" + rating + "-" + word)
     ).removeClass("rating-checked");
@@ -144,13 +144,7 @@ $(document).ready(function () {
   initialize_ratings();
   monitor_checkboxes();
 
-  var today = new Date().toISOString().split("T")[0];
-  var prev_day = new Date();
-  prev_day.setDate(prev_day.getDate() - 7);
-  prev_day = prev_day.toISOString().split("T")[0];
-
-  $("#start-date").val(prev_day);
-  $("#end-date").val(today);
+  set_date_range("week");
 
   $("#ART_FORM").submit(function (e) {
     submit_articles_form(this);
@@ -166,7 +160,7 @@ async function submit_articles_form(form) {
 async function set_articles_submit_json() {
   var practice_words = [];
   for (let rating = 1; rating <= 5; rating++) {
-    if ($("#select-practice-rating-" + rating).is(":checked")) {
+    if (document.getElementById("form-select-practice-rating-"+rating).classList.contains("rating-selected")){
       practice_words.push.apply(
         practice_words,
         user_word_ratings
@@ -199,12 +193,51 @@ async function set_articles_submit_json() {
   $("#known_words").attr("value", known_words2);
 }
 
-function xxx(url, csrfToken) {
-  var parameters = {};
-  parameters["csrfmiddlewaretoken"] = csrfToken;
+function click_article_form_rating_button(rating){
+  if (rating == "all"){
 
-  parameters["test-1"] = get_known_words();
-  sendData(url, parameters);
+    if (document.getElementById("form-select-practice-rating-all").classList.contains("rating-selected")){
+      for (let rating = 1; rating <= 5; rating++) {
+        document.getElementById("form-select-practice-rating-" + rating).classList.remove("rating-selected");
+      }
+      document.getElementById("form-select-practice-rating-all").classList.remove("rating-selected");
+      document.getElementById("form-select-practice-rating-all").innerHTML = "+";
+    }
+      else{
+        for (let rating = 1; rating <= 5; rating++) {
+          document.getElementById("form-select-practice-rating-" + rating).classList.add("rating-selected");
+        }
+        document.getElementById("form-select-practice-rating-all").classList.add("rating-selected");
+        document.getElementById("form-select-practice-rating-all").innerHTML = "-";
+      }
+  }
+  else{
+    let el = document.getElementById("form-select-practice-rating-" + rating)
+    if (el.classList.contains("rating-selected")){
+      el.classList.remove("rating-selected");
+    }
+    else{
+      el.classList.add("rating-selected");
+    }
+  }
+
+  let practice_words = get_practice_words_from_ratings();
+  document.getElementById("practice-rating-words-selected-count").innerText = practice_words.length;
+}
+
+function get_practice_words_from_ratings(){
+  var practice_words = [];
+  for (let rating = 1; rating <= 5; rating++) {
+    if (document.getElementById("form-select-practice-rating-"+rating).classList.contains("rating-selected")){
+      practice_words.push.apply(
+        practice_words,
+        user_word_ratings
+          .filter((wordrating) => wordrating["rating"] === rating)
+          .map((item) => item["word"])
+      );
+    }
+  }
+  return practice_words;
 }
 
 async function get_known_words() {
@@ -254,11 +287,11 @@ function monitor_checkboxes() {
       $(this).parent().parent().removeClass("word-line-selected");
     }
 
-    if ($(".select-word-checkbox:checked").length == 0){
+    if ($(".select-word-checkbox:checked").length == 0) {
       $("#build_flashcards").addClass("button-disabled");
       $("#build_flashcards").attr("onclick", "alert('Please select words first')");
     }
-    else{
+    else {
       $("#build_flashcards").removeClass("button-disabled");
       $("#build_flashcards").attr("onclick", "submit_form('main_form')");
     }
@@ -267,19 +300,10 @@ function monitor_checkboxes() {
       $(".select-word-checkbox:checked").length ==
       $(".select-word-checkbox").length
     ) {
-      $("#select-deselect-all").attr("checked", true);
-      $("#select-deselect-all").prop("checked", true);
-      $("#select-deselect-all").prop("indeterminate", false);
+      $("#select-deselect-all").text("None");
       $("#select-deselect-all").attr("onclick", "clear_selection()");
-    } else if ($(".select-word-checkbox:checked").length == 0) {
-      $("#select-deselect-all").attr("checked", false);
-      $("#select-deselect-all").prop("checked", false);
-      $("#select-deselect-all").prop("indeterminate", false);
-      $("#select-deselect-all").attr("onclick", "select_all()");
     } else {
-      $("#select-deselect-all").attr("checked", false);
-      $("#select-deselect-all").prop("checked", false);
-      $("#select-deselect-all").prop("indeterminate", true);
+      $("#select-deselect-all").text("All");
       $("#select-deselect-all").attr("onclick", "select_all()");
     }
   });
@@ -302,37 +326,23 @@ function monitor_checkboxes_rating() {
 }
 
 function update_select_all_rating_checkbox(rating, num_words_with_rating) {
+  console.log(rating, num_words_with_rating);
   if (num_words_with_rating == 0) {
-    $("#select-deselect-rating-" + rating).prop("disabled", true);
+    $("#select-deselect-rating-" + rating).removeClass("rating-checked");
   } else {
-    $("#select-deselect-rating-" + rating).prop("disabled", false);
+    $("#select-deselect-rating-" + rating).addClass("rating-checked");
     if (
       $(".select-word-checkbox[rating='" + rating + "']:checked").length ==
       num_words_with_rating
     ) {
-      $("#select-deselect-rating-" + rating).attr("checked", true);
-      $("#select-deselect-rating-" + rating).prop("checked", true);
-
-      $("#select-deselect-rating-" + rating).prop("indeterminate", false);
-
+      $("#select-deselect-rating-" + rating).addClass("rating-selected");
       $("#select-deselect-rating-" + rating).attr(
         "onclick",
         "deselect_by_filter(" + rating + ")"
       );
-    } else if (
-      $(".select-word-checkbox[rating='" + rating + "']:checked").length == 0
-    ) {
-      $("#select-deselect-rating-" + rating).attr("checked", false);
-      $("#select-deselect-rating-" + rating).prop("checked", false);
-      $("#select-deselect-rating-" + rating).prop("indeterminate", false);
-      $("#select-deselect-rating-" + rating).attr(
-        "onclick",
-        "select_by_filter(" + rating + ")"
-      );
-    } else {
-      $("#select-deselect-rating-" + rating).attr("checked", false);
-      $("#select-deselect-rating-" + rating).prop("checked", false);
-      $("#select-deselect-rating-" + rating).prop("indeterminate", true);
+    }
+    else {
+      $("#select-deselect-rating-" + rating).removeClass("rating-selected");
       $("#select-deselect-rating-" + rating).attr(
         "onclick",
         "select_by_filter(" + rating + ")"
@@ -340,6 +350,7 @@ function update_select_all_rating_checkbox(rating, num_words_with_rating) {
     }
   }
 }
+
 function hide_popups() {
   $(".popup").hide();
 }
@@ -384,9 +395,13 @@ async function examples_word(practice_word, token) {
 
   var form = document.createElement("form");
 
+  language = window.location.pathname.split("/")[1];
+  if (language === "") {
+    language = "he";
+  }
   form.setAttribute("method", "post");
   form.setAttribute("target", "_blank");
-  form.setAttribute("action", "articles/index");
+  form.setAttribute("action", `/${language}/articles/index`);
 
   var token_input = document.createElement("input");
   token_input.setAttribute("type", "hidden");
@@ -400,11 +415,11 @@ async function examples_word(practice_word, token) {
   practice_words_input.setAttribute("value", JSON.stringify(practice_words));
   form.appendChild(practice_words_input);
 
-  var known_words_input = document.createElement("input");
-  known_words_input.setAttribute("type", "hidden");
-  known_words_input.setAttribute("name", "known_words");
-  known_words_input.setAttribute("value", JSON.stringify(known_words2));
-  form.appendChild(known_words_input);
+  // var known_words_input = document.createElement("input");
+  // known_words_input.setAttribute("type", "hidden");
+  // known_words_input.setAttribute("name", "known_words");
+  // known_words_input.setAttribute("value", JSON.stringify(known_words2));
+  // form.appendChild(known_words_input);
 
   var start_date_input = document.createElement("input");
   start_date_input.setAttribute("type", "hidden");
@@ -442,12 +457,13 @@ window.onclick = function (event) {
   }
 };
 
-function context_menu_open_definition(element, language) {
+function context_menu_open_definition(element, language_code) {
+  const language_code_mapping = {"Ar": "Arabic", "He": "Hebrew"}
   window.open(
     "https://en.wiktionary.org/wiki/" +
-      $("#context-menu").attr("word") +
-      "#" +
-      language
+    $("#context-menu").attr("word") +
+    "#" +
+    language_code_mapping[language_code]
   );
 }
 
@@ -542,15 +558,15 @@ function update_rating(word, rating) {
     .done(function () {
       //# TODO move the update gui here
     })
-    .fail(function () {})
-    .always(function () {});
+    .fail(function () { })
+    .always(function () { });
 }
 
 function submit_filter_form() {
   let form_data = new FormData(document.querySelector("#filter-form"));
   let form_str = new URLSearchParams(form_data).toString();
 
-  if (parseInt(form_data.get("upper_freq_cutoff")) - parseInt(form_data.get("lower_freq_cutoff")) > 500){
+  if (parseInt(form_data.get("upper_freq_cutoff")) - parseInt(form_data.get("lower_freq_cutoff")) > 500) {
     alert("Range must contain fewer than 500 words total.");
     return;
   }
@@ -579,4 +595,28 @@ function toggle_visible_words() {
 
   $("#filter-unselected").prop("checked", !is_checked);
   hide_unselected();
+}
+
+function set_date_range(range_type){
+  console.log(range_type);
+  var today = new Date().toISOString().split("T")[0];
+  
+  var prev_day = new Date();
+  if (range_type === "day"){
+    prev_day.setDate(prev_day.getDate() - 1);
+  }
+  else if (range_type === "week"){
+    prev_day.setDate(prev_day.getDate() - 7);
+  }
+  else if (range_type === "month"){
+    prev_day.setDate(prev_day.getDate() - 30);
+  }
+  else if (range_type === "max"){
+    prev_day = new Date("2021-01-01");
+  }
+
+  prev_day = prev_day.toISOString().split("T")[0];
+
+  $("#start-date").val(prev_day);
+  $("#end-date").val(today);
 }

@@ -20,83 +20,89 @@
 
 <div class="page">
     <div class="card">
-        <div class="section-first">
+        <div class="distinct-section section-first">
             <div class="wordslist-form">
-                Filter range:
+                Filter by frequency ranking:
                 <form id="filter-form" method="get">
                     <input name="lower_freq_cutoff" class="number-input" type="number"
                         value="{{url_parameters.lower_freq_cutoff}}" /> -
                     <input name="upper_freq_cutoff" class="number-input" type="number"
                         value="{{url_parameters.upper_freq_cutoff}}" />
+                    <div>
+                        <label for="only_labeled">Only labeled:</label>
+                        <input type="checkbox" id="only_labeled" name="only_labeled" {% if url_parameters.only_labeled %} checked {% endif %} >
+                    </div>
                     <i class="button pointer fa fa-filter" aria-hidden="true" onclick="submit_filter_form()"
                         title="Filter selection"></i> &nbsp;
                     <input type="submit" hidden value="filter"> 
                 </form>
             </div>
-            <div>
+            <div class="wordslist-form">
+                Search:
+                <form id="search-form" method="get">
+                    <label for="search_words">Words:</label>
+                    <textarea name="search_words" class="textbox-input" placeholder="Search word"></textarea> 
+                    <label for="search_translation">Translation:</label>
+                    <textarea name="search_translation" class="textbox-input" placeholder="Search translation"></textarea> 
+                    <div>
+                        <label for="search_exact">Exact match:</label>
+                        <input type="checkbox" id="search_exact" name="search_exact"> 
+                    </div>
+                    <input type="submit" value="Search"> 
+                </form>
+              </div>
+            <div class="build-buttons">
                 <div id="build_flashcards" class="button xxxx button-disabled" onclick="alert('Please select words first')">
                     Build Flashcards
                 </div>
                 <div class="button xxxx" onclick="show_articles_popup()">
-                    Build Articles
+                    Find Articles &nbsp;<i class="fa fa-newspaper-o" aria-hidden="true"></i>
                 </div>
             </div>
         </div>
 
-        <hr>
-
-        <div>
+        <div class="distinct-section">
             <!-- TODO toggle this and add a helper text -->
-            <input type="checkbox" id="filter-unselected" hidden>
             <div>
-                <div class="pointer eyeer" id="filter-unselected-toggle" onclick="toggle_visible_words()"
-                    title="Show selected only"> <i id="filter-unselected-icon" class="fa fa-eye-slash"
-                        aria-hidden="true"></i> unselected </div>
+                <div>Select:</div>
+                <div class="select-filter-line">
+                    <!-- TODO: style the checkboxes better -->
+                    <div id="select-deselect-all" class="button round-button select-all-button" onclick="select_all()">All</div>
+                    <div class="rating-buttons extra-gap ">
+                        <div id="select-deselect-rating-1" class="button round-button button-rating button-rating-1 rating-checked" onclick="select_by_filter(1)">1</div>
+                        <div id="select-deselect-rating-2" class="button round-button button-rating button-rating-2 rating-checked" onclick="select_by_filter(2)">2</div>
+                        <div id="select-deselect-rating-3" class="button round-button button-rating button-rating-3 rating-checked" onclick="select_by_filter(3)">3</div>
+                        <div id="select-deselect-rating-4" class="button round-button button-rating button-rating-4 rating-checked" onclick="select_by_filter(4)">4</div>
+                        <div id="select-deselect-rating-5" class="button round-button button-rating button-rating-5 rating-checked" onclick="select_by_filter(5)">5</div>
+                        <div id="select-deselect-rating-0" class="button round-button button-rating button-rating-unrated rating-checked" onclick="select_by_filter(0)">Unlabelled</div>
+                    </div>
+                    <div>
+                        <i class="fa fa-check-square-o" aria-hidden="true"></i>
+                        
+                        <span id="selcted_count">0</span> words selected
+                    </div>
+                    <div>
+                        <input type="checkbox" id="filter-unselected" hidden>
+                        <div class="pointer eyeer" id="filter-unselected-toggle" onclick="toggle_visible_words()"
+                            title="Show selected only"> <i id="filter-unselected-icon" class="fa fa-eye-slash"
+                                aria-hidden="true"></i> Hide/Show unselected </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div>
-            <i class="fa fa-check-square-o" aria-hidden="true"></i>
-            
-            <span id="selcted_count">0</span> words selected
-        </div>
 
         <form id="main_form" class="section-second" action="{% url 'flashcards' url_parameters.language_code %}" method="POST">
             {% csrf_token %}
             <div class="word-line">
-                <div> </div>
+                <div>Select</div>
                 <div> </div>
                 <div class="word-line-element">
-                    familiarity label
+                    Familiarity Label
                 </div>
-                <div></div>
-                <div> </div>
-                <div> </div>
-            </div>
-            <div class="word-line first-word-line">
-                <div class="word-index-display">#</div>
-                <input type="checkbox" id="select-deselect-all" class="select-deselet-checkbox pointer"
-                    onclick="select_all()">
-                    <!-- TODO: style the checkboxes better -->
-                <div class="rating-buttons ">
-                    <input type="checkbox" id="select-deselect-rating-1"
-                        class="pointer select-deselet-checkbox select-deselect-rating-1" onclick="select_by_filter(1)">
-                    <input type="checkbox" id="select-deselect-rating-2"
-                        class="pointer select-deselet-checkbox select-deselect-rating-2" onclick="select_by_filter(2)">
-                    <input type="checkbox" id="select-deselect-rating-3"
-                        class="pointer select-deselet-checkbox select-deselect-rating-3" onclick="select_by_filter(3)">
-                    <input type="checkbox" id="select-deselect-rating-4"
-                        class="pointer select-deselet-checkbox select-deselect-rating-4" onclick="select_by_filter(4)">
-                    <input type="checkbox" id="select-deselect-rating-5"
-                        class="pointer select-deselet-checkbox select-deselect-rating-5" onclick="select_by_filter(5)">
-                </div>
-                <div>
-                    <input type="checkbox" id="select-deselect-rating-0"
-                        class="pointer select-deselet-checkbox select-deselect-rating-0" onclick="select_by_filter(0)">
-                    </input>
-                </div>
-                <div></div>
-                <div></div>
+                <div class="word-line-element">Word</div>
+                <div class="word-line-element">Root</div>
+                <div class="word-line-element">Translation</div>
                 <div></div>
             </div>
             <input type="hidden" name="language" value="{{url_parameters.language_code}}">
@@ -132,6 +138,10 @@
                             onclick="clicked_update('{{word.word}}', 5)">
                             5
                         </div>
+                        <div id="button-rating-0-{{word.word}}" class="button-rating-opposite button-rating-0"
+                            onclick="clicked_update('{{word.word}}', 0)">
+                            <i class="fa fa-times-circle-o" aria-hidden="true"></i>
+                        </div>
                     </div>
                     <div class="word-line-element">
                         {{word.word_diacritic}}
@@ -166,9 +176,11 @@
             onclick="context_menu_open_definition(this, '{{url_parameters.language_code|title}}')">
             Wiktionary <i class="fa fa-external-link"></i>
         </div>
-        <div class="context-menu-element" target="_blank" onclick="context_menu_open_pealim(this)">
-            Pealim <i class="fa fa-external-link"></i>
-        </div>
+        {% if url_parameters.language_code == 'he' %}
+            <div class="context-menu-element" target="_blank" onclick="context_menu_open_pealim(this)">
+               Pealim <i class="fa fa-external-link"></i>
+            </div>
+        {% endif %}
     </div>
 
 

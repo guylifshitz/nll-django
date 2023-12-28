@@ -525,13 +525,13 @@ function context_menu_examples_word(element, token) {
 
 async function examples_word(practice_word, token) {
   var practice_words = [practice_word];
-  var known_words2 = [];
-  if (user_word_ratings !== "") {
-    var known_words2 = user_word_ratings.map((item) => item["word"]);
-  }
-  known_words2 = known_words2.filter(function (value, index, arr) {
-    return !practice_words.includes(value);
-  });
+  // var known_words2 = [];
+  // if (user_word_ratings !== "") {
+  //   var known_words2 = user_word_ratings.map((item) => item["word"]);
+  // }
+  // known_words2 = known_words2.filter(function (value, index, arr) {
+  //   return !practice_words.includes(value);
+  // });
 
   var form = document.createElement("form");
 
@@ -551,11 +551,11 @@ async function examples_word(practice_word, token) {
   practice_words_input.setAttribute("value", JSON.stringify(practice_words));
   form.appendChild(practice_words_input);
 
-  var known_words_input = document.createElement("input");
-  known_words_input.setAttribute("type", "hidden");
-  known_words_input.setAttribute("name", "known_words");
-  known_words_input.setAttribute("value", JSON.stringify(known_words2));
-  form.appendChild(known_words_input);
+  // var known_words_input = document.createElement("input");
+  // known_words_input.setAttribute("type", "hidden");
+  // known_words_input.setAttribute("name", "known_words");
+  // known_words_input.setAttribute("value", known_words2);
+  // form.appendChild(known_words_input);
 
   var start_date_input = document.createElement("input");
   start_date_input.setAttribute("type", "hidden");
