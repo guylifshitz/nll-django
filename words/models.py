@@ -40,6 +40,21 @@ class Word(models.Model):
     )
     user_roots_with_user = models.JSONField(null=True, blank=True, default=default_json_values)
 
+    @property
+    def normalized_flexion_counts(self):
+        flexions = self.flexion_counts
+        if not flexions:
+            flexions = {}
+
+        flexions_sum = sum(list(flexions.values()))
+        flexions = {k: v for k, v in sorted(flexions.items(), key=lambda item: item[1], reverse=True)}
+        flexions = {k: max(int(v / flexions_sum * 100), 1) for k, v in flexions.items()}
+        flexions = {k: flexions[k] for k in list(flexions)[:10]}
+
+        if not flexions:
+            flexions = ""
+        return flexions
+
 
 class Flexion(models.Model):
     # objects = models.DjongoManager()
