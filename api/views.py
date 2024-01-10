@@ -242,8 +242,8 @@ class UserWordsViewSet(views.APIView):
                 {
                     "id": lemma.text,
                     "text": lemma.text,
-                    "translation": lemma.translation,
-                    "root": lemma.root,
+                    "translation": lemma.best_translation,
+                    "root": lemma.best_root,
                     "language": lemma.language,
                     "count": lemma.count,
                     "rank": lemma.rank,

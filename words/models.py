@@ -41,6 +41,26 @@ class Word(models.Model):
     user_roots_with_user = models.JSONField(null=True, blank=True, default=default_json_values)
 
     @property
+    def best_root(self):
+        root = self.root
+        if self.user_roots:
+            root = self.user_roots[-1]
+        if not root:
+            root = self.root
+        return root
+
+    @property
+    def best_translation(self):
+        translation = self.translation
+        if self.user_translations:
+            translation = self.user_translations[-1]
+        if not translation:
+            translation = self.translation
+        return translation
+
+
+
+    @property
     def normalized_flexion_counts(self):
         flexions = self.flexion_counts
         if not flexions:
