@@ -22,25 +22,11 @@ class Rss_feed(models.Model):
     title_parsed_postag = ArrayField(models.TextField(), null=True)
     title_parsed_feats = ArrayField(models.TextField(), null=True)
     title_parsed_translation_override = ArrayField(models.TextField(), null=True)
+    title_parsed_roots = ArrayField(models.TextField(), null=True)
+    title_parsed_lemma_gloss = ArrayField(models.TextField(), null=True)
+    title_parsed_flexion_gloss = ArrayField(models.TextField(), null=True)
 
     other_fields = models.JSONField(null=True)
 
     summary = models.TextField(null=True)
 
-
-# class open_subtitle(models.Model):
-#     # _id = models.CharField(max_length=100)
-
-#     source = models.CharField(max_length=100)
-
-#     language = models.CharField(max_length=100)
-
-#     hebrew = models.CharField(max_length=100)
-#     title_translation = models.CharField(max_length=100)
-#     title_parsed_clean = ArrayField(models.TextField())
-#     title_parsed_lemma = models.JSONField()
-#     title_parsed_segmented = models.JSONField()
-#     title_parsed_prefixes = models.JSONField()
-#     title_parsed_postag = models.JSONField()
-#     title_parsed_feats = models.JSONField()
-#     title_parsed_translation_override = models.JSONField()
