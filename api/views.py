@@ -1,3 +1,4 @@
+import hashlib
 import uuid
 from words.models import Word, WordRating
 from articles.models import Rss_feed
@@ -76,20 +77,25 @@ class ArticlesWithWordsView(views.APIView):
 
             for index, word in enumerate(article.title_parsed_clean):
                 lemmas_to_find.add(article.title_parsed_lemma[index])
+                flexion_translation = "NOT DONE YET"
+                if language == 'arabic':
+                    flexion_translation = article.title_parsed_roots[index] + " // LEM:"+ article.title_parsed_flexion_gloss[index].replace("_", " ") + " // FLEX:"+ article.title_parsed_lemma_gloss[index].replace("_", " ")
+
                 article_words.append({
-                    "id": uuid.uuid4().hex,
+                    "id": hashlib.md5(f"{article.id} - {index}".encode()).hexdigest(),
                     "text": article.title_parsed_clean[index],
                     "lemma": article.title_parsed_lemma[index],
                     "segmented": article.title_parsed_segmented[index],
                     "part_of_speech": article.title_parsed_postag[index],
                     "features": article.title_parsed_feats[index],
-                    "flexion_translation": "NOT DONE YET",
+                    "flexion_translation": flexion_translation,
+                    "is_name": article.title_parsed_postag[index] == 'noun_prop',
                 }
                 )
 
             formatted_articles.append(
             {
-                "id": uuid.uuid4().hex,
+                "id": hashlib.md5(f"{article.id}".encode()).hexdigest(),
                 "published_datetime": article.published_datetime,
                 "title": article.title,
                 "link": article.link,
@@ -178,8 +184,9 @@ class ArticlesWithWordsView(views.APIView):
         articles = self.getArticlesWithWords(language, practice_words, known_words, start_date, end_date, 100)
         output = self.formatArticles(articles, language, practice_words, known_words, guy)
 
-        results = ArticleAndWordSerializer(output, many=False).data
-        return Response(results)
+        # results = ArticleAndWordSerializer(output, many=False).data
+
+        return Response(output, status=200)
 
 
 class UserWordsViewSet(views.APIView):
@@ -298,8 +305,10 @@ class UserWordsViewSet(views.APIView):
 
         word = Word.objects.get(text=word_text, language=language)
 
-        # new_word_rating = WordRating.objects.create(user=guy, word=word, rating=rating)
-        WordRating.objects.filter(user=guy, word=word).update(rating=rating)
+        try:
+            WordRating.objects.create(user=guy, word=word, rating=rating)
+        except:
+            WordRating.objects.filter(user=guy, word=word).update(rating=rating)
 
         return Response({"success": True}, status=200)
     
