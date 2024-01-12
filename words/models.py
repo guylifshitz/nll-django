@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 
 # from djongo import models
 
@@ -35,6 +36,8 @@ class Word(models.Model):
     user_translations = models.JSONField(null=True, blank=True, default=default_json_values)
     user_roots = models.JSONField(null=True, blank=True, default=default_json_values)
 
+    parser_translations = ArrayField(models.TextField(), null=True)
+
     user_translations_with_user = models.JSONField(
         null=True, blank=True, default=default_json_values
     )
@@ -51,11 +54,13 @@ class Word(models.Model):
 
     @property
     def best_translation(self):
-        translation = self.translation
+        translation = ""
+        if self.translation:
+            translation += self.translation
         if self.user_translations:
             translation = self.user_translations[-1]
-        if not translation:
-            translation = self.translation
+        if self.parser_translations:
+            translation += "(" + ", ".join(self.parser_translations) + ")"
         return translation
 
 
