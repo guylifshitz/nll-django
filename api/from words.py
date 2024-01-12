@@ -5,7 +5,6 @@ from django.db import connection
 import json
 from rest_framework.response import Response
 from rest_framework import views
-from .serializers import ArticleAndWordSerializer, UserWordSerializer
 from django.contrib.auth.models import User
 import random
 
