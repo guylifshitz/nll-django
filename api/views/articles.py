@@ -67,11 +67,11 @@ class ThingWithWordsView(views.APIView):
         formatted_articles =[]
         lemmas_to_find = set()
         for article in articles:
-            article_words = []
-            print(article)
+            article_lines = []
+            article_line_words = []
+
             all_same_length = len(article.title_parsed_clean) == len(article.title_parsed_lemma) == len(article.title_parsed_segmented) == len(article.title_parsed_postag) == len(article.title_parsed_feats)
             if not all_same_length:
-                print("BAD LINE")
                 print(article.title_parsed_clean, len(article.title_parsed_clean))
                 print(article.title_parsed_lemma, len(article.title_parsed_lemma))
                 print(article.title_parsed_segmented, len(article.title_parsed_segmented))
@@ -89,17 +89,23 @@ class ThingWithWordsView(views.APIView):
                     if article.title_parsed_roots and article.title_parsed_flexion_gloss and article.title_parsed_lemma_gloss:
                         flexion_translation = article.title_parsed_roots[index] + " // LEM:"+ article.title_parsed_flexion_gloss[index].replace("_", " ") + " // FLEX:"+ article.title_parsed_lemma_gloss[index].replace("_", " ")
 
-                article_words.append({
-                    "id": hashlib.md5(f"{article.id} - {index}".encode()).hexdigest(),
-                    "text": article.title_parsed_clean[index],
-                    "lemma": article.title_parsed_lemma[index],
-                    "segmented": article.title_parsed_segmented[index],
-                    "part_of_speech": article.title_parsed_postag[index],
-                    "features": article.title_parsed_feats[index],
-                    "flexion_translation": flexion_translation,
-                    "is_name": article.title_parsed_postag[index] == 'noun_prop',
-                }
+                if article.title_parsed_lemma[index] == "###":
+                    article_lines.append(article_line_words)
+                    article_line_words = []
+                else:
+                    article_line_words.append({
+                        "id": hashlib.md5(f"{article.id} - {index}".encode()).hexdigest(),
+                        "text": article.title_parsed_clean[index],
+                        "lemma": article.title_parsed_lemma[index],
+                        "segmented": article.title_parsed_segmented[index],
+                        "part_of_speech": article.title_parsed_postag[index],
+                        "features": article.title_parsed_feats[index],
+                        "flexion_translation": flexion_translation,
+                        "is_name": article.title_parsed_postag[index] == 'noun_prop',
+                    }
                 )
+                    
+            article_lines.append(article_line_words)
 
             formatted_articles.append(
             {
@@ -111,7 +117,7 @@ class ThingWithWordsView(views.APIView):
                 "translation": article.title_translation,
                 "tag_level_1": article.source,
                 "tag_level_2": str(article.feed_names),
-                "article_words": article_words
+                "article_lines": article_lines
             }
         )
             
