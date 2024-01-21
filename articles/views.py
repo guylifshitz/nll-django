@@ -367,14 +367,25 @@ def index(request, language_code):
     #         title_parsed_lemma={"$elemMatch": {"$in": query_words}},
     #     # )
     article_ids = []
+    known_words_words = list(known_words)
     with connection.cursor() as cursor:
-        query = """(SELECT id, ratio FROM 
-        (SELECT id, lemma_found_count::decimal / title_parsed_lemma_length::decimal AS ratio FROM
+        # query = """(SELECT id, ratio FROM 
+        # (SELECT id, lemma_found_count::decimal / title_parsed_lemma_length::decimal AS ratio FROM
+        # (SELECT id, array_length("title_parsed_lemma", 1) AS title_parsed_lemma_length, 
+        # array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS lemma_found_count
+        # FROM articles_rss_feed WHERE published_datetime >= %s AND published_datetime <= %s AND language = %s) t1 ) t2 WHERE ratio NOTNULL ORDER BY ratio desc limit %s);"""
+        # cursor.execute(
+        #     query, [query_words, start_date_cutoff, end_date_cutoff, language, article_display_count]
+        # )
+
+        query = """(SELECT id, ratio, lemma_found_count, known_found_count FROM 
+        (SELECT id, lemma_found_count, known_found_count, lemma_found_count::decimal / title_parsed_lemma_length::decimal AS ratio FROM
         (SELECT id, array_length("title_parsed_lemma", 1) AS title_parsed_lemma_length, 
-        array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS lemma_found_count
-        FROM articles_rss_feed WHERE published_datetime >= %s AND published_datetime <= %s AND language = %s) t1 ) t2 WHERE ratio NOTNULL ORDER BY ratio desc limit %s);"""
+        array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS lemma_found_count,
+        array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS known_found_count
+        FROM articles_rss_feed WHERE published_datetime >= %s AND published_datetime <= %s AND language = %s) t1 ) t2 WHERE ratio NOTNULL ORDER BY lemma_found_count desc, known_found_count desc NULLS LAST limit %s);"""
         cursor.execute(
-            query, [query_words, start_date_cutoff, end_date_cutoff, language, article_display_count]
+            query, [query_words, known_words_words, start_date_cutoff, end_date_cutoff, language, article_display_count]
         )
         rows = cursor.fetchall()
 

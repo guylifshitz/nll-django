@@ -244,7 +244,6 @@ def index(request, language_code):
             search_words = [w for w in search_words if w]
             search_words = [araby.strip_diacritics(w) for w in search_words]
             for w in search_words:
-                print("search_words", w)
                 if search_exact:
                     search_query |= Q(text__iexact=w)
                     search_query |= Q(flexion_counts__iexact=w)

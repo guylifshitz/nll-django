@@ -29,13 +29,15 @@ DEBUG = os.environ.get("NLL_DJANGO_DEBUG", "False") == "True"
 
 ENVIRONMENT = os.environ.get("NLL_DJANGO_ENVIRONMENT", "local")
 
+
 ALLOWED_HOSTS = [
     "guylifshitz.com",
     "language.guylifshitz.com",
 ]
 
-if ENVIRONMENT == "local":
+if DEBUG == True:
     ALLOWED_HOSTS.append("localhost")
+    ALLOWED_HOSTS.append("*")
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = False
@@ -56,6 +58,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework.authtoken",
+    "corsheaders",
     "accounts"
 ]
 
@@ -75,6 +78,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
 ]
 
 ROOT_URLCONF = "news_reader.urls"
@@ -185,3 +190,10 @@ DATE_INPUT_FORMATS = ["%d-%m-%Y"]
 
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/accounts/login"
+
+
+CORS_ALLOW_ALL_ORIGINS = True
+# TODO put this instead of all origins once we are on the same domain
+# CORS_ALLOWED_ORIGINS = [
+#     "https://guylifshitz.com",
+# ]
