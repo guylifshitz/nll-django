@@ -26,14 +26,26 @@ class Word(models.Model):
     word_diacritic = models.CharField(max_length=100, null=True)
     translation = models.CharField(max_length=300, null=True)
     root = models.CharField(max_length=100, null=True)
-    flexion_counts = models.JSONField(null=True, blank=True, default=default_json_values)
+    flexion_counts = models.JSONField(
+        null=True, blank=True, default=default_json_values
+    )
     rank = models.IntegerField(null=True)
     count = models.IntegerField(null=True)
-    rank_open_subtitles = models.IntegerField(null=True)
-    count_open_subtitles = models.IntegerField(null=True)
+    rank_rss_feed = models.IntegerField(null=True)
+    count_rss_feed = models.IntegerField(null=True)
+    rank_subtitle = models.IntegerField(null=True)
+    count_subtitle = models.IntegerField(null=True)
+    count_song = models.IntegerField(null=True)
+    rank_song = models.IntegerField(null=True)
+    count_wikipedia = models.IntegerField(null=True)
+    rank_wikipedia = models.IntegerField(null=True)
+    rank_lyric = models.IntegerField(null=True)
+    count_lyric = models.IntegerField(null=True)
     language = models.CharField(max_length=100)
 
-    user_translations = models.JSONField(null=True, blank=True, default=default_json_values)
+    user_translations = models.JSONField(
+        null=True, blank=True, default=default_json_values
+    )
     user_roots = models.JSONField(null=True, blank=True, default=default_json_values)
 
     parser_translations = ArrayField(models.TextField(), null=True)
@@ -41,7 +53,9 @@ class Word(models.Model):
     user_translations_with_user = models.JSONField(
         null=True, blank=True, default=default_json_values
     )
-    user_roots_with_user = models.JSONField(null=True, blank=True, default=default_json_values)
+    user_roots_with_user = models.JSONField(
+        null=True, blank=True, default=default_json_values
+    )
 
     @property
     def best_root(self):
@@ -63,8 +77,6 @@ class Word(models.Model):
             translation += "(" + ", ".join(self.parser_translations) + ")"
         return translation
 
-
-
     @property
     def normalized_flexion_counts(self):
         flexions = self.flexion_counts
@@ -72,7 +84,10 @@ class Word(models.Model):
             flexions = {}
 
         flexions_sum = sum(list(flexions.values()))
-        flexions = {k: v for k, v in sorted(flexions.items(), key=lambda item: item[1], reverse=True)}
+        flexions = {
+            k: v
+            for k, v in sorted(flexions.items(), key=lambda item: item[1], reverse=True)
+        }
         flexions = {k: max(int(v / flexions_sum * 100), 1) for k, v in flexions.items()}
         flexions = {k: flexions[k] for k in list(flexions)[:10]}
 
@@ -114,13 +129,17 @@ class WordRating(models.Model):
         ]
 
         constraints = [
-            models.UniqueConstraint(fields=["word", "user"], name="unique_word_user_combination")
+            models.UniqueConstraint(
+                fields=["word", "user"], name="unique_word_user_combination"
+            )
         ]
         # indexes = [TextIndex(fields=["word", "user"])]
 
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    word = models.ForeignKey(Word, on_delete=models.CASCADE, related_name="word_ratings")
+    word = models.ForeignKey(
+        Word, on_delete=models.CASCADE, related_name="word_ratings"
+    )
     rating = models.IntegerField(default=0)
 
     def __str__(self):

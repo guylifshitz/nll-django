@@ -29,12 +29,13 @@ DEBUG = os.environ.get("NLL_DJANGO_DEBUG", "False") == "True"
 
 ENVIRONMENT = os.environ.get("NLL_DJANGO_ENVIRONMENT", "local")
 
+
 ALLOWED_HOSTS = [
     "guylifshitz.com",
     "language.guylifshitz.com",
 ]
 
-if ENVIRONMENT == "local":
+if DEBUG == True:
     ALLOWED_HOSTS.append("localhost")
     ALLOWED_HOSTS.append("*")
 
