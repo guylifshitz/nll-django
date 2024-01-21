@@ -3,15 +3,12 @@ import uuid
 from words.models import Word, WordRating
 from articles.models import (
     Rss_feed,
-    Song,
-    Open_subtitles,
-    Song_habibi,
     Wikipedia,
     Wikipedia_sentence,
     Subtitle,
     Subtitle_sentence,
-    Lyric,
-    Lyric_sentence,
+    Wikipedia,
+    Wikipedia_sentence,
 )
 from django.db.models import Prefetch
 from django.db import connection
@@ -570,8 +567,9 @@ class SourceWithSentncesAndWordsView(ThingWithWordsView):
                 }
             )
 
+        language_code = "ar" if language == "arabic" else "he"
         formatted_lemmas = self.get_lemmas(
-            lemmas_to_find, language, practice_words, known_words, guy
+            lemmas_to_find, language_code, practice_words, known_words, guy
         )
 
         yourdata = {"articles": formatted_articles, "lemmas": formatted_lemmas}
@@ -611,5 +609,5 @@ class SubtitlesWithWordsView(SourceWithSentncesAndWordsView):
 
 class LyricWithWordsView(SourceWithSentncesAndWordsView):
     table_name = "articles_lyric"
-    source_model = Lyric
-    sentence_model = Lyric_sentence
+    source_model = Wikipedia
+    sentence_model = Wikipedia_sentence

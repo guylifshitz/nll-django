@@ -1,4 +1,4 @@
-from articles.models import Lyric, Lyric_sentence
+from articles.models import Wikipedia, Wikipedia_sentence
 from pprint import pprint
 from django.conf import settings
 from .helpers import check_language_supported
@@ -7,9 +7,9 @@ import numpy as np
 
 
 def run(*args):
-    input(
-        "Make sure to run the import lyrics script first, since it deletes all the existing lyrics. Press enter to continue..."
-    )
+    # input(
+    #     "Make sure to run the import lyrics script first, since it deletes all the existing lyrics. Press enter to continue..."
+    # )
 
     songs_df = read_song_lyrics()
     parse_songs(songs_df)
@@ -29,7 +29,7 @@ def parse_songs(songs_df):
     for song_id, songLines in songs_df.groupby("songID"):
         print(f"Insert song {song_id}")
         first_row = songLines.iloc[0]
-        lyric_id = Lyric.objects.create(
+        lyric_id = Wikipedia.objects.create(
             language="ar",
             song_title=first_row["SongTitle"],
             artist=first_row["Singer"],
@@ -41,7 +41,7 @@ def parse_songs(songs_df):
 
         sentences = songLines.sort_values("LyricsOrder")["Lyrics"].tolist()
         for sentence_order, sentence in enumerate(sentences):
-            Lyric_sentence.objects.create(
+            Wikipedia_sentence.objects.create(
                 source=lyric_id,
                 sentence_order=sentence_order,
                 text=sentence,
