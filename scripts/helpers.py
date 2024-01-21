@@ -1,8 +1,18 @@
-from articles.models import Wikipedia, Wikipedia_sentence
+from articles.models import (
+    Wikipedia,
+    Wikipedia_sentence,
+    Subtitle,
+    Subtitle_sentence,
+    Lyric,
+    Lyric_sentence,
+    Rss,
+    Rss_sentence,
+)
 
 
 supported_languages = ["ar", "he"]
-supported_sources = ["wikipedia", "lyric", "rss_feed", "subtitle"]
+supported_sources = ["rss", "lyric", "subtitle", "wikipedia"]
+language_name_to_code = {"arabic": "ar", "hebrew": "he"}
 
 
 def check_language_supported(language: str):
@@ -24,5 +34,11 @@ def chunks(list: list, size: int):
 
 def get_source_model(source_name: str):
     match source_name:
+        case "rss":
+            return Rss, Rss_sentence
         case "lyric":
+            return Lyric, Lyric_sentence
+        case "wikipedia":
             return Wikipedia, Wikipedia_sentence
+        case "subtitle":
+            return Subtitle, Subtitle_sentence

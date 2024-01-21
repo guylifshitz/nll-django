@@ -4,6 +4,7 @@ DEBUG
 staticfiles
 .vscode
 scripts/language_parsers/arabic/farasa_java
+rss_feeds
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

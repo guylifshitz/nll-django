@@ -17,73 +17,76 @@ def parse_sentences(sentences: list[Sentence]):
         ner = NERecognizer.pretrained()
 
     for idx, sentence in enumerate(sentences):
-        print("-------")
-        print(f"Sentence#{idx}: {sentence.text} - {sentence.id}")
+        try:
+            print("-------")
+            print(f"Sentence#{idx}: {sentence.text} - {sentence.id}")
 
-        parsed_title = simple_word_tokenize(sentence.text)
-        if use_NER:
-            ner_labels = ner.predict_sentence(parsed_title)
-        else:
-            ner_labels = ["O" for _ in range(len(parsed_title))]
+            parsed_title = simple_word_tokenize(sentence.text)
+            if use_NER:
+                ner_labels = ner.predict_sentence(parsed_title)
+            else:
+                ner_labels = ["O" for _ in range(len(parsed_title))]
 
-        disambig = mle.disambiguate(parsed_title)
+            disambig = mle.disambiguate(parsed_title)
 
-        # print(json.dumps(disambig, indent=2, ensure_ascii=False))
-        print(disambig)
+            # print(json.dumps(disambig, indent=2, ensure_ascii=False))
+            print(disambig)
 
-        if use_NER:
-            print(ner_labels)
-        missing_analysis = any(True for d in disambig if not d.analyses)
+            if use_NER:
+                print(ner_labels)
+            missing_analysis = any(True for d in disambig if not d.analyses)
 
-        if missing_analysis:
-            pos_tags = [None for _ in range(len(parsed_title))]
-            lemmas = [None for _ in range(len(parsed_title))]
-            segemented = [None for _ in range(len(parsed_title))]
-        else:
-            # pos_tags = [handle_disambig(d, 'pos') for d in disambig]
-            pos_tags = [handle_disambig(d, "pos") for d in disambig]
-            lemmas = [handle_disambig(d, "lex") for d in disambig]
-            roots = [handle_disambig(d, "root") for d in disambig]
-            lemma_gloss = [handle_disambig(d, "stemgloss") for d in disambig]
-            flexion_gloss = [handle_disambig(d, "gloss") for d in disambig]
-            segemented = [handle_disambig(d, "d3seg") for d in disambig]
-            form_gen = [handle_disambig(d, "form_gen") for d in disambig]
-            form_num = [handle_disambig(d, "form_num") for d in disambig]
+            if missing_analysis:
+                pos_tags = [None for _ in range(len(parsed_title))]
+                lemmas = [None for _ in range(len(parsed_title))]
+                segemented = [None for _ in range(len(parsed_title))]
+            else:
+                # pos_tags = [handle_disambig(d, 'pos') for d in disambig]
+                pos_tags = [handle_disambig(d, "pos") for d in disambig]
+                lemmas = [handle_disambig(d, "lex") for d in disambig]
+                roots = [handle_disambig(d, "root") for d in disambig]
+                lemma_gloss = [handle_disambig(d, "stemgloss") for d in disambig]
+                flexion_gloss = [handle_disambig(d, "gloss") for d in disambig]
+                segemented = [handle_disambig(d, "d3seg") for d in disambig]
+                form_gen = [handle_disambig(d, "form_gen") for d in disambig]
+                form_num = [handle_disambig(d, "form_num") for d in disambig]
 
-        lemmas = replace_punctuation(lemmas, pos_tags)
+            lemmas = replace_punctuation(lemmas, pos_tags)
 
-        feats = handle_feats(form_gen, form_num, ner_labels)
-        prefixes = [None for _ in range(len(parsed_title))]
+            feats = handle_feats(form_gen, form_num, ner_labels)
+            prefixes = [None for _ in range(len(parsed_title))]
 
-        if (
-            len(parsed_title) != len(pos_tags)
-            or len(parsed_title) != len(lemmas)
-            or len(parsed_title) != len(prefixes)
-            or len(parsed_title) != len(segemented)
-            or len(parsed_title) != len(feats)
-            or len(parsed_title) != len(roots)
-            or len(parsed_title) != len(lemma_gloss)
-            or len(parsed_title) != len(flexion_gloss)
-        ):
-            print("Problem with parsing title. Skipping...")
-            continue
+            if (
+                len(parsed_title) != len(pos_tags)
+                or len(parsed_title) != len(lemmas)
+                or len(parsed_title) != len(prefixes)
+                or len(parsed_title) != len(segemented)
+                or len(parsed_title) != len(feats)
+                or len(parsed_title) != len(roots)
+                or len(parsed_title) != len(lemma_gloss)
+                or len(parsed_title) != len(flexion_gloss)
+            ):
+                print("Problem with parsing title. Skipping...")
+                continue
 
-        assert len(parsed_title) == len(pos_tags)
-        assert len(parsed_title) == len(lemmas)
-        assert len(parsed_title) == len(prefixes)
-        assert len(parsed_title) == len(segemented)
-        assert len(parsed_title) == len(feats)
-        assert len(parsed_title) == len(roots)
-        assert len(parsed_title) == len(lemma_gloss)
-        assert len(parsed_title) == len(flexion_gloss)
+            assert len(parsed_title) == len(pos_tags)
+            assert len(parsed_title) == len(lemmas)
+            assert len(parsed_title) == len(prefixes)
+            assert len(parsed_title) == len(segemented)
+            assert len(parsed_title) == len(feats)
+            assert len(parsed_title) == len(roots)
+            assert len(parsed_title) == len(lemma_gloss)
+            assert len(parsed_title) == len(flexion_gloss)
 
-        sentence.parsed_clean = parsed_title
-        sentence.parsed_lemma = lemmas
-        sentence.parsed_segmented = segemented
-        sentence.parsed_prefixes = prefixes
-        sentence.parsed_pos = pos_tags
-        sentence.parsed_features = feats
-        sentence.parsed_roots = roots
+            sentence.parsed_clean = parsed_title
+            sentence.parsed_lemma = lemmas
+            sentence.parsed_segmented = segemented
+            sentence.parsed_prefixes = prefixes
+            sentence.parsed_pos = pos_tags
+            sentence.parsed_features = feats
+            sentence.parsed_roots = roots
+        except:
+            print("Skipping, bad data")
 
 
 def replace_punctuation(lemmas, pos_tags):

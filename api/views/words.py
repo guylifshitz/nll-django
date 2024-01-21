@@ -146,6 +146,7 @@ class UserWordsViewSet(views.APIView):
         body_data = json.loads(request.body)
 
         language = body_data.get("language", None)
+        language = "ar"
         word_text = body_data.get("word_text", None)
 
         if not word_text or not language:

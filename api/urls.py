@@ -3,7 +3,6 @@ from rest_framework import routers
 
 from api.views.articles import (
     ArticlesWithWordsView,
-    SongsWithWordsView,
     WikipediaWithWordsView,
     SubtitlesWithWordsView,
     LyricWithWordsView,
@@ -17,7 +16,6 @@ urlpatterns = [
     path("articles/", ArticlesWithWordsView.as_view()),
     path("wikipedia/", WikipediaWithWordsView.as_view()),
     path("subtitles/", SubtitlesWithWordsView.as_view()),
-    # path("songs/", SongsWithWordsView.as_view()),
     path("songs/", LyricWithWordsView.as_view()),
     path("words/", UserWordsViewSet.as_view()),
 ]

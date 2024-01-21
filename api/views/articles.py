@@ -2,9 +2,10 @@ import hashlib
 import uuid
 from words.models import Word, WordRating
 from articles.models import (
-    Rss_feed,
-    Wikipedia,
-    Wikipedia_sentence,
+    Rss,
+    Rss_sentence,
+    Lyric,
+    Lyric_sentence,
     Subtitle,
     Subtitle_sentence,
     Wikipedia,
@@ -283,72 +284,6 @@ class ThingWithWordsView(views.APIView):
         return Response(output, status=200)
 
 
-class SongsWithWordsView(ThingWithWordsView):
-    table_name = "articles_song_lyrics"
-    # table_name = "articles_song_habibi"
-
-
-class ArticlesWithWordsView(ThingWithWordsView):
-    table_name = "articles_rss_feed"
-
-    # TODO: this doesnt handle empty known_words on sql query
-    def get_entries(
-        self,
-        language,
-        practice_words,
-        known_words,
-        article_display_count,
-        start_date,
-        end_date,
-    ):
-        with connection.cursor() as cursor:
-            known_words = set(known_words) - set(practice_words)
-            known_words = list(known_words)
-            print(start_date, end_date, language, article_display_count)
-            print("known_words", known_words, "practice_words", practice_words)
-            if len(practice_words) > 10:
-                query = """(SELECT id, ratio, practice_found_count, known_found_count FROM 
-                (SELECT id, practice_found_count, known_found_count, practice_found_count::decimal / title_parsed_lemma_length::decimal AS ratio FROM
-                (SELECT id, array_length("title_parsed_lemma", 1) AS title_parsed_lemma_length, 
-                array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS practice_found_count,
-                array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS known_found_count
-                FROM articles_rss_feed WHERE published_datetime >= %s AND published_datetime <= %s AND language = %s) t1 ) t2 WHERE ratio NOTNULL ORDER BY ratio desc, practice_found_count desc, known_found_count desc NULLS LAST limit %s);"""
-            else:
-                query = """(SELECT id, ratio, practice_found_count, known_found_count FROM 
-                (SELECT id, practice_found_count, known_found_count, (practice_found_count::decimal + known_found_count::decimal) / title_parsed_lemma_length::decimal AS ratio FROM
-                (SELECT id, array_length("title_parsed_lemma", 1) AS title_parsed_lemma_length, 
-                array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS practice_found_count,
-                array_length(ARRAY( SELECT * FROM UNNEST( "title_parsed_lemma" ) WHERE UNNEST = ANY( array[%s])),1) AS known_found_count
-                FROM articles_rss_feed WHERE published_datetime >= %s AND published_datetime <= %s AND language = %s) t1 ) t2 WHERE ratio NOTNULL ORDER BY ratio desc limit %s);"""
-            cursor.execute(
-                query,
-                [
-                    practice_words,
-                    known_words,
-                    start_date,
-                    end_date,
-                    language,
-                    article_display_count,
-                ],
-            )
-            rows = cursor.fetchall()
-
-        article_ids = []
-        for r in rows:
-            article_ids.append(r[0])
-        print("article_ids", article_ids)
-
-        article_ids = article_ids[0 : article_display_count + 1]
-
-        articles = Rss_feed.objects.filter(link__in=article_ids).order_by("id").all()
-        output_articles = []
-        for article_id in article_ids:
-            for article in articles:
-                if article_id == article.id:
-                    output_articles.append(article)
-        return output_articles
-
-
 class SourceWithSentncesAndWordsView(ThingWithWordsView):
     sentence_ids = []
     sentence_ratios = {}
@@ -557,7 +492,7 @@ class SourceWithSentncesAndWordsView(ThingWithWordsView):
                     "published_datetime": None,
                     "title": article.title,
                     "link": article.link,
-                    "extra_text": article.extra_text,
+                    "extra_text": None,
                     "translation": translation,
                     # + " // "
                     # + "\n".join([sentence.translation for sentence in sentences]),
@@ -609,5 +544,11 @@ class SubtitlesWithWordsView(SourceWithSentncesAndWordsView):
 
 class LyricWithWordsView(SourceWithSentncesAndWordsView):
     table_name = "articles_lyric"
-    source_model = Wikipedia
-    sentence_model = Wikipedia_sentence
+    source_model = Lyric
+    sentence_model = Lyric_sentence
+
+
+class ArticlesWithWordsView(SourceWithSentncesAndWordsView):
+    table_name = "articles_rss"
+    source_model = Rss
+    sentence_model = Rss_sentence

@@ -39,22 +39,32 @@ class Sentence(models.Model):
     parsed_gloss_flexion = ArrayField(models.TextField(), null=True)
 
 
-class Wikipedia(Article):
-    page_name = models.TextField()
+class Rss(Article):
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["article_link"], name="unique_rss_article")
+        ]
+
+    feed_provider = models.TextField()
+    rss_files = ArrayField(models.TextField())
+    feed_names = ArrayField(models.TextField())
+    summary = models.TextField(null=True)
+    article_link = models.TextField()
+    article_title = models.TextField()
+    published_datetime = models.DateTimeField()
+    updated_datetime = models.DateTimeField(null=True)
 
     @property
     def link(self):
-        return "https://en.wikipedia.org/wiki/" + self.page_name
+        return self.article_link
 
     @property
     def title(self):
-        return self.page_name
+        return self.feed_provider
 
 
-class Wikipedia_sentence(Sentence):
-    source = models.ForeignKey(
-        Wikipedia, on_delete=models.CASCADE, related_name="sentences"
-    )
+class Rss_sentence(Sentence):
+    source = models.ForeignKey(Rss, on_delete=models.CASCADE, related_name="sentences")
 
 
 class Lyric(Article):
@@ -119,6 +129,24 @@ class Subtitle(Article):
 class Subtitle_sentence(Sentence):
     source = models.ForeignKey(
         Subtitle, on_delete=models.CASCADE, related_name="sentences"
+    )
+
+
+class Wikipedia(Article):
+    page_name = models.TextField()
+
+    @property
+    def link(self):
+        return "https://en.wikipedia.org/wiki/" + self.page_name
+
+    @property
+    def title(self):
+        return self.page_name
+
+
+class Wikipedia_sentence(Sentence):
+    source = models.ForeignKey(
+        Wikipedia, on_delete=models.CASCADE, related_name="sentences"
     )
 
 
