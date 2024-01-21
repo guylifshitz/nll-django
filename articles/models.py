@@ -1,5 +1,42 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+import uuid
+
+
+class Article(models.Model):
+    class Meta:
+        abstract = True
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    language = models.CharField(max_length=2, null=False, blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Sentence(models.Model):
+    class Meta:
+        abstract = True
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    language = models.CharField(max_length=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    text = models.TextField()
+    translation = models.TextField(null=True)
+    time_translated = models.DateTimeField(null=True)
+
+    sentence_order = models.IntegerField()
+
+    parsed_text = ArrayField(models.TextField(), null=True)
+    parsed_clean = ArrayField(models.TextField(), null=True)
+    parsed_segmented = ArrayField(models.TextField(), null=True)
+    parsed_lemma = ArrayField(models.TextField(), null=True)
+    parsed_pos = ArrayField(models.TextField(), null=True)
+    parsed_features = ArrayField(models.TextField(), null=True)
+    parsed_prefixes = ArrayField(models.TextField(), null=True)
+    parsed_suffixes = ArrayField(models.TextField(), null=True)
+    parsed_roots = ArrayField(models.TextField(), null=True)
+    parsed_gloss_lemma = ArrayField(models.TextField(), null=True)
+    parsed_gloss_flexion = ArrayField(models.TextField(), null=True)
 
 
 class Rss_feed(models.Model):
@@ -121,15 +158,6 @@ class Song_habibi(models.Model):
     summary = models.TextField(null=True)
 
 
-class Article(models.Model):
-    class Meta:
-        abstract = True
-
-    id = models.UUIDField(primary_key=True)
-    language = models.CharField(max_length=2)
-    time_created = models.DateField()
-
-
 class Wikipedia(Article):
     page_name = models.TextField()
 
@@ -140,31 +168,6 @@ class Wikipedia(Article):
     @property
     def title(self):
         return self.page_name
-
-
-class Sentence(models.Model):
-    class Meta:
-        abstract = True
-
-    id = models.UUIDField(primary_key=True)
-    language = models.CharField(max_length=2)
-    time_translated = models.DateField()
-    time_created = models.DateField()
-    source_table = models.CharField(max_length=100)
-    text = models.TextField()
-    translation = models.TextField()
-    sentence_order = models.IntegerField()
-    parsed_text = ArrayField(models.TextField())
-    parsed_clean = ArrayField(models.TextField())
-    parsed_segmented = ArrayField(models.TextField())
-    parsed_lemma = ArrayField(models.TextField())
-    parsed_pos = ArrayField(models.TextField())
-    parsed_features = ArrayField(models.TextField())
-    parsed_prefixes = ArrayField(models.TextField())
-    parsed_suffixes = ArrayField(models.TextField())
-    parsed_roots = ArrayField(models.TextField())
-    parsed_gloss_lemma = ArrayField(models.TextField())
-    parsed_gloss_flexion = ArrayField(models.TextField())
 
 
 class Wikipedia_sentence(Sentence):
@@ -210,12 +213,14 @@ class Subtitle_sentence(Sentence):
 
 class Lyric(Article):
     song_title = models.TextField()
-    artist = models.TextField()
-    genre = models.TextField()
-    year = models.IntegerField()
-    views = models.IntegerField()
-    website_id = models.TextField()
-    source_name = models.TextField()
+    artist = models.TextField(null=True)
+    genre = models.TextField(null=True)
+    year = models.IntegerField(null=True)
+    views = models.IntegerField(null=True)
+    website_id = models.TextField(null=True)
+    source_name = models.TextField(null=True)
+    dialect = models.TextField(null=True)
+    singer_nationality = models.TextField(null=True)
 
     @property
     def title(self):
