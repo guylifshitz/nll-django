@@ -50,6 +50,8 @@ class Word(models.Model):
     rank_wikipedia = models.IntegerField(null=True)
     count_lyric = models.IntegerField(null=True)
     rank_lyric = models.IntegerField(null=True)
+    count_rss = models.IntegerField(null=True)
+    rank_rss = models.IntegerField(null=True)
 
     user_translations = models.JSONField(
         null=True, blank=True, default=default_json_values

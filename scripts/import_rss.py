@@ -2,6 +2,8 @@ import datetime
 from pathlib import Path
 from time import mktime
 import traceback
+
+import dateutil
 from articles.models import Rss, Rss_sentence
 from pprint import pprint
 from .helpers import check_language_supported, language_name_to_code
@@ -54,6 +56,27 @@ def get_all_new_feed_download_paths(rss_files_already_parsed):
     return list(rss_file_paths)
 
 
+def get_published_time(rss_entry):
+    parsed_time = rss_entry.get(
+        "published_parsed", rss_entry.get("updated_parsed", None)
+    )
+    string_time = rss_entry.get("published", rss_entry.get("updated", None))
+
+    if parsed_time:
+        published_datetime_sec = mktime(parsed_time)
+        published_datetime = datetime.datetime.fromtimestamp(published_datetime_sec)
+    elif string_time:
+        published_datetime = string_time
+        published_datetime = dateutil.parser.parse(published_datetime)
+    else:
+        return None
+
+    published_datetime = timezone.make_aware(
+        published_datetime, timezone=timezone.get_current_timezone()
+    )
+    return published_datetime
+
+
 def parse_feeds(rss_file_paths: list[Path]):
     feed_config = pd.read_json(f"{rss_data_path}/rss_list.json")
     print(feed_config)
@@ -65,18 +88,13 @@ def parse_feeds(rss_file_paths: list[Path]):
             source_language = feed_config[feed_config["site"] == feed_provider].iloc[0][
                 "language"
             ]
+
             source_language_code = language_name_to_code[source_language]
             for e in entries:
                 # import ipdb
 
                 # ipdb.set_trace()
-                published_datetime_sec = mktime(e["published_parsed"])
-                published_datetime = datetime.datetime.fromtimestamp(
-                    published_datetime_sec
-                )
-                published_datetime = timezone.make_aware(
-                    published_datetime, timezone=timezone.get_current_timezone()
-                )
+                published_datetime = get_published_time(e)
                 data = {
                     "article_link": e["link"],
                     "rss_files": [get_relateive_path(rss_file)],
@@ -87,7 +105,7 @@ def parse_feeds(rss_file_paths: list[Path]):
                     # "updated_datetime": datetime.datetime.fromtimestamp(
                     #     mktime(e["updated_parsed"])
                     # ),
-                    "summary": e["summary"],
+                    "summary": e.get("summary", None),
                     "article_title": e["title"],
                     # "created_datetime": datetime.datetime.fromtimestamp(
                     #     mktime(e["created_parsed"])
@@ -122,4 +140,10 @@ def parse_feeds(rss_file_paths: list[Path]):
             # "other_fields": get_all_other_fields(data),
 
         except Exception:
+            print("ERROR:", rss_file)
             print(traceback.format_exc())
+            try:
+                entries = feedparser.parse(str(rss_file)).entries
+                print("entries", entries)
+            except Exception:
+                pass

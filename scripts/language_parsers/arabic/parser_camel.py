@@ -85,6 +85,8 @@ def parse_sentences(sentences: list[Sentence]):
             sentence.parsed_pos = pos_tags
             sentence.parsed_features = feats
             sentence.parsed_roots = roots
+            sentence.parsed_gloss_lemma = lemma_gloss
+            sentence.parsed_gloss_flexion = flexion_gloss
         except:
             print("Skipping, bad data")
 

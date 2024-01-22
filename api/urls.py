@@ -1,13 +1,13 @@
 from django.urls import path, include
 from rest_framework import routers
 
-from api.views.articles import (
+from api.views.api_articles_view import (
     ArticlesWithWordsView,
     WikipediaWithWordsView,
     SubtitlesWithWordsView,
     LyricWithWordsView,
 )
-from api.views.words import UserWordsViewSet
+from api.views.api_words_view import UserWordsViewSet
 
 router = routers.DefaultRouter()
 
