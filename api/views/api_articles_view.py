@@ -23,29 +23,28 @@ import datetime
 from psycopg2.extensions import AsIs
 from itertools import chain, groupby
 from operator import itemgetter
+from scripts.helpers import language_name_to_code, supported_languages
 
 
 class SourceWithSentncesAndWordsView(views.APIView):
     sentence_ids = []
     sentence_ratios = {}
 
-    def get_entries(
+    def get_source_entries(
         self,
-        language,
+        language_code,
         practice_words,
         known_words,
         article_display_count,
-        start_date,
-        end_date,
+        # start_date,
+        # end_date,
     ):
-        language = "ar" if language == "arabic" else "he"
-
         with connection.cursor() as cursor:
             known_words = set(known_words) - set(practice_words)
             known_words = list(known_words)
 
             print("Find sentences with: ")
-            print("language:", language)
+            print("language:", language_code)
             print("table_name:", self.table_name)
             print("practice_words:", practice_words)
             print("known_words:", known_words)
@@ -58,27 +57,28 @@ class SourceWithSentncesAndWordsView(views.APIView):
                 array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(known_words)s])),1) AS known_found_count
                 FROM %(sentence_table)s WHERE language = %(language)s) t1 ) t2 WHERE ratio NOTNULL and (parsed_lemma_length - punct_found_count) > 1 ORDER BY ratio desc, practice_found_count desc, known_found_count desc NULLS LAST limit %(limit)s);"""
             else:
-                query = """(SELECT id, source_id, ratio, practice_found_count, known_found_count, parsed_lemma_length FROM 
-                (SELECT id, source_id, practice_found_count, known_found_count, parsed_lemma_length, (practice_found_count::decimal + known_found_count::decimal) / parsed_lemma_length::decimal AS ratio FROM
+                query = """(SELECT id, source_id, ratio, practice_found_count, known_found_count, parsed_lemma_length, punct_found_count FROM 
+                (SELECT id, source_id, practice_found_count, known_found_count, parsed_lemma_length, punct_found_count, ROUND((practice_found_count::decimal + known_found_count::decimal) / (parsed_lemma_length::decimal - punct_found_count::decimal ),1) AS ratio FROM
                 (SELECT id, source_id, array_length("parsed_lemma", 1) AS parsed_lemma_length, 
-                array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(practice_words)s])),1) AS practice_found_count,
-                array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(known_words)s])),1) AS known_found_count
-                FROM %(sentence_table)s WHERE language = %(language)s) t1 ) t2 WHERE ratio NOTNULL ORDER BY known_found_count desc limit %(limit)s);"""
+                cardinality(ARRAY( SELECT * FROM UNNEST( "parsed_pos" ) WHERE UNNEST = 'punc')) AS punct_found_count,
+                cardinality(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(practice_words)s]))) AS practice_found_count,
+                cardinality(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(known_words)s]))) AS known_found_count
+                FROM %(sentence_table)s WHERE language = %(language)s) t1 ) t2 WHERE ratio NOTNULL and (parsed_lemma_length - punct_found_count) > 1 ORDER BY ratio desc, practice_found_count desc, known_found_count desc NULLS LAST limit %(limit)s);"""
             cursor.execute(
                 query,
                 {
                     "sentence_table": AsIs(f"{self.table_name}_sentence"),
-                    "language": language,
+                    "language": language_code,
                     "practice_words": practice_words,
                     "known_words": known_words,
                     "limit": article_display_count,
                 },
             )
-            print(query)
+            print(query, f"{self.table_name}_sentence")
             print(
                 {
                     "sentence_table": AsIs(f"{self.table_name}_sentence"),
-                    "language": language,
+                    "language": language_code,
                     "practice_words": practice_words,
                     "known_words": known_words,
                     "limit": article_display_count,
@@ -151,11 +151,11 @@ class SourceWithSentncesAndWordsView(views.APIView):
             }
         ]
 
-    def format_entries(self, articles, language, practice_words, known_words, guy):
+    def format_source_entries(
+        self, articles, language_code, practice_words, known_words, guy
+    ):
         formatted_articles = []
         lemmas_to_find = set()
-
-        language_code = "ar" if language == "arabic" else "he"
 
         for article in articles:
             article_lines = []
@@ -245,7 +245,6 @@ class SourceWithSentncesAndWordsView(views.APIView):
                 }
             )
 
-        language_code = "ar" if language == "arabic" else "he"
         formatted_lemmas = self.get_lemmas(
             lemmas_to_find, language_code, practice_words, known_words, guy
         )
@@ -259,7 +258,7 @@ class SourceWithSentncesAndWordsView(views.APIView):
 
     # TODO: consider commmon code with UserWordsViewSet
     def get_lemmas(
-        self, all_article_lemmas, language, practice_words, known_words, guy
+        self, all_article_lemmas, language_code, practice_words, known_words, guy
     ):
         wordrating_queryset = WordRating.objects.filter(user=guy)
 
@@ -271,7 +270,7 @@ class SourceWithSentncesAndWordsView(views.APIView):
                     queryset=wordrating_queryset,
                 )
             )
-            .filter(language=language, text__in=all_article_lemmas)
+            .filter(language=language_code, text__in=all_article_lemmas)
             .order_by("rank")
             .all()
         )
@@ -308,7 +307,7 @@ class SourceWithSentncesAndWordsView(views.APIView):
 
         return formatted_lemmas
 
-    def get_known_words(self, user, language):
+    def get_known_words(self, user, language_code):
         wordrating_queryset = WordRating.objects.filter(user=user)
         known_words = (
             Word.objects.prefetch_related(
@@ -318,7 +317,7 @@ class SourceWithSentncesAndWordsView(views.APIView):
                     queryset=wordrating_queryset,
                 )
             )
-            .filter(language=language, word_ratings__rating__gt=0)
+            .filter(language=language_code, word_ratings__rating__gt=0)
             .order_by("rank")
             .all()
         )
@@ -330,6 +329,7 @@ class SourceWithSentncesAndWordsView(views.APIView):
         body_data = json.loads(request.body)
 
         language = body_data.get("language", None)
+
         start_date = body_data.get("start_date", None)
         end_date = body_data.get("end_date", None)
         if not start_date:
@@ -341,17 +341,27 @@ class SourceWithSentncesAndWordsView(views.APIView):
             return Response(
                 {"success": False, "error": "language is required"}, status=400
             )
+        if language not in supported_languages:
+            return Response(
+                {"success": False, "error": f"language {language} is not supported"},
+                status=400,
+            )
+        language_code = language_name_to_code[language]
 
         practice_words = body_data.get("practice_words", None)
         # known_words.append("punc")
-        known_words = self.get_known_words(guy, language)
+        known_words = self.get_known_words(guy, language_code)
         known_words = [w.text for w in known_words]
 
-        articles = self.get_entries(
-            language, practice_words, known_words, 100, start_date, end_date
+        articles = self.get_source_entries(
+            language_code,
+            practice_words,
+            known_words,
+            100
+            # , start_date, end_date
         )
-        output = self.format_entries(
-            articles, language, practice_words, known_words, guy
+        output = self.format_source_entries(
+            articles, language_code, practice_words, known_words, guy
         )
 
         # results = ArticleAndWordSerializer(output, many=False).data
@@ -392,7 +402,7 @@ class LyricWithWordsView(SourceWithSentncesAndWordsView):
     sentence_model = Lyric_sentence
 
 
-class ArticlesWithWordsView(SourceWithSentncesAndWordsView):
+class RssWithWordsView(SourceWithSentncesAndWordsView):
     table_name = "articles_rss"
     source_model = Rss
     sentence_model = Rss_sentence

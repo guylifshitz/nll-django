@@ -17,14 +17,15 @@ from articles.models import (
 )
 
 
-supported_languages = ["ar", "he"]
 supported_sources = ["rss", "lyric", "subtitle", "wikipedia"]
 language_name_to_code = {"arabic": "ar", "hebrew": "he"}
+supported_language_codes = language_name_to_code.values()
+supported_languages = language_name_to_code.keys()
 
 
 def check_language_supported(language: str):
-    if language not in supported_languages:
-        raise Exception(f"Language should be one of {supported_languages}")
+    if language not in supported_language_codes:
+        raise Exception(f"Language should be one of {supported_language_codes}")
     return True
 
 

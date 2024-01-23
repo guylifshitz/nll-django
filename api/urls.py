@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 
 from api.views.api_articles_view import (
-    ArticlesWithWordsView,
+    RssWithWordsView,
     WikipediaWithWordsView,
     SubtitlesWithWordsView,
     LyricWithWordsView,
@@ -13,7 +13,7 @@ router = routers.DefaultRouter()
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("articles/", ArticlesWithWordsView.as_view()),
+    path("rss/", RssWithWordsView.as_view()),
     path("wikipedia/", WikipediaWithWordsView.as_view()),
     path("subtitles/", SubtitlesWithWordsView.as_view()),
     path("songs/", LyricWithWordsView.as_view()),
