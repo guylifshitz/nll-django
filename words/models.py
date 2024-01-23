@@ -35,7 +35,9 @@ class Word(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     text = models.TextField(null=False)
-    translation = models.CharField(max_length=300, null=True)
+    translation = models.TextField(null=True)
+    translation_google = models.TextField(null=True)
+    translation_azure = models.TextField(null=True)
     root = models.CharField(max_length=100, null=True)
     flexion_counts = models.JSONField(
         null=True, blank=True, default=default_json_values

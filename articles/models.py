@@ -22,6 +22,10 @@ class Sentence(models.Model):
 
     text = models.TextField()
     translation = models.TextField(null=True)
+
+    translation_google = models.TextField(null=True)
+    translation_azure = models.TextField(null=True)
+
     time_translated = models.DateTimeField(null=True)
 
     sentence_order = models.IntegerField()
