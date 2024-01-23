@@ -167,7 +167,6 @@ class SourceWithSentncesAndWordsView(views.APIView):
                 if not sentence.parsed_clean:
                     article_lines.append(self.generate_bad_line())
                     continue
-
                 try:
                     article_line_words = []
 
@@ -204,7 +203,8 @@ class SourceWithSentncesAndWordsView(views.APIView):
                                 "part_of_speech": sentence.parsed_pos[index],
                                 "features": sentence.parsed_features[index],
                                 "flexion_translation": flexion_translation,
-                                "is_name": sentence.parsed_pos[index] == "noun_prop",
+                                "is_name": sentence.parsed_pos[index] == "noun_prop"
+                                or sentence.parsed_lemma[index] == "punc",
                             }
                         )
                 except:
@@ -214,7 +214,7 @@ class SourceWithSentncesAndWordsView(views.APIView):
                     translation = str(self.sentence_ratios[str(sentence.id)]) + str(
                         sentence.translation
                     )
-                    if len(sentences) > 511:
+                    if len(sentences) > 1:
                         article_lines.append(self.generate_empty_line())
                         article_lines.append(self.generate_empty_line())
                         article_lines.append(self.generate_empty_line())
@@ -290,6 +290,7 @@ class SourceWithSentncesAndWordsView(views.APIView):
             else:
                 isPractice = False
 
+            rank_column = f"rank_{self.source_name}"
             formatted_lemmas.append(
                 {
                     "id": lemma.text,
@@ -298,7 +299,7 @@ class SourceWithSentncesAndWordsView(views.APIView):
                     "root": lemma.root,
                     "language": lemma.language,
                     "count": lemma.count,
-                    "rank": f"{lemma.rank}",
+                    "rank": getattr(lemma, rank_column),
                     "familiarity_label": familiarity_label,
                     "isKnown": isKnown,
                     "isPractice": isPractice,
@@ -370,12 +371,14 @@ class SourceWithSentncesAndWordsView(views.APIView):
 
 
 class WikipediaWithWordsView(SourceWithSentncesAndWordsView):
+    source_name = "wikipedia"
     table_name = "articles_wikipedia"
     source_model = Wikipedia
     sentence_model = Wikipedia_sentence
 
 
 class SubtitlesWithWordsView(SourceWithSentncesAndWordsView):
+    source_name = "subtitle"
     table_name = "articles_subtitle"
     source_model = Subtitle
     sentence_model = Subtitle_sentence
@@ -397,6 +400,7 @@ class SubtitlesWithWordsView(SourceWithSentncesAndWordsView):
 
 
 class LyricWithWordsView(SourceWithSentncesAndWordsView):
+    source_name = "lyric"
     table_name = "articles_lyric"
     source_model = Lyric
     sentence_model = Lyric_sentence
@@ -404,5 +408,6 @@ class LyricWithWordsView(SourceWithSentncesAndWordsView):
 
 class RssWithWordsView(SourceWithSentncesAndWordsView):
     table_name = "articles_rss"
+    source_name = "rss"
     source_model = Rss
     sentence_model = Rss_sentence
