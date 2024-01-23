@@ -5,6 +5,8 @@ staticfiles
 .vscode
 scripts/language_parsers/arabic/farasa_java
 rss_feeds
+config/azure_credentials.json
+config/google_credentials.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
