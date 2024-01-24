@@ -61,4 +61,18 @@ def download_feeds(feeds: pd.DataFrame, data_folder: str):
             with open(dl_path, "wb") as f:
                 f.write(response.content)
 
-    print(f"Failed downloads: {failed_downloads}")
+    output_failed_downloads(failed_downloads, data_folder, download_time)
+
+
+def output_failed_downloads(
+    failed_downloads: list[dict], download_folder: str, download_time: str
+):
+    if len(failed_downloads) == 0:
+        return
+
+    Path(f"{download_folder}/logs").mkdir(parents=True, exist_ok=True)
+    with open(
+        f"{download_folder}/logs/rss_download_errors_{download_time}.json", "w"
+    ) as f:
+        print(f"Failed downloads: {failed_downloads}")
+        json.dump(failed_downloads, f, indent=2)
