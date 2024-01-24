@@ -58,6 +58,9 @@ def get_lemma_gloss_per_lemma(sentence_model: Sentence, language: str):
         .annotate(count=Count("parsed_lemma2"))
         .values_list("parsed_lemma2", "parsed_gloss_lemma2")
     )
+    import pdb
+
+    pdb.set_trace()
     return lemma_glosses
 
 
@@ -80,6 +83,7 @@ def save_roots(lemma_roots, language):
         Word.objects.filter(language=language, text=lemma).update(root=root)
 
 
+# TODO: make these use dataframes and groupby on lemmas to get a full list of glosses
 def save_lemma_glosses(lemma_glosses, language):
     for lemma, lemma_gloss in lemma_glosses:
         Word.objects.filter(language=language, text=lemma).update(
