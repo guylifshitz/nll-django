@@ -6,6 +6,7 @@ from scripts.helpers import (
     get_source_model,
 )
 from words.models import Word, Flexion
+import pandas as pd
 
 
 def run(*args):
@@ -80,16 +81,25 @@ def save_roots(lemma_roots, language):
         Word.objects.filter(language=language, text=lemma).update(root=root)
 
 
-# TODO: make these use dataframes and groupby on lemmas to get a full list of glosses
 def save_lemma_glosses(lemma_glosses, language):
-    for lemma, lemma_gloss in lemma_glosses:
+    lemma_gloss_df = pd.DataFrame(lemma_glosses, columns=["lemma", "gloss"])
+    for lemma, gloss in lemma_gloss_df.groupby("lemma"):
+        glosses = gloss["gloss"].tolist()
+        glosses = [gloss.split(";") for gloss in glosses]
+        glosses = [item for sublist in glosses for item in sublist]
+        glosses = list(set(glosses))
         Word.objects.filter(language=language, text=lemma).update(
-            parser_translations=[lemma_gloss]
+            parser_translations=glosses
         )
 
 
 def save_flexion_glosses(flexion_glosses, language):
-    for flexion, flexion_gloss in flexion_glosses:
-        Flexion.objects.filter(language=language, text=flexion).update(
-            parser_translations=[flexion_gloss]
+    flexion_gloss_df = pd.DataFrame(flexion_glosses, columns=["lemma", "gloss"])
+    for lemma, gloss in flexion_gloss_df.groupby("lemma"):
+        glosses = gloss["gloss"].tolist()
+        glosses = [gloss.split(";") for gloss in glosses]
+        glosses = [item for sublist in glosses for item in sublist]
+        glosses = list(set(glosses))
+        Flexion.objects.filter(language=language, text=lemma).update(
+            parser_translations=glosses
         )
