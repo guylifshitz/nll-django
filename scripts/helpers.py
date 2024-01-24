@@ -120,6 +120,7 @@ def translate_texts_azure(texts, source_language, target_language="en"):
     print(params)
     print(request)
     response = request.json()
+    print(response)
     translations = [trans["translations"][0]["text"] for trans in response]
 
     print(f"Translated (Azure): {zip(texts, translations)}")

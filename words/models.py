@@ -109,25 +109,20 @@ class Word(models.Model):
 
 
 class Flexion(models.Model):
-    # objects = models.DjongoManager()
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    language = models.CharField(max_length=2)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    # class Meta:
-    #     db_table = "flexions"
-
-    # text = models.CharField(primary_key=True, max_length=100)
-    # _id = models.CharField(max_length=100)
-    text = models.CharField(primary_key=True, max_length=100, null=False)
-    language = models.CharField(max_length=100)
-    translation_google = models.CharField(max_length=300, null=True)
-    translation_azure = models.CharField(max_length=300, null=True)
+    text = models.TextField(null=False)
     # lemma = models.CharField(max_length=1000)
+    translation_google = models.TextField(null=True)
+    translation_azure = models.TextField(null=True)
     # user_suggested_translations = models.ArrayField()
     count = models.IntegerField(null=True)
     count_rss = models.IntegerField(null=True)
     count_lyric = models.IntegerField(null=True)
     count_subtitle = models.IntegerField(null=True)
     count_wikipedia = models.IntegerField(null=True)
-    rank_rss = models.IntegerField(null=True)
 
 
 class WordRating(models.Model):
