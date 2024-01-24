@@ -117,6 +117,8 @@ class Flexion(models.Model):
     # lemma = models.CharField(max_length=1000)
     translation_google = models.TextField(null=True)
     translation_azure = models.TextField(null=True)
+    parser_translations = ArrayField(models.TextField(), null=True)
+
     # user_suggested_translations = models.ArrayField()
     count = models.IntegerField(null=True)
     count_rss = models.IntegerField(null=True)

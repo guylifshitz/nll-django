@@ -32,7 +32,7 @@ def run(*args):
 
 def count_lemmas(language: str, sentence_model: Sentence) -> list[str]:
     lemma_counts = (
-        sentence_model.objectsf.filter(language=language)
+        sentence_model.objects.filter(language=language)
         .annotate(parsed_lemma2=Func(F("parsed_lemma"), function="unnest"))
         .values("parsed_lemma2")
         .annotate(count=Count("id"))
