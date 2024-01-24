@@ -15,9 +15,9 @@ def run(*args):
     language = args[0]
     check_language_supported(language)
 
-    # input(
-    #     "[DELETE: Subtitle] This script will DELETE all Subtitles and Subtitle sentences in the database. [Press Enter to continue]"
-    # )
+    input(
+        f"[DELETE: Subtitle] This script will DELETE all Subtitles and Subtitle sentences in the database in language:{language}. [Press Enter to continue]"
+    )
     Subtitle.objects.filter(language=language).delete()
     Subtitle_sentence.objects.filter(language=language).delete()
 

@@ -49,13 +49,20 @@ class SourceWithSentncesAndWordsView(views.APIView):
             print("practice_words:", practice_words)
             print("known_words:", known_words)
             if len(practice_words) > 10:
+                # query = """(SELECT id, source_id, ratio, practice_found_count, known_found_count, parsed_lemma_length, punct_found_count FROM
+                # (SELECT id, source_id, practice_found_count, known_found_count, parsed_lemma_length, punct_found_count, CEIL(practice_found_count::decimal / (parsed_lemma_length::decimal - punct_found_count::decimal ),1) AS ratio FROM
+                # (SELECT id, source_id, array_length("parsed_lemma", 1) AS parsed_lemma_length,
+                # cardinality(ARRAY( SELECT * FROM UNNEST( "parsed_pos" ) WHERE UNNEST = 'punc')) AS punct_found_count,
+                # array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(practice_words)s])),1) AS practice_found_count,
+                # array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(known_words)s])),1) AS known_found_count
+                # FROM %(sentence_table)s WHERE language = %(language)s) t1 ) t2 WHERE ratio NOTNULL and (parsed_lemma_length - punct_found_count) > 1 ORDER BY ratio desc, practice_found_count desc, known_found_count desc NULLS LAST limit %(limit)s);"""
                 query = """(SELECT id, source_id, ratio, practice_found_count, known_found_count, parsed_lemma_length, punct_found_count FROM 
-                (SELECT id, source_id, practice_found_count, known_found_count, parsed_lemma_length, punct_found_count, ROUND(practice_found_count::decimal / (parsed_lemma_length::decimal - punct_found_count::decimal ),1) AS ratio FROM
+                (SELECT id, source_id, practice_found_count, known_found_count, parsed_lemma_length, punct_found_count, (practice_found_count::decimal / (parsed_lemma_length::decimal - punct_found_count::decimal )) AS ratio FROM
                 (SELECT id, source_id, array_length("parsed_lemma", 1) AS parsed_lemma_length, 
                 cardinality(ARRAY( SELECT * FROM UNNEST( "parsed_pos" ) WHERE UNNEST = 'punc')) AS punct_found_count,
                 array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(practice_words)s])),1) AS practice_found_count,
                 array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(known_words)s])),1) AS known_found_count
-                FROM %(sentence_table)s WHERE language = %(language)s) t1 ) t2 WHERE ratio NOTNULL and (parsed_lemma_length - punct_found_count) > 1 ORDER BY ratio desc, practice_found_count desc, known_found_count desc NULLS LAST limit %(limit)s);"""
+                FROM %(sentence_table)s WHERE language = %(language)s) t1 ) t2 WHERE ratio NOTNULL and (parsed_lemma_length - punct_found_count) > 4 ORDER BY ratio desc, practice_found_count desc, known_found_count desc NULLS LAST limit %(limit)s);"""
             else:
                 query = """(SELECT id, source_id, ratio, practice_found_count, known_found_count, parsed_lemma_length, punct_found_count FROM 
                 (SELECT id, source_id, practice_found_count, known_found_count, parsed_lemma_length, punct_found_count, ROUND((practice_found_count::decimal + known_found_count::decimal) / (parsed_lemma_length::decimal - punct_found_count::decimal ),1) AS ratio FROM
@@ -63,7 +70,7 @@ class SourceWithSentncesAndWordsView(views.APIView):
                 cardinality(ARRAY( SELECT * FROM UNNEST( "parsed_pos" ) WHERE UNNEST = 'punc')) AS punct_found_count,
                 cardinality(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(practice_words)s]))) AS practice_found_count,
                 cardinality(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(known_words)s]))) AS known_found_count
-                FROM %(sentence_table)s WHERE language = %(language)s) t1 ) t2 WHERE ratio NOTNULL and (parsed_lemma_length - punct_found_count) > 1 ORDER BY ratio desc, practice_found_count desc, known_found_count desc NULLS LAST limit %(limit)s);"""
+                FROM %(sentence_table)s WHERE language = %(language)s) t1 ) t2 WHERE ratio NOTNULL and (parsed_lemma_length - punct_found_count) > 4 and practice_found_count > 0 ORDER BY ratio desc, practice_found_count desc, known_found_count desc NULLS LAST limit %(limit)s);"""
             cursor.execute(
                 query,
                 {
@@ -92,6 +99,7 @@ class SourceWithSentncesAndWordsView(views.APIView):
         for r in rows:
             self.sentence_ids.append(r[0])
             self.sentence_ratios[str(r[0])] = r[2]
+            print("r", r[1], r[2])
             source_ids.append(r[1])
             result_rows.append(r)
         # source_ids = self.custom_sort_order(result_rows)
@@ -350,7 +358,6 @@ class SourceWithSentncesAndWordsView(views.APIView):
         language_code = language_name_to_code[language]
 
         practice_words = body_data.get("practice_words", None)
-        # known_words.append("punc")
         known_words = self.get_known_words(guy, language_code)
         known_words = [w.text for w in known_words]
 

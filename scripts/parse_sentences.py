@@ -1,18 +1,24 @@
-from articles.models import Wikipedia, Wikipedia_sentence, Sentence
+import django
+
+django.setup()
+
+from functools import partial
 from pprint import pprint
-from django.conf import settings
 from .helpers import (
     check_language_supported,
     check_source_supported,
     chunks,
     get_source_model,
 )
-import pandas as pd
 import scripts.language_parsers.arabic.parser_camel as arabic_parser
 import scripts.language_parsers.hebrew.parser2 as hebrew_parser
+from multiprocessing import Pool
+
+from articles.models import Sentence
 
 fetch_limit = 100000000
 chunk_size = 1000
+pool_count = 8
 
 
 def run(*args):
@@ -28,9 +34,12 @@ def run(*args):
     print("source_model", source_model)
     sentences = get_unparsed_sentences(language, sentence_model, limit=fetch_limit)
 
-    for sentence_chunk in chunks(sentences, chunk_size):
-        print(f"Processing {len(sentence_chunk)} sentences")
-        parse_sentences(sentence_chunk, language)
+    sentence_chunks = chunks(sentences, chunk_size)
+    # for sentence_chunk in sentence_chunks:
+    #     parse_sentences(sentence_chunk, language)
+
+    with Pool(processes=pool_count) as pool:
+        pool.map(partial(parse_sentences, language=language), sentence_chunks)
 
 
 def get_unparsed_sentences(language: str, sentence_model: Sentence, limit: int = None):

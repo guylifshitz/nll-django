@@ -29,10 +29,12 @@ def run(*args):
 
     source_model, sentence_model = get_source_model(source_name)
     print("source_model", source_model)
+
+    print("Getting lemmas")
     lemmas = get_all_lemmas(language, sentence_model)
 
     for lemma_chunk in chunks(lemmas, chunk_size):
-        print(f"Processing {len(lemma_chunk)} sentences")
+        print(f"Processing {len(lemma_chunk)} lemmas")
         insert_lemmas(lemma_chunk, language)
 
 

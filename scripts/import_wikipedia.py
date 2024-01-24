@@ -19,9 +19,9 @@ def run(*args):
     language = args[0]
     check_language_supported(language)
 
-    # input(
-    #     "[DELETE: Lyric] This script will DELETE all lyrics and lyric sentences in the database. [Press Enter to continue]"
-    # )
+    input(
+        f"[DELETE: Lyric] This script will DELETE all lyrics and lyric sentences in the database in language:{language}. [Press Enter to continue]"
+    )
     Wikipedia.objects.filter(language=language).delete()
     Wikipedia_sentence.objects.filter(language=language).delete()
 

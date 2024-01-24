@@ -30,10 +30,10 @@ def parse_sentences(sentences: list[Sentence]):
             disambig = mle.disambiguate(parsed_title)
 
             # print(json.dumps(disambig, indent=2, ensure_ascii=False))
-            print(disambig)
+            # print(disambig)
+            # if use_NER:
+            #     print(ner_labels)
 
-            if use_NER:
-                print(ner_labels)
             missing_analysis = any(True for d in disambig if not d.analyses)
 
             if missing_analysis:
