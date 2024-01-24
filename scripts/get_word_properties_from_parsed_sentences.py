@@ -58,9 +58,6 @@ def get_lemma_gloss_per_lemma(sentence_model: Sentence, language: str):
         .annotate(count=Count("parsed_lemma2"))
         .values_list("parsed_lemma2", "parsed_gloss_lemma2")
     )
-    import pdb
-
-    pdb.set_trace()
     return lemma_glosses
 
 
