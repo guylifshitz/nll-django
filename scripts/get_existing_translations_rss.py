@@ -1,16 +1,10 @@
-from django.db.models import Func, F, Count
 import psycopg2
-from articles.models import Rss, Rss_sentence, Wikipedia, Wikipedia_sentence, Sentence
-from words.models import Word
+from articles.models import Rss, Rss_sentence
 
-from pprint import pprint
-from django.conf import settings
 from .helpers import (
     language_name_to_code,
 )
 import pandas as pd
-import scripts.language_parsers.arabic.parser_camel as arabic_parser
-import scripts.language_parsers.hebrew.parser2 as hebrew_parser
 
 
 def run(*args):

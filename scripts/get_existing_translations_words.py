@@ -1,20 +1,10 @@
-from django.db.models import Func, F, Count
 import psycopg2
-from articles.models import Wikipedia, Wikipedia_sentence, Sentence
 from words.models import Word
 
-from pprint import pprint
-from django.conf import settings
 from .helpers import (
     language_name_to_code,
-    check_language_supported,
-    check_source_supported,
-    chunks,
-    get_source_model,
 )
 import pandas as pd
-import scripts.language_parsers.arabic.parser_camel as arabic_parser
-import scripts.language_parsers.hebrew.parser2 as hebrew_parser
 
 
 def run(*args):
@@ -43,7 +33,7 @@ def parse_words(existing_words_df):
             print(f"Word not found: {word_text} ({language})")
             continue
         if len(res) > 1:
-            raise "More than one word found: {word_text} ({language}), found {len(res)} matches"
+            raise f"More than one word found: {word_text} ({language}), found {len(res)} matches"
         res = res.first()
 
         print(f"Update {word_text}:{translation} ({language}) ")
