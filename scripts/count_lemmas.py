@@ -1,18 +1,13 @@
 from django.db.models import Func, F, Count
-from articles.models import Wikipedia, Wikipedia_sentence, Sentence
+from articles.models import Sentence
 from words.models import Word
 
-from pprint import pprint
-from django.conf import settings
 from .helpers import (
     check_language_supported,
     check_source_supported,
     chunks,
     get_source_model,
 )
-import pandas as pd
-import scripts.language_parsers.arabic.parser_camel as arabic_parser
-import scripts.language_parsers.hebrew.parser2 as hebrew_parser
 
 chunk_size = 1000
 
@@ -37,9 +32,8 @@ def run(*args):
 
 def count_lemmas(language: str, sentence_model: Sentence) -> list[str]:
     lemma_counts = (
-        sentence_model.objects.annotate(
-            parsed_lemma2=Func(F("parsed_lemma"), function="unnest")
-        )
+        sentence_model.objectsf.filter(language=language)
+        .annotate(parsed_lemma2=Func(F("parsed_lemma"), function="unnest"))
         .values("parsed_lemma2")
         .annotate(count=Count("id"))
         .values_list("parsed_lemma2", "count")

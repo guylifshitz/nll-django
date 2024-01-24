@@ -1,18 +1,13 @@
-from django.db.models import Func, F, Count
-from articles.models import Wikipedia, Wikipedia_sentence, Sentence
+from django.db.models import Func, F
+from articles.models import Sentence
 from words.models import Word
 
-from pprint import pprint
-from django.conf import settings
 from .helpers import (
     check_language_supported,
     check_source_supported,
     chunks,
     get_source_model,
 )
-import pandas as pd
-import scripts.language_parsers.arabic.parser_camel as arabic_parser
-import scripts.language_parsers.hebrew.parser2 as hebrew_parser
 
 fetch_limit = 100000000
 chunk_size = 1000
