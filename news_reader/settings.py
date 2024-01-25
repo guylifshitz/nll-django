@@ -12,6 +12,17 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+ENVIRONMENT = os.environ.get("NLL_DJANGO_ENVIRONMENT", "development")
+if ENVIRONMENT == "production":
+    load_dotenv(".env-prod")
+elif ENVIRONMENT == "development":
+    load_dotenv(".env-dev")
+elif ENVIRONMENT == "test":
+    load_dotenv(".env-test")
+else:
+    raise Exception(f"Unknown environment {ENVIRONMENT}")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,14 +31,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    "SECRET_KEY", os.environ["NLL_DJANGO_SECRET_KEY"]
-)
+SECRET_KEY = os.environ.get("SECRET_KEY", os.environ["NLL_DJANGO_SECRET_KEY"])
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("NLL_DJANGO_DEBUG", "False") == "True"
-
-ENVIRONMENT = os.environ.get("NLL_DJANGO_ENVIRONMENT", "local")
+DEBUG = os.environ.get("NLL_DJANGO_DEBUG_MODE", "False") == "True"
+if ENVIRONMENT == "production":
+    DEBUG = False
 
 
 ALLOWED_HOSTS = [
@@ -35,17 +44,16 @@ ALLOWED_HOSTS = [
     "language.guylifshitz.com",
 ]
 
-if DEBUG == True:
+if ENVIRONMENT == "development":
     ALLOWED_HOSTS.append("localhost")
     ALLOWED_HOSTS.append("*")
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = False
-SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 # Application definition
-
 INSTALLED_APPS = [
     "api.apps.ApiConfig",
     "articles.apps.ArticlesConfig",
@@ -59,7 +67,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "corsheaders",
-    "accounts"
+    "accounts",
 ]
 
 REST_FRAMEWORK = {
@@ -87,7 +95,7 @@ ROOT_URLCONF = "news_reader.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -104,37 +112,16 @@ WSGI_APPLICATION = "news_reader.wsgi.application"
 
 
 # Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-# mongodb://:@guylifshitz.com:27017/newspaper-language-learner
-if ENVIRONMENT == "local":
-    DATABASES = {
-        "default": {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'nll',
-            'USER': 'django',
-            'PASSWORD': os.environ["NLL_DJANGO_DB_PASS"],
-            'HOST': 'localhost',
-            'PORT': '5432', 
-        }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ["NLL_DJANGO_DB_NAME"],
+        "USER": os.environ["NLL_DJANGO_DB_USERNAME"],
+        "PASSWORD": os.environ["NLL_DJANGO_DB_PASS"],
+        "HOST": os.environ["NLL_DJANGO_DB_HOST"],
+        "PORT": os.environ["NLL_DJANGO_DB_PORT"],
     }
-else:
-    DATABASES = {
-            "default": {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': 'nll',
-                'USER': 'django',
-                'PASSWORD': os.environ["NLL_DJANGO_DB_PASS"],
-                'HOST': 'guylifshitz.com',
-                'PORT': '5438', 
-            }
-        }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -157,15 +144,10 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
-
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
-USE_I18N = True
-
-USE_L10N = True
-
+USE_I18N = False
+USE_L10N = False
 USE_TZ = True
 
 
