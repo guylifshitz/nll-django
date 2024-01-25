@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
@@ -16,32 +17,43 @@ class Word(models.Model):
 
     class Meta:
         indexes = [
+            models.Index(fields=["id"]),
             models.Index(fields=["text"]),
             models.Index(fields=["language"]),
             models.Index(fields=["rank"]),
+            models.Index(fields=["rank_lyric"]),
+            models.Index(fields=["rank_rss_feed"]),
+            models.Index(fields=["rank_subtitle"]),
+            models.Index(fields=["rank_wikipedia"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(fields=["text", "language"], name="unique_word")
         ]
 
-    # _id = models.CharField(primary_key=True, max_length=100)
-    text = models.CharField(primary_key=True, max_length=100, null=False)
-    word_diacritic = models.CharField(max_length=100, null=True)
-    translation = models.CharField(max_length=300, null=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    language = models.CharField(max_length=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    text = models.TextField(null=False)
+    translation = models.TextField(null=True)
+    translation_google = models.TextField(null=True)
+    translation_azure = models.TextField(null=True)
     root = models.CharField(max_length=100, null=True)
     flexion_counts = models.JSONField(
         null=True, blank=True, default=default_json_values
     )
-    rank = models.IntegerField(null=True)
     count = models.IntegerField(null=True)
-    rank_rss_feed = models.IntegerField(null=True)
+    rank = models.IntegerField(null=True)
     count_rss_feed = models.IntegerField(null=True)
-    rank_subtitle = models.IntegerField(null=True)
+    rank_rss_feed = models.IntegerField(null=True)
     count_subtitle = models.IntegerField(null=True)
-    count_song = models.IntegerField(null=True)
-    rank_song = models.IntegerField(null=True)
+    rank_subtitle = models.IntegerField(null=True)
     count_wikipedia = models.IntegerField(null=True)
     rank_wikipedia = models.IntegerField(null=True)
-    rank_lyric = models.IntegerField(null=True)
     count_lyric = models.IntegerField(null=True)
-    language = models.CharField(max_length=100)
+    rank_lyric = models.IntegerField(null=True)
+    count_rss = models.IntegerField(null=True)
+    rank_rss = models.IntegerField(null=True)
 
     user_translations = models.JSONField(
         null=True, blank=True, default=default_json_values
@@ -97,20 +109,22 @@ class Word(models.Model):
 
 
 class Flexion(models.Model):
-    # objects = models.DjongoManager()
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    language = models.CharField(max_length=2)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    # class Meta:
-    #     db_table = "flexions"
-
-    # text = models.CharField(primary_key=True, max_length=100)
-    # _id = models.CharField(max_length=100)
-    text = models.CharField(primary_key=True, max_length=100, null=False)
-    language = models.CharField(max_length=100)
-    translation_google = models.CharField(max_length=300, null=True)
-    translation_azure = models.CharField(max_length=300, null=True)
-    count = models.IntegerField(null=True)
+    text = models.TextField(null=False)
     # lemma = models.CharField(max_length=1000)
+    translation_google = models.TextField(null=True)
+    translation_azure = models.TextField(null=True)
+    parser_translations = ArrayField(models.TextField(), null=True)
+
     # user_suggested_translations = models.ArrayField()
+    count = models.IntegerField(null=True)
+    count_rss = models.IntegerField(null=True)
+    count_lyric = models.IntegerField(null=True)
+    count_subtitle = models.IntegerField(null=True)
+    count_wikipedia = models.IntegerField(null=True)
 
 
 class WordRating(models.Model):
