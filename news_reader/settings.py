@@ -15,14 +15,12 @@ import os
 from dotenv import load_dotenv
 
 ENVIRONMENT = os.environ.get("NLL_DJANGO_ENVIRONMENT", "development")
+# if ENVIRONMENT == "development":
+#     load_dotenv(".env-dev")
+#     DEBUG = True
+print("ENVIRONMENT", ENVIRONMENT)
 if ENVIRONMENT == "production":
-    load_dotenv(".env-prod")
-elif ENVIRONMENT == "development":
-    load_dotenv(".env-dev")
-elif ENVIRONMENT == "test":
-    load_dotenv(".env-test")
-else:
-    raise Exception(f"Unknown environment {ENVIRONMENT}")
+    DEBUG = False
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -32,12 +30,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY", os.environ["NLL_DJANGO_SECRET_KEY"])
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("NLL_DJANGO_DEBUG_MODE", "False") == "True"
-if ENVIRONMENT == "production":
-    DEBUG = False
-
 
 ALLOWED_HOSTS = [
     "guylifshitz.com",
