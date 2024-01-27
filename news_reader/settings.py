@@ -14,11 +14,13 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
+
 ENVIRONMENT = os.environ.get("NLL_DJANGO_ENVIRONMENT", "development")
-# if ENVIRONMENT == "development":
-#     load_dotenv(".env-dev")
-#     DEBUG = True
 print("ENVIRONMENT", ENVIRONMENT)
+
+if ENVIRONMENT == "development":
+    DEBUG = True
+    load_dotenv(".env")
 if ENVIRONMENT == "production":
     DEBUG = False
 
@@ -29,7 +31,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY", os.environ["NLL_DJANGO_SECRET_KEY"])
+SECRET_KEY = os.environ.get("NLL_DJANGO_SECRET_KEY")
 
 ALLOWED_HOSTS = [
     "guylifshitz.com",
@@ -107,11 +109,11 @@ WSGI_APPLICATION = "news_reader.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ["NLL_DJANGO_DB_NAME"],
-        "USER": os.environ["NLL_DJANGO_DB_USERNAME"],
-        "PASSWORD": os.environ["NLL_DJANGO_DB_PASS"],
-        "HOST": os.environ["NLL_DJANGO_DB_HOST"],
-        "PORT": os.environ["NLL_DJANGO_DB_PORT"],
+        "NAME": os.environ.get("NLL_DJANGO_DB_NAME", ""),
+        "USER": os.environ.get("NLL_DJANGO_DB_USERNAME", ""),
+        "PASSWORD": os.environ.get("NLL_DJANGO_DB_PASS", ""),
+        "HOST": os.environ.get("NLL_DJANGO_DB_HOST", ""),
+        "PORT": os.environ.get("NLL_DJANGO_DB_PORT", ""),
     }
 }
 
