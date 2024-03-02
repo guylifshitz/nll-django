@@ -48,7 +48,7 @@ def parse_sentences(sentences: list[Sentence]):
     )
 
 
-def parse_line(sentence_text):
+def parse_line(sentence_text: str):
     try:
         # Replace Gershayim
         sentence_text = re.sub(
@@ -158,7 +158,7 @@ def parse_line(sentence_text):
     )
 
 
-def parse_sentence_api(text):
+def parse_sentence_api(text: str):
     text = text.replace('"', "'")
     localhost_yap = "http://localhost:8000/yap/heb/joint"
     data = '{{"text": "{}  "}}'.format(text).encode(
