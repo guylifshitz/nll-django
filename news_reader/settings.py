@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "accounts",
+    "django_extensions",
 ]
 
 REST_FRAMEWORK = {

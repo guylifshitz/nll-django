@@ -122,7 +122,6 @@ class UserWordsViewSet(views.APIView):
         order_by = body_data.get("order_by", "")
         order_by_column = f"rank_{order_by}" if order_by else "rank"
         # order_by_column = "rank_lyric"
-        language = "ar"
         print("search_exact", search_exact)
         print("search_words", search_words)
 
@@ -146,7 +145,6 @@ class UserWordsViewSet(views.APIView):
         body_data = json.loads(request.body)
 
         language = body_data.get("language", None)
-        language = "ar"
         word_text = body_data.get("word_text", None)
 
         if not word_text or not language:

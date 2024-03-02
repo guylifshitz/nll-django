@@ -5,6 +5,7 @@ import string
 import traceback
 import re
 from random import randint
+from articles.models import Sentence
 
 prefixes = ["ה", "ב", "כ", "ל", "מ", "ש", "כש", "ו"]
 pronouns = [
@@ -21,24 +22,8 @@ pronouns = [
 ]
 
 
-def parse_sentence_api(text):
-    text = text.replace('"', "'")
-    localhost_yap = "http://localhost:8000/yap/heb/joint"
-    data = '{{"text": "{}  "}}'.format(text).encode(
-        "utf-8"
-    )  # input string ends with two space characters
-    headers = {"content-type": "application/json"}
-    response = requests.get(url=localhost_yap, data=data, headers=headers)
-    json_response = response.json()
-    return json_response["md_lattice"]
-
-
-def flatten(matrix):
-    return [item for row in matrix for item in row]
-
-
-def parse_sentences(sentences):
-    parsed_lines = [parse_line(sentence) for sentence in sentences]
+def parse_sentences(sentences: list[Sentence]):
+    parsed_lines = [parse_line(sentence.text) for sentence in sentences]
 
     sentences_cleaned = [x[0] for x in parsed_lines]
     sentences_lemma = [x[1] for x in parsed_lines]
@@ -63,24 +48,24 @@ def parse_sentences(sentences):
     )
 
 
-def parse_line(title_line):
+def parse_line(sentence_text):
     try:
         # Replace Gershayim
-        title_line = re.sub(
-            r'(?<=[\u0590-\u05FF])"(?=[\u0590-\u05FF])', "״", title_line
+        sentence_text = re.sub(
+            r'(?<=[\u0590-\u05FF])"(?=[\u0590-\u05FF])', "״", sentence_text
         )
-        title_line = re.sub(
-            r"(?<=[\u0590-\u05FF])\'\'(?=[\u0590-\u05FF])", "״", title_line
+        sentence_text = re.sub(
+            r"(?<=[\u0590-\u05FF])\'\'(?=[\u0590-\u05FF])", "״", sentence_text
         )
 
-        title_line = title_line.translate(
+        sentence_text = sentence_text.translate(
             str.maketrans({key: " {0} ".format(key) for key in string.punctuation})
         )
 
         # TODO use a good tokenizer
-        title_cleaned = title_line.split(" ")
+        title_cleaned = sentence_text.split(" ")
         title_cleaned = list(filter(lambda x: x != "", title_cleaned))
-        print(title_line)
+        print(sentence_text)
         parts = parse_sentence_api(" ".join(title_cleaned))
         header = ["FROM", "TO", "FORM", "LEMMA", "CPOSTTAG", "POSTAG", "FEATS", "TOKEN"]
         parts = pd.read_csv(StringIO(parts), sep="\t", names=header)
@@ -153,7 +138,7 @@ def parse_line(title_line):
             title_FEATS = []
     except Exception:
         with open(f"DEBUG/ERROR2:{randint(1,1000)}.txt", "a") as f:
-            f.write(f"{title_line}\n")
+            f.write(f"{sentence_text}\n")
         print("Skipping title due to an exception.")
         print(traceback.format_exc())
         title_cleaned = ["BAD TITLE1"]
@@ -171,3 +156,19 @@ def parse_line(title_line):
         title_POSTAG,
         title_FEATS,
     )
+
+
+def parse_sentence_api(text):
+    text = text.replace('"', "'")
+    localhost_yap = "http://localhost:8000/yap/heb/joint"
+    data = '{{"text": "{}  "}}'.format(text).encode(
+        "utf-8"
+    )  # input string ends with two space characters
+    headers = {"content-type": "application/json"}
+    response = requests.get(url=localhost_yap, data=data, headers=headers)
+    json_response = response.json()
+    return json_response["md_lattice"]
+
+
+def flatten(matrix):
+    return [item for row in matrix for item in row]
