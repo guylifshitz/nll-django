@@ -35,6 +35,7 @@ class Word(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     text = models.TextField(null=False)
+
     translation = models.TextField(null=True)
     translation_google = models.TextField(null=True)
     translation_azure = models.TextField(null=True)
@@ -109,7 +110,15 @@ class Word(models.Model):
 
 
 class Flexion(models.Model):
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["text", "lemma", "language"], name="unique_flexion"
+            )
+        ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    lemma = models.ForeignKey(Word, on_delete=models.CASCADE)
     language = models.CharField(max_length=2)
     created_at = models.DateTimeField(auto_now_add=True)
 

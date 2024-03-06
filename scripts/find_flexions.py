@@ -1,6 +1,7 @@
 from django.db.models import Func, F
 from articles.models import Sentence
-from words.models import Flexion
+from words.models import Flexion, Word
+import pandas as pd
 
 from pprint import pprint
 from django.conf import settings
@@ -28,28 +29,30 @@ def run(*args):
     print("source_model", source_model)
 
     print("Getting flexions")
-    flexions = get_all_flexions(language, sentence_model)
-
-    for flexion_chunk in chunks(flexions, chunk_size):
-        print(f"Processing {len(flexion_chunk)} flexions")
-        insert_flexions(flexion_chunk, language)
+    lemma_flexion_df = find_flexions_per_lemma(language, sentence_model)
+    insert_flexions(lemma_flexion_df, language)
 
 
-def get_all_flexions(language: str, sentence_model: Sentence) -> list[str]:
-    return (
-        sentence_model.objects.annotate(
-            flexions=Func(F("parsed_clean"), function="unnest")
-        )
-        .values_list("flexions", flat=True)
-        .distinct()
+# TODO harmonize with the code on count flexions
+def find_flexions_per_lemma(language: str, sentence_model: Sentence) -> list[str]:
+    queryset = (
+        sentence_model.objects.filter(language=language)
+        .filter(parsed_lemma__isnull=False)
+        .annotate(parsed_flexion2=Func(F("parsed_clean"), function="unnest"))
+        .annotate(parsed_lemma2=Func(F("parsed_lemma"), function="unnest"))
+        .values_list("parsed_lemma2", "parsed_flexion2")
     )
+    lemma_flexion_df = pd.DataFrame(queryset, columns=["lemma", "flexion"])
+    return lemma_flexion_df
 
 
-def insert_flexions(flexion_texts: list[str], language: str):
+def insert_flexions(lemma_flexion_df: pd.DataFrame, language: str):
     print("Insert flexions")
-    flexion_texts = filter(lambda x: x is not None, flexion_texts)
-    flexion_objects = [
-        Flexion(text=flexion_text, language=language) for flexion_text in flexion_texts
-    ]
 
-    Flexion.objects.bulk_create(flexion_objects, ignore_conflicts=True)
+    for lemma_text, group in lemma_flexion_df.groupby("lemma"):
+        lemma = Word.objects.get(text=lemma_text, language=language)
+        flexion_objects = [
+            Flexion(text=flexion_text, lemma=lemma, language=language)
+            for flexion_text in group["flexion"].unique()
+        ]
+        Flexion.objects.bulk_create(flexion_objects, ignore_conflicts=True)

@@ -35,9 +35,9 @@ class UserWordsViewSet(views.APIView):
             querys &= Q(rank__lte=upper_rank_cutoff)
         search_query = Q()
         if search_words:
-            if language == "arabic":
+            if language == "ar":
                 search_words = [araby.strip_diacritics(w) for w in search_words]
-            elif language == "hebrew":
+            elif language == "he":
                 search_words = [self.remove_niqqud(word) for word in search_words]
 
             for search_word in search_words:

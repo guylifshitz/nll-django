@@ -1,6 +1,7 @@
 from django.db.models import Func, F, Count
 from articles.models import Sentence
-from words.models import Flexion
+from words.models import Flexion, Word
+import pandas as pd
 
 from pprint import pprint
 from .helpers import (
@@ -23,33 +24,34 @@ def run(*args):
 
     print(f"Processing {language}/{source_name}")
 
-    print("Counting flexions")
+    print("Finding flexions per lemma")
     source_model, sentence_model = get_source_model(source_name)
-    flexion_counts = count_flexions(language, sentence_model)
-    print(f"Got {len(flexion_counts)} flexions")
-    for flexion_chunk in chunks(flexion_counts, chunk_size):
-        print(f"Processing {len(flexion_chunk)} flexions")
-        update_flexion_count(flexion_chunk, language, source_name)
+    lemma_flexion_df = find_flexions_per_lemma(language, sentence_model)
+    print("Update counts")
+    update_flexion_count(lemma_flexion_df, language, source_name)
 
 
-def count_flexions(language: str, sentence_model: Sentence) -> list[str]:
-    flexion_counts = (
+def find_flexions_per_lemma(language: str, sentence_model: Sentence) -> list[str]:
+    queryset = (
         sentence_model.objects.filter(language=language)
+        .filter(parsed_lemma__isnull=False)
         .annotate(parsed_flexion2=Func(F("parsed_clean"), function="unnest"))
-        .values("parsed_flexion2")
-        .annotate(count=Count("id"))
-        .values_list("parsed_flexion2", "count")
+        .annotate(parsed_lemma2=Func(F("parsed_lemma"), function="unnest"))
+        .values_list("parsed_lemma2", "parsed_flexion2")
     )
-    return flexion_counts
+    lemma_flexion_df = pd.DataFrame(queryset, columns=["lemma", "flexion"])
+    return lemma_flexion_df
 
 
-def update_flexion_count(flexion_counts: list[str], language: str, source_name: str):
+def update_flexion_count(
+    lemma_flexion_df: pd.DataFrame, language: str, source_name: str
+):
     count_column = f"count_{source_name}"
-    for flexion_text, count in flexion_counts:
-        if flexion_text is None:
-            continue
-        Flexion.objects.filter(text=flexion_text, language=language).update(
-            **{count_column: count}
-        )
 
-    return
+    for lemma_text, group in lemma_flexion_df.groupby("lemma"):
+        lemma = Word.objects.get(text=lemma_text, language=language)
+        counts = group["flexion"].value_counts()
+        for flexion_text, count in counts.items():
+            Flexion.objects.filter(
+                text=flexion_text, lemma=lemma, language=language
+            ).update(**{count_column: count})

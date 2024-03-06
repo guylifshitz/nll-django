@@ -8,7 +8,7 @@ import pandas as pd
 
 
 def run(*args):
-    existing_words_df = load_existing_words().head(100)
+    existing_words_df = load_existing_words()
     parse_words(existing_words_df)
 
 

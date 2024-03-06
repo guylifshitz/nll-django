@@ -23,29 +23,25 @@ pronouns = [
 
 
 def parse_sentences(sentences: list[Sentence]):
-    parsed_lines = [parse_line(sentence.text) for sentence in sentences]
+    for idx, sentence in enumerate(sentences):
+        parsed_line = parse_line(sentence.text)
 
-    sentences_cleaned = [x[0] for x in parsed_lines]
-    sentences_lemma = [x[1] for x in parsed_lines]
-    sentences_segmented = [x[2] for x in parsed_lines]
-    sentences_prefixes = [x[3] for x in parsed_lines]
-    sentences_POSTAG = [x[4] for x in parsed_lines]
-    sentences_FEATS = [x[5] for x in parsed_lines]
-    sentences_roots = [[] for x in parsed_lines]
-    sentences_gloss_lemma = [[] for x in parsed_lines]
-    sentences_gloss_flexion = [[] for x in parsed_lines]
+        all_same_length = all(
+            [len(parsed_line[i]) == len(parsed_line[0]) for i in range(6)]
+        )
+        if not all_same_length:
+            print("Problem with parsing title. Skipping...")
+            continue
 
-    return (
-        sentences_cleaned,
-        sentences_lemma,
-        sentences_segmented,
-        sentences_prefixes,
-        sentences_POSTAG,
-        sentences_FEATS,
-        sentences_roots,
-        sentences_gloss_lemma,
-        sentences_gloss_flexion,
-    )
+        sentence.parsed_clean = parsed_line[0]
+        sentence.parsed_lemma = parsed_line[1]
+        sentence.parsed_segmented = parsed_line[2]
+        sentence.parsed_prefixes = parsed_line[3]
+        sentence.parsed_pos = parsed_line[4]
+        sentence.parsed_features = parsed_line[5]
+        sentence.parsed_roots = None
+        sentence.parsed_gloss_lemma = None
+        sentence.parsed_gloss_flexion = None
 
 
 def parse_line(sentence_text: str):

@@ -35,11 +35,12 @@ def run(*args):
     sentences = get_unparsed_sentences(language, sentence_model, limit=fetch_limit)
 
     sentence_chunks = chunks(sentences, chunk_size)
-    # for sentence_chunk in sentence_chunks:
-    #     parse_sentences(sentence_chunk, language)
-
-    with Pool(processes=pool_count) as pool:
-        pool.map(partial(parse_sentences, language=language), sentence_chunks)
+    if pool_count == 1:
+        for sentence_chunk in sentence_chunks:
+            parse_sentences(sentence_chunk, language)
+    else:
+        with Pool(processes=pool_count) as pool:
+            pool.map(partial(parse_sentences, language=language), sentence_chunks)
 
 
 def get_unparsed_sentences(language: str, sentence_model: Sentence, limit: int = None):
