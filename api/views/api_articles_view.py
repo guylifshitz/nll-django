@@ -23,7 +23,7 @@ import datetime
 from psycopg2.extensions import AsIs
 from itertools import chain, groupby
 from operator import itemgetter
-from scripts.helpers import language_name_to_code, supported_languages
+from scripts.helpers import supported_language_codes
 
 
 class SourceWithSentncesAndWordsView(views.APIView):
@@ -337,7 +337,7 @@ class SourceWithSentncesAndWordsView(views.APIView):
 
         body_data = json.loads(request.body)
 
-        language = body_data.get("language", None)
+        language_code = body_data.get("language", None)
 
         start_date = body_data.get("start_date", None)
         end_date = body_data.get("end_date", None)
@@ -346,16 +346,18 @@ class SourceWithSentncesAndWordsView(views.APIView):
         if not end_date:
             end_date = "01/01/3000"
 
-        if not language:
+        if not language_code:
             return Response(
                 {"success": False, "error": "language is required"}, status=400
             )
-        if language not in supported_languages:
+        if language_code not in supported_language_codes:
             return Response(
-                {"success": False, "error": f"language {language} is not supported"},
+                {
+                    "success": False,
+                    "error": f"language {language_code} is not supported",
+                },
                 status=400,
             )
-        language_code = language_name_to_code[language]
 
         practice_words = body_data.get("practice_words", None)
         known_words = self.get_known_words(guy, language_code)

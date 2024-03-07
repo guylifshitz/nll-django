@@ -62,7 +62,11 @@ class UserWordsViewSet(views.APIView):
                     "word_ratings",
                     to_attr="word_ratings_list",
                     queryset=wordratings_query_set,
-                )
+                ),
+                Prefetch(
+                    "flexions",
+                    to_attr="word_flexions_list",
+                ),
             )
             .filter(querys)
             .order_by(order_by_column)

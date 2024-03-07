@@ -92,10 +92,8 @@ class Word(models.Model):
 
     @property
     def normalized_flexion_counts(self):
-        flexions = self.flexion_counts
-        if not flexions:
-            flexions = {}
-
+        flexions = self.word_flexions_list
+        flexions = {flex.text: flex.count_lyric for flex in flexions}
         flexions_sum = sum(list(flexions.values()))
         flexions = {
             k: v
@@ -118,7 +116,8 @@ class Flexion(models.Model):
         ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    lemma = models.ForeignKey(Word, on_delete=models.CASCADE)
+    lemma = models.ForeignKey(Word, on_delete=models.CASCADE, related_name="flexions")
+
     language = models.CharField(max_length=2)
     created_at = models.DateTimeField(auto_now_add=True)
 
