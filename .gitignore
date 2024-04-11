@@ -5,8 +5,14 @@ staticfiles
 .vscode
 scripts/language_parsers/arabic/farasa_java
 rss_feeds
+rss_feeds.json
 config/azure_credentials.json
 config/google_credentials.json
+
+# helper scripts
+run_server_local.sh
+run_server_remote.sh
+run_auto.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

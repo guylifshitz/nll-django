@@ -20,7 +20,7 @@ print("ENVIRONMENT", ENVIRONMENT)
 
 if ENVIRONMENT == "development":
     DEBUG = True
-    load_dotenv(".env")
+    # load_dotenv(".env")
 if ENVIRONMENT == "production":
     DEBUG = False
 

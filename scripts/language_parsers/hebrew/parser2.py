@@ -21,6 +21,98 @@ pronouns = [
     "הן",
 ]
 
+# ABVERB 	The word כ before numerals
+# AT 	Accusative marker את which appears as a separate word in written Hebrew
+# BN 	BN – participle (בינוני)
+# BNN 	Participle (בינוני) in construct state form
+# CC 	Conjunction
+# CD 	Numeral
+# CDT 	Numeral in construct state
+# CONJ 	Coordinating conjunction ו
+# COP 	Copula
+# COP_TOINFINITIVE 	The infinitive form of the verb היה used as a copula
+# DEF 	A special tag assigned to the definiteness marker ה, which appears with nouns, adjectives and numerals
+# DT 	Used in the treebank only for the determiner כל with a pronominal suffix
+# DTT 	Determiner
+# DUMMY_AT 	Accusative marker אתwhen used with a pronominal suffix
+# EX 	existential marker יש or אין
+# IN 	Preposition
+# INTJ 	Interjection
+# JJ 	Adjective
+# JJT 	Adjective in construct state
+# MD 	Modal predicates
+# NN 	Noun
+# NN_S_PP 	Noun with a pronominal suffix
+# NNP 	Proper noun
+# NNT 	Construct state noun
+# P 	Prefix written as a separate word (אי, בלתי,אנטי etc.)
+# POS 	Possessive preposition של and accusative marker את with a pronominal suffix
+# PREPOSITION 	Inseparable preposition
+# PRP 	Personal pronoun
+# QW 	Question word
+# S_PRN 	Personal pronoun attached to a preposition as a pronominal suffix
+# TEMP 	Subordinating conjunction introducing time clauses
+# VB 	Verb
+# VB_TOINFINITIVE 	A verb in its infinitive form
+# yyCLN 	Colon
+# yyCM 	Comma
+# yyDASH 	Hyphen or dash
+# yyDOT 	Period
+# yyELPS 	Ellipsis (...)
+# yyEXCL 	Exclamation point
+# yyLRB 	Left parenthesis
+# yyQM 	Question mark
+# yyQUOT 	Quotation mark
+# yyRRB 	Right parenthesis
+# yySCLN 	Semicolon
+
+pos_to_simple_pos = {
+    "ABVERB": "_",
+    "AT": "et",
+    "BN": "verb",
+    "BNN": "verb",
+    "CC": "conjunction",
+    "CD": "numeral",
+    "CDT": "numeral",
+    "CONJ": "conjunction",
+    "COP": "_",
+    "COP_TOINFINITIVE": "verb",
+    "DEF": "definiteness marker",
+    "DT": "_",
+    "DTT": "determiner",
+    "DUMMY_AT": "et",
+    "EX": "existential marker",
+    "IN": "preposition",
+    "INTJ": "interjection",
+    "JJ": "adjective",
+    "JJT": "adjective",
+    "MD": "modal predicates",
+    "NN": "noun",
+    "NN_S_PP": "noun",
+    "NNP": "proper noun",
+    "NNT": "noun",
+    "P": "_",
+    "POS": "_",
+    "PREPOSITION": "preposition",
+    "PRP": "personal pronoun",
+    "QW": "question word",
+    "S_PRN": "_",
+    "TEMP": "_",
+    "VB": "verb",
+    "VB_TOINFINITIVE": "verb",
+    "yyCLN": "punctuation",
+    "yyCM": "punctuation",
+    "yyDASH": "punctuation",
+    "yyDOT": "punctuation",
+    "yyELPS": "punctuation",
+    "yyEXCL": "punctuation",
+    "yyLRB": "punctuation",
+    "yyQM": "punctuation",
+    "yyQUOT": "punctuation",
+    "yyRRB": "punctuation",
+    "yySCLN": "punctuation",
+}
+
 
 def parse_sentences(sentences: list[Sentence]):
     for idx, sentence in enumerate(sentences):
@@ -38,6 +130,7 @@ def parse_sentences(sentences: list[Sentence]):
         sentence.parsed_segmented = parsed_line[2]
         sentence.parsed_prefixes = parsed_line[3]
         sentence.parsed_pos = parsed_line[4]
+        sentence.parsed_pos_simple = [pos_to_simple_pos[pos] for pos in parsed_line[4]]
         sentence.parsed_features = parsed_line[5]
         sentence.parsed_roots = None
         sentence.parsed_gloss_lemma = None
