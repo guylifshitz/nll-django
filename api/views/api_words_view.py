@@ -10,6 +10,70 @@ from django.contrib.auth.models import User
 import pyarabic.araby as araby
 
 
+class UserWordRatingsSet(views.APIView):
+    def get_words(self, user, language):
+        word_ratings = WordRating.objects.filter(user=user)
+        return word_ratings
+
+    def build_output(self, word_ratings):
+        output = []
+        for word_rating in word_ratings:
+            output.append(
+                {
+                    "id": word_rating.word.id,
+                    "text": word_rating.word.text,
+                    "language": word_rating.word.language,
+                    "familiarity_label": word_rating.rating,
+                    "created_at": word_rating.created_at,
+                    "updated_at": word_rating.updated_at,
+                }
+            )
+        return output
+
+    def get(self, request):
+        guy = User.objects.get(username="guy")
+
+        body_data = json.loads(request.body)
+
+        language = body_data.get("language", None)
+        if not language:
+            return Response(
+                {"success": False, "error": "language is required"}, status=400
+            )
+
+        word_ratings = self.get_words(user=guy, language=language)
+
+        return Response(
+            {"success": True, "word_ratings": self.build_output(word_ratings)},
+            status=200,
+        )
+        pass
+
+    def put(self, request):
+        guy = User.objects.get(username="guy")
+
+        body_data = json.loads(request.body)
+
+        language = body_data.get("language", None)
+        word_text = body_data.get("word_text", None)
+
+        if not word_text or not language:
+            return Response({"success": False}, status=400)
+
+        rating = body_data.get("rating", None)
+
+        word = Word.objects.get(text=word_text, language=language)
+
+        try:
+            WordRating.objects.create(user=guy, word=word, rating=rating)
+        except:
+            word_rating = WordRating.objects.filter(user=guy, word=word).first()
+            word_rating.rating = rating
+            word_rating.save()
+
+        return Response({"success": True}, status=200)
+
+
 class UserWordsViewSet(views.APIView):
     # TODO correctly handle authentication
     # from rest_framework.authtoken.models import Token
@@ -94,7 +158,7 @@ class UserWordsViewSet(views.APIView):
 
             output.append(
                 {
-                    "id": lemma.text,
+                    "id": lemma.id,
                     "text": lemma.text,
                     "translation": lemma.best_translation,
                     "root": lemma.best_root,
@@ -142,25 +206,3 @@ class UserWordsViewSet(views.APIView):
         output = self.build_output_from_lemmas(lemmas_to_find)
 
         return Response({"success": True, "lemmas": output}, status=200)
-
-    def put(self, request):
-        guy = User.objects.get(username="guy")
-
-        body_data = json.loads(request.body)
-
-        language = body_data.get("language", None)
-        word_text = body_data.get("word_text", None)
-
-        if not word_text or not language:
-            return Response({"success": False}, status=400)
-
-        rating = body_data.get("rating", None)
-
-        word = Word.objects.get(text=word_text, language=language)
-
-        try:
-            WordRating.objects.create(user=guy, word=word, rating=rating)
-        except:
-            WordRating.objects.filter(user=guy, word=word).update(rating=rating)
-
-        return Response({"success": True}, status=200)

@@ -7,7 +7,7 @@ from api.views.api_articles_view import (
     SubtitlesWithWordsView,
     LyricWithWordsView,
 )
-from api.views.api_words_view import UserWordsViewSet
+from api.views.api_words_view import UserWordsViewSet, UserWordRatingsSet
 
 router = routers.DefaultRouter()
 
@@ -18,4 +18,5 @@ urlpatterns = [
     path("subtitles/", SubtitlesWithWordsView.as_view()),
     path("songs/", LyricWithWordsView.as_view()),
     path("words/", UserWordsViewSet.as_view()),
+    path("word_ratings/", UserWordRatingsSet.as_view()),
 ]
