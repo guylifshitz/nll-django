@@ -1,3 +1,4 @@
+import datetime
 import requests
 import pandas as pd
 import json
@@ -11,6 +12,12 @@ def run():
     df_local = download_words_from_api(local_url, "he")
     df_remote = download_words_from_api(remote_url, "he")
 
+    df_local.to_csv(
+        f"../BACKUP/word_ratings_local_{datetime.datetime.now().isoformat()}.csv"
+    )
+    df_remote.to_csv(
+        f"../BACKUP/word_ratings_remote_{datetime.datetime.now().isoformat()}.csv"
+    )
     df_merged = merge_word_ratings(df_local, df_remote)
 
     df_merged = df_merged[
@@ -65,3 +72,6 @@ def update_word_rating(word_text, rating, base_url, language_code):
         ),
     )
     return response
+
+
+run()

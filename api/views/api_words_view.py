@@ -165,7 +165,7 @@ class UserWordsViewSet(views.APIView):
                     "language": lemma.language,
                     "count": lemma.count,
                     "rank": f"news: {lemma.rank_rss}   song:{lemma.rank_lyric}  wikipedia:{lemma.rank_wikipedia}  subtitles:{lemma.rank_subtitle}",
-                    "flexion_counts": lemma.normalized_flexion_counts,
+                    "flexion_counts": lemma.normalized_flexion_counts("count_lyric"),
                     "familiarity_label": familiarity_label,
                 }
             )

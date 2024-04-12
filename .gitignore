@@ -1,6 +1,7 @@
 .DS_Store
 TODO.sh
 DEBUG
+BACKUP
 staticfiles
 .vscode
 scripts/language_parsers/arabic/farasa_java

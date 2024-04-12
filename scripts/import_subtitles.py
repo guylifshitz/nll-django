@@ -180,7 +180,7 @@ def parse_subtitles(sentence_ids_df, imdb_titles, imdb_people, language):
                 imdb_row["originalTitle"].iloc[0] + f" [{chunk_count}]"
             )
 
-            source_id = insert_subtitle(imdb_row)
+            source_id = insert_subtitle(imdb_row, language)
             english_sentences = group_chunk["sentence_english"].tolist()
             foreign_sentences = group_chunk["sentence_foreign"].tolist()
 
@@ -196,8 +196,9 @@ def parse_subtitles(sentence_ids_df, imdb_titles, imdb_people, language):
                 )
 
 
-def insert_subtitle(title_row):
+def insert_subtitle(title_row, language):
     source_id = Subtitle.objects.create(
+        language=language,
         title_original=get_title(title_row),
         title_foreign=None,
         title_english=None,

@@ -1,3 +1,4 @@
+import traceback
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
@@ -90,20 +91,38 @@ class Word(models.Model):
             translation += "(" + ", ".join(self.parser_translations) + ")"
         return translation
 
-    @property
-    def normalized_flexion_counts(self):
-        flexions = self.word_flexions_list
-        flexions = {flex.text: flex.count_lyric for flex in flexions}
-        flexions_sum = sum(list(flexions.values()))
-        flexions = {
-            k: v
-            for k, v in sorted(flexions.items(), key=lambda item: item[1], reverse=True)
-        }
-        flexions = {k: max(int(v / flexions_sum * 100), 1) for k, v in flexions.items()}
-        flexions = {k: flexions[k] for k in list(flexions)[:10]}
+    def normalized_flexion_counts(self, count_column):
+        try:
+            flexions = self.word_flexions_list
+            flexions = {flex.text: getattr(flex, count_column) for flex in flexions}
+            flexions = dict(
+                filter(lambda flexion: flexion[1] != None, flexions.items())
+            )
 
-        if not flexions:
+            try:
+                flexions_sum = sum(list(flexions.values()))
+            except:
+                flexions_sum = 1
+            print("flexions_sum", flexions)
+            flexions = {
+                k: v
+                for k, v in sorted(
+                    flexions.items(), key=lambda item: item[1], reverse=True
+                )
+            }
+            flexions = {
+                k: max(int(v / flexions_sum * 100), 1) for k, v in flexions.items()
+            }
+            flexions = {k: flexions[k] for k in list(flexions)[:10]}
+
+            if not flexions:
+                flexions = ""
+        except Exception as e:
+            print("Error flexion:", e)
+            traceback.print_exc()
+
             flexions = ""
+
         return flexions
 
 
