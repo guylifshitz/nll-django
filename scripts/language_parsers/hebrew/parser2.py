@@ -130,7 +130,7 @@ def parse_sentences(sentences: list[Sentence]):
         sentence.parsed_segmented = parsed_line[2]
         sentence.parsed_prefixes = parsed_line[3]
         sentence.parsed_pos = parsed_line[4]
-        sentence.parsed_pos_simple = [pos_to_simple_pos[pos] for pos in parsed_line[4]]
+        # sentence.parsed_pos_simple = [pos_to_simple_pos[pos] for pos in parsed_line[4]]
         sentence.parsed_features = parsed_line[5]
         sentence.parsed_roots = None
         sentence.parsed_gloss_lemma = None

@@ -11,8 +11,16 @@ def run(*args):
         for source in supported_sources:
             source_model, source_sentences = get_source_model(source)
             print(f"{source}: {source_model.objects.filter(language=language).count()}")
+
+            source_sentences_count = source_sentences.objects.filter(
+                language=language
+            ).count()
+            source_sentences_unparsed_count = source_sentences.objects.filter(
+                language=language, parsed_clean=None
+            ).count()
+            print(f"{source} sentences: {source_sentences_count}")
             print(
-                f"{source} sentences: {source_sentences.objects.filter(language=language).count()}"
+                f"{source} sentences unparsed: {source_sentences_unparsed_count} ({int(source_sentences_unparsed_count/source_sentences_count*100)}%)"
             )
 
         print("")
