@@ -29,6 +29,8 @@ from scripts.helpers import supported_language_codes
 class SourceWithSentncesAndWordsView(views.APIView):
     sentence_ids = []
     sentence_ratios = {}
+    datetime_filter = None
+    table_query = "%(sentence_table)s"
 
     def get_source_entries(
         self,
@@ -36,8 +38,8 @@ class SourceWithSentncesAndWordsView(views.APIView):
         practice_words,
         known_words,
         article_display_count,
-        # start_date,
-        # end_date,
+        start_date=None,
+        end_date=None,
     ):
         with connection.cursor() as cursor:
             known_words = set(known_words) - set(practice_words)
@@ -48,29 +50,48 @@ class SourceWithSentncesAndWordsView(views.APIView):
             print("table_name:", self.table_name)
             print("practice_words:", practice_words)
             print("known_words:", known_words)
+
             if len(practice_words) > 10:
-                # query = """(SELECT id, source_id, ratio, practice_found_count, known_found_count, parsed_lemma_length, punct_found_count FROM
-                # (SELECT id, source_id, practice_found_count, known_found_count, parsed_lemma_length, punct_found_count, CEIL(practice_found_count::decimal / (parsed_lemma_length::decimal - punct_found_count::decimal ),1) AS ratio FROM
-                # (SELECT id, source_id, array_length("parsed_lemma", 1) AS parsed_lemma_length,
-                # cardinality(ARRAY( SELECT * FROM UNNEST( "parsed_pos" ) WHERE UNNEST = 'punc')) AS punct_found_count,
-                # array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(practice_words)s])),1) AS practice_found_count,
-                # array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(known_words)s])),1) AS known_found_count
-                # FROM %(sentence_table)s WHERE language = %(language)s) t1 ) t2 WHERE ratio NOTNULL and (parsed_lemma_length - punct_found_count) > 1 ORDER BY ratio desc, practice_found_count desc, known_found_count desc NULLS LAST limit %(limit)s);"""
-                query = """(SELECT id, source_id, ratio, practice_found_count, known_found_count, parsed_lemma_length, punct_found_count FROM 
-                (SELECT id, source_id, practice_found_count, known_found_count, parsed_lemma_length, punct_found_count, (practice_found_count::decimal / (parsed_lemma_length::decimal - punct_found_count::decimal )) AS ratio FROM
-                (SELECT id, source_id, array_length("parsed_lemma", 1) AS parsed_lemma_length, 
-                cardinality(ARRAY( SELECT * FROM UNNEST( "parsed_pos" ) WHERE UNNEST = 'punc')) AS punct_found_count,
-                array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(practice_words)s])),1) AS practice_found_count,
-                array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(known_words)s])),1) AS known_found_count
-                FROM %(sentence_table)s WHERE language = %(language)s) t1 ) t2 WHERE ratio NOTNULL and (parsed_lemma_length - punct_found_count) > 4 ORDER BY ratio desc, practice_found_count desc, known_found_count desc NULLS LAST limit %(limit)s);"""
+                ratio_equation = "(practice_found_count::decimal / (parsed_lemma_length::decimal - punct_found_count::decimal ))"
+                parsed_lemma_length_equation = 'array_length("parsed_lemma", 1)'
+                punct_found_count_equation = "cardinality(ARRAY( SELECT * FROM UNNEST( \"parsed_pos\" ) WHERE UNNEST = 'punc'))"
+                practice_found_count_equation = 'array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(practice_words)s])),1) AS practice_found_count'
+                known_found_count_equation = 'array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(known_words)s])),1) AS known_found_count'
             else:
-                query = """(SELECT id, source_id, ratio, practice_found_count, known_found_count, parsed_lemma_length, punct_found_count FROM 
-                (SELECT id, source_id, practice_found_count, known_found_count, parsed_lemma_length, punct_found_count, ROUND((practice_found_count::decimal + known_found_count::decimal) / (parsed_lemma_length::decimal - punct_found_count::decimal ),1) AS ratio FROM
-                (SELECT id, source_id, array_length("parsed_lemma", 1) AS parsed_lemma_length, 
-                cardinality(ARRAY( SELECT * FROM UNNEST( "parsed_pos" ) WHERE UNNEST = 'punc')) AS punct_found_count,
-                cardinality(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(practice_words)s]))) AS practice_found_count,
-                cardinality(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(known_words)s]))) AS known_found_count
-                FROM %(sentence_table)s WHERE language = %(language)s) t1 ) t2 WHERE ratio NOTNULL and (parsed_lemma_length - punct_found_count) > 4 and practice_found_count > 0 ORDER BY ratio desc, practice_found_count desc, known_found_count desc NULLS LAST limit %(limit)s);"""
+                ratio_equation = "ROUND((practice_found_count::decimal + known_found_count::decimal) / (parsed_lemma_length::decimal - punct_found_count::decimal ),1)"
+                parsed_lemma_length_equation = 'array_length("parsed_lemma", 1)'
+                punct_found_count_equation = "cardinality(ARRAY( SELECT * FROM UNNEST( \"parsed_pos\" ) WHERE UNNEST = 'punc'))"
+                practice_found_count_equation = 'cardinality(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(practice_words)s])))'
+                known_found_count_equation = 'cardinality(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(known_words)s])))'
+
+            query = f"""(
+                SELECT
+                    *
+                FROM 
+                    (SELECT
+                        *, 
+                        {ratio_equation} AS ratio
+                    FROM
+                    (SELECT 
+                        id,
+                        source_id, 
+                        {parsed_lemma_length_equation} AS parsed_lemma_length, 
+                        {punct_found_count_equation} AS punct_found_count,
+                        {practice_found_count_equation} AS practice_found_count,
+                        {known_found_count_equation} AS known_found_count
+                    FROM 
+                        {self.table_query} WHERE language = %(language)s) t1 ) t2
+                    WHERE
+                        ratio NOTNULL 
+                        AND (parsed_lemma_length - punct_found_count) > 4 
+                        AND practice_found_count > 0 
+                    ORDER BY
+                        ratio desc,
+                        practice_found_count desc,
+                        known_found_count desc NULLS LAST
+                    LIMIT
+                        %(limit)s);"""
+
             cursor.execute(
                 query,
                 {
@@ -79,6 +100,8 @@ class SourceWithSentncesAndWordsView(views.APIView):
                     "practice_words": practice_words,
                     "known_words": known_words,
                     "limit": article_display_count,
+                    "start_date": start_date,
+                    "end_date": end_date,
                 },
             )
             print(query, f"{self.table_name}_sentence")
@@ -364,11 +387,7 @@ class SourceWithSentncesAndWordsView(views.APIView):
         known_words = [w.text for w in known_words]
 
         articles = self.get_source_entries(
-            language_code,
-            practice_words,
-            known_words,
-            100,
-            # , start_date, end_date
+            language_code, practice_words, known_words, 100, start_date, end_date
         )
         output = self.format_source_entries(
             articles, language_code, practice_words, known_words, guy
@@ -420,3 +439,4 @@ class RssWithWordsView(SourceWithSentncesAndWordsView):
     source_name = "rss"
     source_model = Rss
     sentence_model = Rss_sentence
+    table_query = "(select articles_rss_sentence.*, articles_rss.published_datetime from articles_rss_sentence left join articles_rss  on articles_rss_sentence.source_id = articles_rss.id where published_datetime >= %(start_date)s and published_datetime <= %(end_date)s) joined_tables"
