@@ -38,31 +38,36 @@ class Word(models.Model):
     text = models.TextField(null=False)
 
     translation = models.TextField(null=True)
-    translation_google = models.TextField(null=True)
-    translation_azure = models.TextField(null=True)
-    root = models.CharField(max_length=100, null=True)
+    translation_google = models.TextField(null=True, blank=True)
+    translation_azure = models.TextField(null=True, blank=True)
+    user_translations = models.JSONField(null=True, blank=True, default={})
+    root = models.CharField(max_length=100, null=True, blank=True)
     flexion_counts = models.JSONField(
         null=True, blank=True, default=default_json_values
     )
-    count = models.IntegerField(null=True)
-    rank = models.IntegerField(null=True)
-    count_rss_feed = models.IntegerField(null=True)
-    rank_rss_feed = models.IntegerField(null=True)
-    count_subtitle = models.IntegerField(null=True)
-    rank_subtitle = models.IntegerField(null=True)
-    count_wikipedia = models.IntegerField(null=True)
-    rank_wikipedia = models.IntegerField(null=True)
-    count_lyric = models.IntegerField(null=True)
-    rank_lyric = models.IntegerField(null=True)
-    count_rss = models.IntegerField(null=True)
-    rank_rss = models.IntegerField(null=True)
+    count = models.IntegerField(null=True, blank=True)
+    rank = models.IntegerField(null=True, blank=True)
+    count_rss_feed = models.IntegerField(null=True, blank=True)
+    rank_rss_feed = models.IntegerField(null=True, blank=True)
+    count_subtitle = models.IntegerField(null=True, blank=True)
+    rank_subtitle = models.IntegerField(null=True, blank=True)
+    count_wikipedia = models.IntegerField(null=True, blank=True)
+    rank_wikipedia = models.IntegerField(null=True, blank=True)
+    count_lyric = models.IntegerField(null=True, blank=True)
+    rank_lyric = models.IntegerField(null=True, blank=True)
+    count_rss = models.IntegerField(null=True, blank=True)
+    rank_rss = models.IntegerField(null=True, blank=True)
 
     user_translations = models.JSONField(
         null=True, blank=True, default=default_json_values
     )
     user_roots = models.JSONField(null=True, blank=True, default=default_json_values)
 
-    parser_translations = ArrayField(models.TextField(), null=True)
+    parser_translations = ArrayField(
+        models.TextField(),
+        null=True,
+        blank=True,
+    )
 
     user_translations_with_user = models.JSONField(
         null=True, blank=True, default=default_json_values
@@ -86,10 +91,31 @@ class Word(models.Model):
         if self.translation:
             translation += self.translation
         if self.user_translations:
-            translation = self.user_translations[-1]
+            translation = ", ".join(
+                [
+                    translation["translation"] + self.get_pos_tag(translation)
+                    for translation in self.user_translations[-1]
+                ]
+            )
         if self.parser_translations:
             translation += "(" + ", ".join(self.parser_translations) + ")"
         return translation
+
+    def get_pos_tag(self, translation):
+        pos_mapping = {
+            "noun": "n.",
+            "verb": "v.",
+            "adjective": "adj.",
+            "adverb": "adv.",
+            "pronoun": "pron.",
+            "preposition": "prep.",
+            # "conjunction": "conj.",
+            # "interjection": "interj.",
+        }
+        pos_tag = ""
+        if translation.get("pos") and translation["pos"] != "general":
+            pos_tag = f" ({pos_mapping[translation['pos']]})"
+        return pos_tag
 
     def normalized_flexion_counts(self, count_column):
         try:

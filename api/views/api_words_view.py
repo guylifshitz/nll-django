@@ -206,3 +206,29 @@ class UserWordsViewSet(views.APIView):
         output = self.build_output_from_lemmas(lemmas_to_find)
 
         return Response({"success": True, "lemmas": output}, status=200)
+
+
+class UserTranslation(views.APIView):
+
+    def put(self, request):
+        body_data = json.loads(request.body)
+
+        print(body_data)
+        word_id = body_data.get("id", None)
+        new_translations = body_data.get("new_translations", None)
+
+        print(word_id)
+        word = Word.objects.get(id=word_id)
+        print(word)
+        word.user_translations.append(new_translations)
+        word.save()
+
+        return Response({"success": True}, status=200)
+
+    def post(self, request):
+        body_data = json.loads(request.body)
+        print(body_data)
+        word_id = body_data.get("id", None)
+        word = Word.objects.get(id=word_id)
+
+        return Response({"user_translations": word.user_translations}, status=200)
