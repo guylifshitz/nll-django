@@ -6,6 +6,7 @@ from api.views.api_articles_view import (
     WikipediaWithWordsView,
     SubtitlesWithWordsView,
     LyricWithWordsView,
+    SentenceTranslationView,
 )
 from api.views.api_words_view import (
     UserWordsViewSet,
@@ -24,4 +25,5 @@ urlpatterns = [
     path("words/", UserWordsViewSet.as_view()),
     path("word_ratings/", UserWordRatingsSet.as_view()),
     path("user_translations/", UserTranslation.as_view()),
+    path("sentence_translation/", SentenceTranslationView.as_view()),
 ]

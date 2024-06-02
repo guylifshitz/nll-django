@@ -66,6 +66,18 @@ class Rss(Article):
     def title(self):
         return self.feed_provider
 
+    @property
+    def tag_level_1(self):
+        return self.title + ": " + ", ".join(self.feed_names)
+
+    @property
+    def tag_level_2(self):
+        return self.published_datetime.strftime("%d-%m-%Y")
+
+    @property
+    def extra_text(self):
+        return self.summary
+
 
 class Rss_sentence(Sentence):
     source = models.ForeignKey(Rss, on_delete=models.CASCADE, related_name="sentences")
@@ -93,6 +105,10 @@ class Lyric(Article):
     @property
     def link(self):
         return None
+
+    @property
+    def tag_level_2(self):
+        return self.year
 
 
 class Lyric_sentence(Sentence):
@@ -129,6 +145,10 @@ class Subtitle(Article):
     def extra_text(self):
         return str(self.number_ratings)
 
+    @property
+    def tag_level_2(self):
+        return self.year
+
 
 class Subtitle_sentence(Sentence):
     source = models.ForeignKey(
@@ -145,6 +165,10 @@ class Wikipedia(Article):
 
     @property
     def title(self):
+        return self.page_name
+
+    @property
+    def tag_level_2(self):
         return self.page_name
 
 

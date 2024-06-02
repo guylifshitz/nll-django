@@ -2,6 +2,8 @@ import hashlib
 import uuid
 from words.models import Word, WordRating
 from articles.models import (
+    Article,
+    Sentence,
     Rss,
     Rss_sentence,
     Lyric,
@@ -55,8 +57,8 @@ class SourceWithSentncesAndWordsView(views.APIView):
                 ratio_equation = "(practice_found_count::decimal / (parsed_lemma_length::decimal - punct_found_count::decimal ))"
                 parsed_lemma_length_equation = 'array_length("parsed_lemma", 1)'
                 punct_found_count_equation = "cardinality(ARRAY( SELECT * FROM UNNEST( \"parsed_pos\" ) WHERE UNNEST = 'punc'))"
-                practice_found_count_equation = 'array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(practice_words)s])),1) AS practice_found_count'
-                known_found_count_equation = 'array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(known_words)s])),1) AS known_found_count'
+                practice_found_count_equation = 'array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(practice_words)s])),1)'
+                known_found_count_equation = 'array_length(ARRAY( SELECT * FROM UNNEST( "parsed_lemma" ) WHERE UNNEST = ANY( array[%(known_words)s])),1)'
             else:
                 ratio_equation = "ROUND((practice_found_count::decimal + known_found_count::decimal) / (parsed_lemma_length::decimal - punct_found_count::decimal ),1)"
                 parsed_lemma_length_equation = 'array_length("parsed_lemma", 1)'
@@ -157,30 +159,38 @@ class SourceWithSentncesAndWordsView(views.APIView):
     def generate_empty_line(self):
         return [
             {
-                "id": hashlib.md5(f"{uuid.uuid4()}".encode()).hexdigest(),
-                "text": "",
-                "lemma": "",
-                "segmented": "",
-                "part_of_speech": "",
-                "features": "",
-                "flexion_translation": "",
-                "is_name": False,
+                "id": None,
+                "words": [
+                    {
+                        "id": hashlib.md5(f"{uuid.uuid4()}".encode()).hexdigest(),
+                        "text": "",
+                        "lemma": "",
+                        "segmented": "",
+                        "part_of_speech": "",
+                        "features": "",
+                        "flexion_translation": "",
+                        "is_name": False,
+                    }
+                ],
             }
         ]
 
     def generate_bad_line(self):
-        return [
-            {
-                "id": hashlib.md5(f"{uuid.uuid4()}".encode()).hexdigest(),
-                "text": "OUCH",
-                "lemma": "OUCH",
-                "segmented": "OUCH",
-                "part_of_speech": "OUCH",
-                "features": "OUCH",
-                "flexion_translation": "OUCH",
-                "is_name": False,
-            }
-        ]
+        return {
+            "id": None,
+            "words": [
+                {
+                    "id": hashlib.md5(f"{uuid.uuid4()}".encode()).hexdigest(),
+                    "text": "OUCH",
+                    "lemma": "OUCH",
+                    "segmented": "OUCH",
+                    "part_of_speech": "OUCH",
+                    "features": "OUCH",
+                    "flexion_translation": "OUCH",
+                    "is_name": False,
+                }
+            ],
+        }
 
     def format_source_entries(
         self, articles, language_code, practice_words, known_words, guy
@@ -241,22 +251,22 @@ class SourceWithSentncesAndWordsView(views.APIView):
                 except:
                     article_lines.append(self.generate_bad_line())
 
+                new_line = {"id": sentence.id, "words": article_line_words}
+
                 if sentence.id in self.sentence_ids:
-                    translation = str(self.sentence_ratios[str(sentence.id)]) + str(
-                        sentence.translation
-                    )
+                    translation = sentence.translation
                     if len(sentences) > 1:
                         article_lines.append(self.generate_empty_line())
                         article_lines.append(self.generate_empty_line())
                         article_lines.append(self.generate_empty_line())
-                        article_lines.append(article_line_words)
+                        article_lines.append(new_line)
                         article_lines.append(self.generate_empty_line())
                         article_lines.append(self.generate_empty_line())
                         article_lines.append(self.generate_empty_line())
                     else:
-                        article_lines.append(article_line_words)
+                        article_lines.append(new_line)
                 else:
-                    article_lines.append(article_line_words)
+                    article_lines.append(new_line)
 
             formatted_articles.append(
                 {
@@ -266,12 +276,12 @@ class SourceWithSentncesAndWordsView(views.APIView):
                     "published_datetime": None,
                     "title": article.title,
                     "link": article.link,
-                    "extra_text": None,
+                    "extra_text": article.extra_text,
                     "translation": translation,
                     # + " // "
                     # + "\n".join([sentence.translation for sentence in sentences]),
-                    "tag_level_1": article.title,
-                    "tag_level_2": [None],
+                    "tag_level_1": article.tag_level_1,
+                    "tag_level_2": article.tag_level_2,
                     "article_lines": article_lines,
                 }
             )
@@ -440,3 +450,30 @@ class RssWithWordsView(SourceWithSentncesAndWordsView):
     source_model = Rss
     sentence_model = Rss_sentence
     table_query = "(select articles_rss_sentence.*, articles_rss.published_datetime from articles_rss_sentence left join articles_rss  on articles_rss_sentence.source_id = articles_rss.id where published_datetime >= %(start_date)s and published_datetime <= %(end_date)s) joined_tables"
+
+
+class SentenceTranslationView(views.APIView):
+
+    def put(self, request):
+        body_data = json.loads(request.body)
+
+        print(body_data)
+        sentence_id = body_data.get("id", None)
+        source_table = body_data.get("source", None)
+        new_translation = body_data.get("new_translation", None)
+
+        match source_table:
+            case "wikipedia":
+                sentence = Wikipedia_sentence.objects.get(id=sentence_id)
+            case "subtitle":
+                sentence = Subtitle_sentence.objects.get(id=sentence_id)
+            case "lyric":
+                sentence = Lyric_sentence.objects.get(id=sentence_id)
+            case "rss":
+                sentence = Rss_sentence.objects.get(id=sentence_id)
+
+        print(sentence)
+        sentence.translation = new_translation
+        sentence.save()
+
+        return Response({"success": True}, status=200)
