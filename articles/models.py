@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 import uuid
@@ -175,6 +176,44 @@ class Wikipedia(Article):
 class Wikipedia_sentence(Sentence):
     source = models.ForeignKey(
         Wikipedia, on_delete=models.CASCADE, related_name="sentences"
+    )
+
+
+class User_Document(Article):
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+    document_name = models.TextField()
+
+    @property
+    def title(self):
+        return self.document_name
+
+    @property
+    def link(self):
+        return self.document_name
+
+    @property
+    def extra_text(self):
+        return self.document_name
+
+    @property
+    def tag_level_1(self):
+        return self.document_name
+
+    @property
+    def tag_level_2(self):
+        return self.document_name
+
+    @property
+    def tag_level_2(self):
+        return self.document_name
+
+
+class User_Document_sentence(Sentence):
+    source = models.ForeignKey(
+        User_Document, on_delete=models.CASCADE, related_name="sentences"
     )
 
 

@@ -14,10 +14,12 @@ from articles.models import (
     Lyric_sentence,
     Rss,
     Rss_sentence,
+    User_Document,
+    User_Document_sentence,
 )
 
 
-supported_sources = ["rss", "lyric", "subtitle", "wikipedia"]
+supported_sources = ["rss", "lyric", "subtitle", "wikipedia", "user"]
 language_name_to_code = {"arabic": "ar", "hebrew": "he"}
 supported_language_codes = language_name_to_code.values()
 supported_languages = language_name_to_code.keys()
@@ -50,6 +52,8 @@ def get_source_model(source_name: str):
             return Wikipedia, Wikipedia_sentence
         case "subtitle":
             return Subtitle, Subtitle_sentence
+        case "user":
+            return User_Document, User_Document_sentence
 
 
 def translate_texts_google(

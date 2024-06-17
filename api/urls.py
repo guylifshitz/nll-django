@@ -7,6 +7,7 @@ from api.views.api_articles_view import (
     SubtitlesWithWordsView,
     LyricWithWordsView,
     SentenceTranslationView,
+    UserDocumentWithWordsView,
 )
 from api.views.api_words_view import (
     UserWordsViewSet,
@@ -19,6 +20,7 @@ router = routers.DefaultRouter()
 urlpatterns = [
     path("", include(router.urls)),
     path("rss/", RssWithWordsView.as_view()),
+    path("user-document/", UserDocumentWithWordsView.as_view()),
     path("wikipedia/", WikipediaWithWordsView.as_view()),
     path("subtitles/", SubtitlesWithWordsView.as_view()),
     path("songs/", LyricWithWordsView.as_view()),

@@ -12,6 +12,8 @@ from articles.models import (
     Subtitle_sentence,
     Wikipedia,
     Wikipedia_sentence,
+    User_Document,
+    User_Document_sentence,
 )
 from django.db.models import Prefetch
 from django.db import connection
@@ -201,8 +203,12 @@ class SourceWithSentncesAndWordsView(views.APIView):
         for article in articles:
             article_lines = []
 
-            sentences = set(article.sentence_list)
+            # sentences = set(article.sentence_list)
+            sentences = article.sentence_list
+            for sentence in sentences:
+                print(sentence.sentence_order)
 
+            sentences.sort(key=lambda x: x.sentence_order)
             output_sentences = []
             for sentence in sentences:
                 if not sentence.parsed_clean:
@@ -253,20 +259,8 @@ class SourceWithSentncesAndWordsView(views.APIView):
 
                 new_line = {"id": sentence.id, "words": article_line_words}
 
-                if sentence.id in self.sentence_ids:
-                    translation = sentence.translation
-                    if len(sentences) > 1:
-                        article_lines.append(self.generate_empty_line())
-                        article_lines.append(self.generate_empty_line())
-                        article_lines.append(self.generate_empty_line())
-                        article_lines.append(new_line)
-                        article_lines.append(self.generate_empty_line())
-                        article_lines.append(self.generate_empty_line())
-                        article_lines.append(self.generate_empty_line())
-                    else:
-                        article_lines.append(new_line)
-                else:
-                    article_lines.append(new_line)
+                translation = sentence.translation
+                article_lines.append(new_line)
 
             formatted_articles.append(
                 {
@@ -331,7 +325,10 @@ class SourceWithSentncesAndWordsView(views.APIView):
             else:
                 isPractice = False
 
-            rank_column = f"rank_{self.source_name}"
+            if self.source_name == "user":
+                rank_column = "rank_subtitle"
+            else:
+                rank_column = f"rank_{self.source_name}"
             formatted_lemmas.append(
                 {
                     "id": lemma.text,
@@ -408,6 +405,13 @@ class SourceWithSentncesAndWordsView(views.APIView):
         return Response(output, status=200)
 
 
+class UserDocumentWithWordsView(SourceWithSentncesAndWordsView):
+    source_name = "user"
+    table_name = "articles_user_document"
+    source_model = User_Document
+    sentence_model = User_Document_sentence
+
+
 class WikipediaWithWordsView(SourceWithSentncesAndWordsView):
     source_name = "wikipedia"
     table_name = "articles_wikipedia"
@@ -471,6 +475,8 @@ class SentenceTranslationView(views.APIView):
                 sentence = Lyric_sentence.objects.get(id=sentence_id)
             case "rss":
                 sentence = Rss_sentence.objects.get(id=sentence_id)
+            case "user-document":
+                sentence = User_Document_sentence.objects.get(id=sentence_id)
 
         print(sentence)
         sentence.translation = new_translation
