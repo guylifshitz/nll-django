@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework import routers
 
 from api.views.api_articles_view import (
+    CreateUserArticleView,
     RssWithWordsView,
     WikipediaWithWordsView,
     SubtitlesWithWordsView,
@@ -28,4 +29,5 @@ urlpatterns = [
     path("word_ratings/", UserWordRatingsSet.as_view()),
     path("user_translations/", UserTranslation.as_view()),
     path("sentence_translation/", SentenceTranslationView.as_view()),
+    path("user_article/create/", CreateUserArticleView.as_view()),
 ]

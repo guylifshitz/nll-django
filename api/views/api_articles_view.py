@@ -1,4 +1,5 @@
 import hashlib
+import re
 import uuid
 from words.models import Word, WordRating
 from articles.models import (
@@ -25,9 +26,10 @@ from django.contrib.auth.models import User
 import random
 import datetime
 from psycopg2.extensions import AsIs
-from itertools import chain, groupby
 from operator import itemgetter
+from itertools import chain, groupby
 from scripts.helpers import supported_language_codes
+from scripts.parse_sentences import parse_sentences
 
 
 class SourceWithSentncesAndWordsView(views.APIView):
@@ -183,12 +185,12 @@ class SourceWithSentncesAndWordsView(views.APIView):
             "words": [
                 {
                     "id": hashlib.md5(f"{uuid.uuid4()}".encode()).hexdigest(),
-                    "text": "OUCH",
-                    "lemma": "OUCH",
-                    "segmented": "OUCH",
-                    "part_of_speech": "OUCH",
-                    "features": "OUCH",
-                    "flexion_translation": "OUCH",
+                    "text": "[ERROR]",
+                    "lemma": "[ERROR]",
+                    "segmented": "[ERROR]",
+                    "part_of_speech": "[ERROR]",
+                    "features": "[ERROR]",
+                    "flexion_translation": "[ERROR]",
                     "is_name": False,
                 }
             ],
@@ -461,7 +463,6 @@ class SentenceTranslationView(views.APIView):
     def put(self, request):
         body_data = json.loads(request.body)
 
-        print(body_data)
         sentence_id = body_data.get("id", None)
         source_table = body_data.get("source", None)
         new_translation = body_data.get("new_translation", None)
@@ -483,3 +484,57 @@ class SentenceTranslationView(views.APIView):
         sentence.save()
 
         return Response({"success": True}, status=200)
+
+
+class CreateUserArticleView(views.APIView):
+
+    def put(self, request):
+        guy = User.objects.get(username="guy").id
+
+        body_data = json.loads(request.body)
+
+        language = body_data.get("language", None)
+        title = body_data.get("title", None)
+        # user_id = request.user.id
+
+        text = body_data.get("text", None)
+        separate_type = body_data.get("separate_type", None)
+        True if separate_type == "period" else False
+
+        self.parse_document(language, title, text, guy, separate_type)
+
+        return Response({"success": True}, status=200)
+
+    def parse_document(
+        self, doc_language, doc_name, doc_contents, user_id, sepearate_by_period
+    ):
+
+        doc_id = User_Document.objects.create(
+            language=doc_language, document_name=doc_name, author_id=user_id
+        )
+
+        if sepearate_by_period:
+            sentences = self.split_sentences(doc_contents)
+        else:
+            sentences = doc_contents.split("\n")
+
+        new_sentences = []
+        for sentence_order, sentence in enumerate(sentences):
+            print(sentence)
+            new_sentences.append(
+                User_Document_sentence.objects.create(
+                    source=doc_id,
+                    language=doc_language,
+                    sentence_order=sentence_order,
+                    text=sentence,
+                )
+            )
+
+        parse_sentences(new_sentences, doc_language)
+
+    def split_sentences(self, paragraph):
+        text = re.sub("؟", "?", paragraph)
+        sentences = []
+        for sen in nltk.sent_tokenize(text):
+            sentences.append(sen)
+        return sentences
